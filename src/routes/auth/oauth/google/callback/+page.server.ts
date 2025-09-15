@@ -21,11 +21,14 @@ export async function load(event) {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const code = event.url.searchParams.get('code');
-	const state = event.url.searchParams.get('state');
-	const storedState = event.cookies.get('google_state') ?? null;
-	const storedCodeVerifier = event.cookies.get('google_code_verifier') ?? null;
-	if (!code || !storedState || !storedCodeVerifier || state !== storedState) {
+    const url = event.url;
+	console.log("URL:", url);
+	if (url!=undefined && url.searchParams!=undefined) {
+		const code = url.searchParams.get('code');
+		const state = url.searchParams.get('state');
+		const storedState = event.cookies.get('google_state') ?? null;
+		const storedCodeVerifier = event.cookies.get('google_code_verifier') ?? null;
+		if (!code || !storedState || !storedCodeVerifier || state !== storedState) {
 		return {
 			status: 400
 		};

@@ -8,7 +8,7 @@
 	<title>{APP_NAME}</title>
 	<meta
 		name="description"
-		content="Sveltekit Auth Starter - An open source auth starter project utilizing lucia-auth, skeleton ui, prisma and sveltekit."
+		content="OpenProduct, une association des producteurs locaux."
 	/>
 </svelte:head>
 
