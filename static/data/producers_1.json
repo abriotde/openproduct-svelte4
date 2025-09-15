@@ -1,0 +1,51 @@
+{
+  "id": 1,
+  "producers": [
+    {
+      "id": 1,
+      "name": "Ferme Bio du Rhône",
+      "lat": 45.7640,
+      "lng": 4.8357,
+      "cat": "A",
+      "txt": "Producteur de légumes biologiques et de fruits de saison. Vente directe à la ferme et sur les marchés locaux.",
+      "addr": "123 Route de la Ferme",
+      "postcode": "69000",
+      "city": "Lyon",
+      "tel": "0478123456",
+      "email": "contact@ferme-bio-rhone.fr",
+      "web": "https://ferme-bio-rhone.fr",
+      "suspect": 0
+    },
+    {
+      "id": 2,
+      "name": "Atelier Textile Local",
+      "lat": 45.7489,
+      "lng": 4.8467,
+      "cat": "H",
+      "txt": "Confection artisanale de vêtements en tissus biologiques et équitables. Réparation et retouches.",
+      "addr": "45 Rue des Artisans",
+      "postcode": "69001",
+      "city": "Lyon",
+      "tel": "0478654321",
+      "email": "info@atelier-textile.fr",
+      "web": "https://atelier-textile-local.fr",
+      "suspect": 0
+    },
+    {
+      "id": 3,
+      "name": "Menuiserie Traditionnelle",
+      "lat": 45.7311,
+      "lng": 4.8186,
+      "cat": "O",
+      "txt": "Fabrication de meubles en bois massif, restauration d'anciens meubles. Travail artisanal sur mesure.",
+      "addr": "78 Avenue du Bois",
+      "postcode": "69002",
+      "city": "Lyon",
+      "tel": "0478987654",
+      "email": "contact@menuiserie-trad.fr",
+      "web": "https://menuiserie-traditionnelle.fr",
+      "suspect": 0
+    }
+  ]
+}
+
