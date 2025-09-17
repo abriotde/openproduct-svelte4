@@ -1,3 +1,4 @@
+package-lock.json
 .DS_Store
 node_modules
 /build
@@ -8,5 +9,5 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-package-lock.json
 *.swp
+static/data/producers_*.json
