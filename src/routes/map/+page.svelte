@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
-	let mapContainer: HTMLDivElement;
-	let filterSelect: HTMLSelectElement;
+	let mapContainer = $state<HTMLDivElement>();
+	let filterSelect = $state<HTMLSelectElement>();
 
 	onMount(async () => {
 		if (browser) {
@@ -32,6 +32,9 @@
 	function initializeMap() {
 		// @ts-ignore
 		const L = window.L;
+		
+		// Vérifier que mapContainer existe
+		if (!mapContainer) return;
 		
 		// Initialiser la carte
 		const map = L.map(mapContainer).setView([45.7640, 4.8357], 12);
@@ -191,6 +194,7 @@
 
 		// Gérer le changement de filtre
 		function handleFilterChange() {
+			if (!filterSelect) return;
 			const selectedValue = filterSelect.value;
 			displayProducers(selectedValue);
 		}

@@ -11,9 +11,11 @@
 		<p class="max-w-[700px] text-lg text-muted-foreground">
 			Please check your email account for a message to confirm your email address for {APP_NAME}. If
 			you did not receive the email,
-			<a href="/auth/verify/resend-email-{encodeURIComponent(data.user.email)}" class="underline"
-				>click here</a
-			> to resend it.
+			{#if data.user}
+				<a href="/auth/verify/resend-email-{encodeURIComponent(data.user.email)}" class="underline"
+					>click here</a
+				> to resend it.
+			{/if}
 		</p>
 	</div>
 </section>
