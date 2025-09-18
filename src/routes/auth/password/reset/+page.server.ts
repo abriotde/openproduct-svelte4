@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { setError, superValidate } from 'sveltekit-superforms/server';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { userSchema } from '$lib/config/zod-schemas';
 import { sendPasswordResetEmail } from '$lib/config/email-messages';
 import { getUserByEmail, updateUser } from '$lib/server/database/user-model.js';

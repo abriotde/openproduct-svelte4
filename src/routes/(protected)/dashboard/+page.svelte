@@ -13,18 +13,21 @@
 
 	export let data: PageData;
 
-	const { form, errors, enhance, submitting, message } = superForm(data.form, {
-		validators: zodClient(producerSchema),
-		resetForm: false,
-		onUpdated: ({ form }) => {
-			if (form.valid) {
-				showSuccessMessage = true;
-				setTimeout(() => {
-					showSuccessMessage = false;
-				}, 5000);
+	const { form, errors, enhance, submitting, message } = superForm(
+		data.form,
+		{
+			validators: zodClient(producerSchema),
+			resetForm: false,
+			onUpdated: ({ form }) => {
+				if (form.valid) {
+					showSuccessMessage = true;
+					setTimeout(() => {
+						showSuccessMessage = false;
+					}, 5000);
+				}
 			}
 		}
-	});
+	);
 
 	let showSuccessMessage = false;
 

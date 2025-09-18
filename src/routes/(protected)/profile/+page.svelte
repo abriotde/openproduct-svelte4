@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { userSchema } from '$lib/config/zod-schemas';
-	import type { SuperValidated } from 'sveltekit-superforms';
+	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { Loader2 } from 'lucide-svelte';
 	import { AlertCircle } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
@@ -15,11 +15,8 @@
 		lastName: true,
 		email: true
 	});
-
 	type ProfileSchema = typeof profileSchema;
-
-	export let form: SuperValidated<ProfileSchema>;
-	form = data.form;
+	export let form: SuperValidated<Infer<ProfileSchema>> = data.form;
 </script>
 
 <div class="flex items-center justify-center mx-auto max-w-2xl">
@@ -68,7 +65,10 @@
 					<Form.Button class="w-full" disabled={submitting}
 						>{#if submitting}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-							Please wait{:else}Update profile{/if}
+							Please wait
+						{:else}
+							Update profile
+						{/if}
 					</Form.Button>
 					<div class="mt-6 text-center text-sm">
 						<Button on:click={() => goto('/auth/password/reset')} class="w-full" variant="outline"

@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
-import { setError, superValidate } from 'sveltekit-superforms/server';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { Argon2id } from 'oslo/password';
 import { lucia } from '$lib/server/lucia';
 import { createUser } from '$lib/server/database/user-model';
