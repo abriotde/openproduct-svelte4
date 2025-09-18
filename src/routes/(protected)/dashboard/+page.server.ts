@@ -52,6 +52,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 };
 
+async function getXYFromAddress(address:string) {
+	const url = "https://api-adresse.data.gouv.fr/search/?q="+encodeURI(address);
+	console.log("Url : ", url);
+	const response = await fetch(url);
+	const res = await response.json();
+	if (res.features.length==0) return null;
+	const feature = res.features[0];
+	const coordinates = feature.geometry.coordinates;
+	let addr = feature.properties;
+	addr.latitude = coordinates[1];
+	addr.longitude = coordinates[0];
+	return addr;
+}
+
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		if (!locals.user) {
@@ -72,6 +86,17 @@ export const actions: Actions = {
 				.where(eq(producerTable.userId, locals.user.id))
 				.limit(1);
 
+			const address = form.data.address || null;
+			const postCode = form.data.postCode || null;
+			const city = form.data.city || null;
+			const addr = await getXYFromAddress(address+", "+postCode+" "+city)
+			let latitude = 0.0;
+			let longitude = 0.0;
+			if (addr) {
+				latitude = addr.latitude;
+				longitude = addr.longitude;
+			}
+
 			const producerData = {
 				userId: locals.user.id,
 				companyName: form.data.companyName,
@@ -79,9 +104,9 @@ export const actions: Actions = {
 				lastName: form.data.lastName || null,
 				shortDescription: form.data.shortDescription || null,
 				description: form.data.description || null,
-				postCode: form.data.postCode || null,
-				city: form.data.city || null,
-				address: form.data.address || null,
+				postCode: postCode,
+				city: city,
+				address: address,
 				category: form.data.category || null,
 				phoneNumber1: form.data.phoneNumber1 || null,
 				phoneNumber2: form.data.phoneNumber2 || null,
@@ -89,7 +114,9 @@ export const actions: Actions = {
 				website1: form.data.website1 || null,
 				website2: form.data.website2 || null,
 				website3: form.data.website3 || null,
-				updatedAt: new Date()
+				updatedAt: new Date(),
+				latitude: latitude,
+				longitude: longitude,
 			};
 
 			if (existingProducer.length > 0) {

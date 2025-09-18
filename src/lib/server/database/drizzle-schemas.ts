@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, integer, real } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const userTable = pgTable('users', {
@@ -64,7 +64,9 @@ export const producerTable = pgTable('producers', {
     updatedAt: timestamp('updated_at', {
         withTimezone: true,
         mode: 'date'
-    }).notNull().default(sql`now()`)
+    }).notNull().default(sql`now()`),
+    latitude: real('latitude').notNull().default(sql`0.0`),
+    longitude: real('longitude').notNull().default(sql`0.0`)
 });
 
 export type Producer = typeof producerTable.$inferInsert;
