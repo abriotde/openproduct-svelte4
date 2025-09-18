@@ -9,7 +9,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
-		throw redirect(302, '/auth/sign-in');
+		redirect(302, '/auth/sign-in');
 	}
 
 	// Récupérer le profil producteur existant
