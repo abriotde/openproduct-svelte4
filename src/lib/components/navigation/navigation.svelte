@@ -41,7 +41,7 @@
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
 					href="/"
-					class:active={'/' === currentPage}>Home</a
+					class:active={'/' === currentPage}>Accueil</a
 				>
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
@@ -51,14 +51,14 @@
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
 					href="/dashboard"
-					class:active={'/dashboard' === currentPage}>Protected</a
+					class:active={'/dashboard' === currentPage}>Mon Profil</a
 				>
 			</nav>
 		</div>
 		<div class="flex flex-1 items-center justify-end space-x-4">
 			<nav class="flex items-center space-x-1">
 				{#if !user}
-					<Button on:click={() => goto('/auth/sign-in')}>Sign in</Button>
+					<Button on:click={() => goto('/auth/sign-in')}>Connection</Button>
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="ghost" size="icon">

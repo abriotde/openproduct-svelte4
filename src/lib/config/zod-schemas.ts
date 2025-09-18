@@ -54,3 +54,83 @@ export const userUpdatePasswordSchema = userSchema
 	});
 
 	export type UserUpdatePasswordSchema = typeof userUpdatePasswordSchema;
+export const producerSchema = z.object({
+	companyName: z
+		.string({ required_error: 'Company name is required' })
+		.min(1, { message: 'Company name is required' })
+		.max(100, { message: 'Company name must be less than 100 characters' })
+		.trim(),
+	firstName: z
+		.string()
+		.max(50, { message: 'First name must be less than 50 characters' })
+		.trim()
+		.optional(),
+	lastName: z
+		.string()
+		.max(50, { message: 'Last name must be less than 50 characters' })
+		.trim()
+		.optional(),
+	shortDescription: z
+		.string()
+		.max(200, { message: 'Short description must be less than 200 characters' })
+		.trim()
+		.optional(),
+	description: z
+		.string()
+		.max(1000, { message: 'Description must be less than 1000 characters' })
+		.trim()
+		.optional(),
+	postCode: z
+		.string()
+		.regex(/^\d{5}$/, { message: 'Post code must be 5 digits' })
+		.optional(),
+	city: z
+		.string()
+		.max(100, { message: 'City must be less than 100 characters' })
+		.trim()
+		.optional(),
+	address: z
+		.string()
+		.max(200, { message: 'Address must be less than 200 characters' })
+		.trim()
+		.optional(),
+	category: z
+		.enum(['A', 'H', 'O', 'P', 'I'], { 
+			errorMap: () => ({ message: 'Please select a valid category' })
+		})
+		.optional(),
+	phoneNumber1: z
+		.string()
+		.regex(/^(?:\+33|0)[1-9](?:[0-9]{8})$/, { 
+			message: 'Please enter a valid French phone number' 
+		})
+		.optional(),
+	phoneNumber2: z
+		.string()
+		.regex(/^(?:\+33|0)[1-9](?:[0-9]{8})$/, { 
+			message: 'Please enter a valid French phone number' 
+		})
+		.optional(),
+	siretNumber: z
+		.string()
+		.regex(/^\d{14}$/, { message: 'SIRET number must be 14 digits' })
+		.optional(),
+	website1: z
+		.string()
+		.url({ message: 'Please enter a valid URL' })
+		.optional()
+		.or(z.literal('')),
+	website2: z
+		.string()
+		.url({ message: 'Please enter a valid URL' })
+		.optional()
+		.or(z.literal('')),
+	website3: z
+		.string()
+		.url({ message: 'Please enter a valid URL' })
+		.optional()
+		.or(z.literal(''))
+});
+
+export type ProducerSchema = typeof producerSchema;
+

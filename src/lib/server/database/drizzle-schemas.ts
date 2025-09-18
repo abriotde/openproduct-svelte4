@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const userTable = pgTable('users', {
 	id: text('id').notNull().primaryKey(),
@@ -36,3 +37,37 @@ export const sessionTable = pgTable('sessions', {
 export type User = typeof userTable.$inferInsert;
 export type UpdateUser = Partial<typeof userTable.$inferInsert>;
 export type Session = typeof sessionTable.$inferInsert;
+
+
+export const producerTable = pgTable('producers', {
+    id: text('id').notNull().primaryKey(),
+    userId: text('user_id').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
+    companyName: text('company_name').notNull(),
+    firstName: text('first_name'),
+    lastName: text('last_name'),
+    shortDescription: text('short_description'),
+    description: text('description'),
+    postCode: text('post_code'),
+    city: text('city'),
+    address: text('address'),
+    category: text('category'),
+    phoneNumber1: text('phone_number_1'),
+    phoneNumber2: text('phone_number_2'),
+    siretNumber: text('siret_number'),
+    website1: text('website_1'),
+    website2: text('website_2'),
+    website3: text('website_3'),
+    createdAt: timestamp('created_at', {
+        withTimezone: true,
+        mode: 'date'
+    }).notNull().default(sql`now()`),
+    updatedAt: timestamp('updated_at', {
+        withTimezone: true,
+        mode: 'date'
+    }).notNull().default(sql`now()`)
+});
+
+export type Producer = typeof producerTable.$inferInsert;
+export type UpdateProducer = Partial<typeof producerTable.$inferInsert>;
+
+
