@@ -4,9 +4,10 @@ import { setError, superValidate } from 'sveltekit-superforms/server';
 import { Argon2id } from 'oslo/password';
 import { lucia } from '$lib/server/lucia';
 import { createUser } from '$lib/server/database/user-model';
-
 import { userSchema } from '$lib/config/zod-schemas';
 import { sendVerificationEmail } from '$lib/config/email-messages';
+import type { PageServerLoad, Actions } from './$types.js';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const signUpSchema = userSchema.pick({
 	firstName: true,
@@ -16,19 +17,19 @@ const signUpSchema = userSchema.pick({
 	terms: true
 });
 
-export const load = async (event) => {
+export const load:PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(event, signUpSchema);
+	const form = await superValidate(event, zod(signUpSchema));
 	return {
 		form
 	};
 };
 
-export const actions = {
+export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, signUpSchema);
+		const form = await superValidate(event, zod(signUpSchema));
 		//console.log(form);
 
 		if (!form.valid) {

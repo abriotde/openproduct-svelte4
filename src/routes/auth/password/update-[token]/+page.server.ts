@@ -3,16 +3,19 @@ import { setError, superValidate } from 'sveltekit-superforms/server';
 import { userUpdatePasswordSchema } from '$lib/config/zod-schemas';
 import { getUserByToken, updateUser } from '$lib/server/database/user-model.js';
 import { Argon2id } from 'oslo/password';
-export const load = async (event) => {
-	const form = await superValidate(event, userUpdatePasswordSchema);
+import type { PageServerLoad, Actions } from './$types.js';
+import { zod } from 'sveltekit-superforms/adapters';
+
+export const load:PageServerLoad = async (event) => {
+	const form = await superValidate(event, zod(userUpdatePasswordSchema));
 	return {
 		form
 	};
 };
 
-export const actions = {
+export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, userUpdatePasswordSchema);
+		const form = await superValidate(event, zod(userUpdatePasswordSchema));
 
 		if (!form.valid) {
 			return fail(400, {

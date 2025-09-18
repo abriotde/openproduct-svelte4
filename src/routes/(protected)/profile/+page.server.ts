@@ -4,6 +4,8 @@ import { setFlash } from 'sveltekit-flash-message/server';
 import { userSchema } from '$lib/config/zod-schemas';
 import { updateEmailAddressSuccessEmail } from '$lib/config/email-messages';
 import { updateUser } from '$lib/server/database/user-model.js';
+import type { PageServerLoad, Actions } from './$types.js';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const profileSchema = userSchema.pick({
 	firstName: true,
@@ -11,8 +13,8 @@ const profileSchema = userSchema.pick({
 	email: true
 });
 
-export const load = async (event) => {
-	const form = await superValidate(event, profileSchema);
+export const load: PageServerLoad = async (event) => {
+	const form = await superValidate(event, zod(profileSchema));
 
 	const user = event.locals.user;
 	if (!user) {
@@ -31,9 +33,9 @@ export const load = async (event) => {
 	};
 };
 
-export const actions = {
+export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, profileSchema);
+		const form = await superValidate(event, zod(profileSchema));
 		//console.log(form);
 
 		if (!form.valid) {

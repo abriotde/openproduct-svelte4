@@ -3,20 +3,22 @@ import { setError, superValidate } from 'sveltekit-superforms/server';
 import { userSchema } from '$lib/config/zod-schemas';
 import { sendPasswordResetEmail } from '$lib/config/email-messages';
 import { getUserByEmail, updateUser } from '$lib/server/database/user-model.js';
+import type { PageServerLoad, Actions } from './$types.js';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const resetPasswordSchema = userSchema.pick({ email: true });
 
-export const load = async (event) => {
-	const form = await superValidate(event, resetPasswordSchema);
+export const load:PageServerLoad = async (event) => {
+	const form = await superValidate(event, zod(resetPasswordSchema));
 	return {
 		form
 	};
 };
 
-export const actions = {
+export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, resetPasswordSchema);
-
+		const form = await superValidate(event, zod(resetPasswordSchema));
+		console.log("Form : ",form);
 		if (!form.valid) {
 			return fail(400, {
 				form

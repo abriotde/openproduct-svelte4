@@ -5,26 +5,28 @@ import { lucia } from '$lib/server/lucia';
 import { Argon2id } from 'oslo/password';
 import { userSchema } from '$lib/config/zod-schemas';
 import { getUserByEmail } from '$lib/server/database/user-model';
+import type { PageServerLoad, Actions } from './$types.js';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const signInSchema = userSchema.pick({
 	email: true,
 	password: true
 });
 
-export const load = async (event) => {
+export const load:PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(event, signInSchema);
+	const form = await superValidate(event, zod(signInSchema));
 	return {
 		form
 	};
 };
 
-export const actions = {
+export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, signInSchema);
-		//console.log(form);
+		const form = await superValidate(event, zod(signInSchema));
+		console.log("Form sign-in : ", form);
 
 		if (!form.valid) {
 			return fail(400, {
