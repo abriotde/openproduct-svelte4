@@ -149,6 +149,6 @@
 
 <style>
 	.active {
-		@apply text-primary;
+		color: hsl(var(--primary));
 	}
 </style>
