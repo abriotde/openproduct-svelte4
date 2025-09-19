@@ -14,20 +14,15 @@ const profileSchema = userSchema.pick({
 });
 
 export const load: PageServerLoad = async (event) => {
-	const form = await superValidate(event, zod(profileSchema));
-
 	const user = event.locals.user;
 	if (!user) {
 		return fail(400, {
-			form,
 			error: 'You must be signed in to view this page.'
 		});
 	}
-	form.data = {
-		firstName: user?.firstName,
-		lastName: user?.lastName,
-		email: user?.email
-	};
+
+	const form = await superValidate(zod(profileSchema));
+
 	return {
 		form
 	};

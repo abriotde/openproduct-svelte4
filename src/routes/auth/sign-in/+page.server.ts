@@ -17,7 +17,7 @@ export const load:PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(event, zod(signInSchema));
+	const form = await superValidate(zod(signInSchema));
 	return {
 		form
 	};

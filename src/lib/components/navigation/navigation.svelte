@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Command from '$lib/components/ui/command';
@@ -13,12 +11,8 @@
 	import { page } from '$app/stores';
 	import convertNameToInitials from '$lib/_helpers/convertNameToInitials';
 
-	interface Props {
-		user: any;
-	}
-
-	let { user }: Props = $props();
-	let currentPage = $derived($page.url.pathname);
+	export let user: any;
+	$: currentPage = $page.url.pathname;
 
 	function signOut() {
 		// Create a form element
@@ -29,12 +23,12 @@
 		form.submit();
 	}
 
-	let initials: string = $state('');
-	run(() => {
+	let initials: string = '';
+	$: {
 		if (user) {
 			initials = convertNameToInitials(user.firstName, user.lastName);
 		}
-	});
+	}
 </script>
 
 <header class="bg-background sticky top-0 z-40 w-full border-b">
@@ -56,6 +50,11 @@
 				>
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
+					href="/map"
+					class:active={'/map' === currentPage}>Carte</a
+				>
+				<a
+					class="flex items-center text-sm font-medium text-muted-foreground"
 					href="/dashboard"
 					class:active={'/dashboard' === currentPage}>Mon Profil</a
 				>
@@ -66,19 +65,19 @@
 				{#if !user}
 					<Button on:click={() => goto('/auth/sign-in')}>Connection</Button>
 					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild >
-							{#snippet children({ builder })}
-														<Button builders={[builder]} variant="ghost" size="icon">
-									<Sun
-										class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-									/>
-									<Moon
-										class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-									/>
-									<span class="sr-only">Toggle theme</span>
-								</Button>
-																				{/snippet}
-												</DropdownMenu.Trigger>
+							<DropdownMenu.Trigger asChild>
+								{#snippet children(props)}
+									<Button {...props} variant="ghost" size="icon">
+										<Sun
+											class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+										/>
+										<Moon
+											class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+										/>
+										<span class="sr-only">Toggle theme</span>
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end">
 							<DropdownMenu.Item on:click={() => setMode('light')}>Light</DropdownMenu.Item>
 							<DropdownMenu.Item on:click={() => setMode('dark')}>Dark</DropdownMenu.Item>
@@ -87,15 +86,15 @@
 					</DropdownMenu.Root>
 				{:else}
 					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild >
-							{#snippet children({ builder })}
-														<Button variant="ghost" builders={[builder]} class="relative h-8 w-8 rounded-full">
-									<Avatar.Root class="h-8 w-8">
-										<Avatar.Fallback>{initials}</Avatar.Fallback>
-									</Avatar.Root>
-								</Button>
-																				{/snippet}
-												</DropdownMenu.Trigger>
+							<DropdownMenu.Trigger asChild>
+								{#snippet children(props)}
+									<Button variant="ghost" {...props} class="relative h-8 w-8 rounded-full">
+										<Avatar.Root class="h-8 w-8">
+											<Avatar.Fallback>{initials}</Avatar.Fallback>
+										</Avatar.Root>
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56" align="end">
 							<DropdownMenu.Label class="font-normal">
 								<div class="flex flex-col space-y-1">

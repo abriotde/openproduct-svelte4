@@ -11,12 +11,9 @@
 	import { AlertCircle, CheckCircle2, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 
-	interface Props {
-		data: PageData;
-	}
+	export let data: PageData;
 
-	let { data }: Props = $props();
-
+<<<<<<< Updated upstream
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form,
 		{
@@ -32,8 +29,22 @@
 			}
 		}
 	);
+=======
+	const { form, errors, enhance, submitting, message } = superForm(data.form, {
+		validators: zodClient(producerSchema),
+		resetForm: false,
+		onUpdated: ({ form }) => {
+			if (form.valid) {
+				showSuccessMessage = true;
+				setTimeout(() => {
+					showSuccessMessage = false;
+				}, 5000);
+			}
+		}
+	});
+>>>>>>> Stashed changes
 
-	let showSuccessMessage = $state(false);
+	let showSuccessMessage = false;
 
 	const categories = [
 		{ value: 'A', label: 'Alimentaire', color: 'bg-green-100 text-green-800' },

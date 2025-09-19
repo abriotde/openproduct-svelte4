@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type { PageData } from './$types';
 	import '../app.pcss';
 	import { page } from '$app/stores';
@@ -10,30 +8,23 @@
 	import { toast } from 'svelte-sonner';
 	import Navigation from '$lib/components/navigation/navigation.svelte';
 
-	interface Props {
-		data: any;
-		children?: import('svelte').Snippet;
-	}
-
-	let { data, children }: Props = $props();
-	let user: PageData['user'] = $derived(data.user);
-	
+	export let data: any;
+	let user: PageData['user'];
+	$: user = data.user;
 	const flash = getFlash(page);
 	//$: console.log('+layout.svelte root flash: ' + JSON.stringify($flash));
-	run(() => {
-		if ($flash) {
-			switch ($flash.type) {
-				case 'success':
-					//console.log('flash.message.success: ' + $flash.message);
-					toast.success($flash.message);
-					break;
-				case 'error':
-					//console.log('flash.message.error: ' + $flash.message);
-					toast.error($flash.message);
-					break;
-			}
+	$: if ($flash) {
+		switch ($flash.type) {
+			case 'success':
+				//console.log('flash.message.success: ' + $flash.message);
+				toast.success($flash.message);
+				break;
+			case 'error':
+				//console.log('flash.message.error: ' + $flash.message);
+				toast.error($flash.message);
+				break;
 		}
-	});
+	}
 </script>
 
 <ModeWatcher />
@@ -41,6 +32,6 @@
 <div class="relative flex min-h-screen flex-col">
 	<Navigation {user} />
 	<div class="mt-8 md:mt-12">
-		{@render children?.()}
+		<slot />
 	</div>
 </div>
