@@ -13,7 +13,6 @@
 
 	export let data: PageData;
 
-<<<<<<< Updated upstream
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form,
 		{
@@ -29,20 +28,6 @@
 			}
 		}
 	);
-=======
-	const { form, errors, enhance, submitting, message } = superForm(data.form, {
-		validators: zodClient(producerSchema),
-		resetForm: false,
-		onUpdated: ({ form }) => {
-			if (form.valid) {
-				showSuccessMessage = true;
-				setTimeout(() => {
-					showSuccessMessage = false;
-				}, 5000);
-			}
-		}
-	});
->>>>>>> Stashed changes
 
 	let showSuccessMessage = false;
 
