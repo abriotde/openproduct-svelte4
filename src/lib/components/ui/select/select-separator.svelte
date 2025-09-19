@@ -2,7 +2,7 @@
 	import { Select as SelectPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils";
 
-	type $$Props = SelectPrimitive.SeparatorProps;
+	type $$Props = SelectPrimitive.Root.SeparatorProps;
 
 	interface Props {
 		class?: $$Props["class"];
@@ -13,7 +13,7 @@
 	
 </script>
 
-<SelectPrimitive.Separator
+<SelectPrimitive.Root.Separator
 	class={cn("-mx-1 my-1 h-px bg-muted", className)}
 	{...rest}
 />

@@ -25,7 +25,7 @@
 	{...rest}
 	on:click
 >
-	<CheckboxPrimitive.Indicator
+	<CheckboxPrimitive.Root
 		class={cn("flex items-center justify-center text-current h-4 w-4")}
 		
 		
@@ -37,5 +37,5 @@
 				<Minus class="h-3.5 w-3.5" />
 			{/if}
 					{/snippet}
-		</CheckboxPrimitive.Indicator>
+		</CheckboxPrimitive.Root>
 </CheckboxPrimitive.Root>
