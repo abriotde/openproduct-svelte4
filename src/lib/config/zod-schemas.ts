@@ -2,31 +2,31 @@ import { z } from 'zod';
 
 export const userSchema = z.object({
 	firstName: z
-		.string({ required_error: 'First Name is required' })
+		.string({ error: 'First Name is required' })
 		.min(1, { message: 'First Name is required' })
 		.trim(),
 	lastName: z
-		.string({ required_error: 'Last Name is required' })
+		.string({ error: 'Last Name is required' })
 		.min(1, { message: 'Last Name is required' })
 		.trim(),
 	email: z
-		.string({ required_error: 'Email is required' })
+		.string({ error: 'Email is required' })
 		.email({ message: 'Please enter a valid email address' }),
 	password: z
-		.string({ required_error: 'Password is required' })
+		.string({ error: 'Password is required' })
 		.min(6, { message: 'Password must be at least 6 characters' })
 		.trim(),
 	confirmPassword: z
-		.string({ required_error: 'Password is required' })
+		.string({ error: 'Password is required' })
 		.min(6, { message: 'Password must be at least 6 characters' })
 		.trim(),
 	//terms: z.boolean({ required_error: 'You must accept the terms and privacy policy' }),
 	role: z
-		.enum(['USER', 'PREMIUM', 'ADMIN'], { required_error: 'You must have a role' })
+		.enum(['USER', 'PREMIUM', 'ADMIN'])
 		.default('USER'),
 	verified: z.boolean().default(false),
 	terms: z.literal<boolean>(true, {
-		errorMap: () => ({ message: "You must accept the terms & privacy policy" }),
+		error: () => ({ message: "You must accept the terms & privacy policy" }),
 	}),
 	token: z.string().optional(),
 	receiveEmail: z.boolean().default(true),
@@ -56,7 +56,7 @@ export const userUpdatePasswordSchema = userSchema
 	export type UserUpdatePasswordSchema = typeof userUpdatePasswordSchema;
 export const producerSchema = z.object({
 	companyName: z
-		.string({ required_error: 'Company name is required' })
+		.string({ error: 'Company name is required' })
 		.min(1, { message: 'Company name is required' })
 		.max(100, { message: 'Company name must be less than 100 characters' })
 		.trim(),
@@ -95,9 +95,7 @@ export const producerSchema = z.object({
 		.trim()
 		.optional(),
 	category: z
-		.enum(['A', 'H', 'O', 'P', 'I'], { 
-			errorMap: () => ({ message: 'Please select a valid category' })
-		})
+		.enum(['A', 'H', 'O', 'P', 'I'])
 		.optional(),
 	phoneNumber1: z
 		.string()
@@ -116,17 +114,14 @@ export const producerSchema = z.object({
 		.regex(/^\d{14}$/, { message: 'SIRET number must be 14 digits' })
 		.optional(),
 	website1: z
-		.string()
 		.url({ message: 'Please enter a valid URL' })
 		.optional()
 		.or(z.literal('')),
 	website2: z
-		.string()
 		.url({ message: 'Please enter a valid URL' })
 		.optional()
 		.or(z.literal('')),
 	website3: z
-		.string()
 		.url({ message: 'Please enter a valid URL' })
 		.optional()
 		.or(z.literal(''))
