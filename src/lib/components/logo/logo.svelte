@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { User2 } from 'lucide-svelte';
-	export let size: string;
+	interface Props {
+		size: string;
+	}
+
+	let { size }: Props = $props();
 </script>
 
 <User2 {size} />

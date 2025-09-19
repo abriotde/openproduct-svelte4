@@ -11,7 +11,11 @@
 	import { AlertCircle, CheckCircle2, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form,
@@ -29,7 +33,7 @@
 		}
 	);
 
-	let showSuccessMessage = false;
+	let showSuccessMessage = $state(false);
 
 	const categories = [
 		{ value: 'A', label: 'Alimentaire', color: 'bg-green-100 text-green-800' },

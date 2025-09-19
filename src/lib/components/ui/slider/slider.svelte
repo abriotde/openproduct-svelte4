@@ -4,9 +4,14 @@
 
 	type $$Props = SliderPrimitive.Props;
 
-	let className: $$Props["class"] = undefined;
-	export let value: $$Props["value"] = [0];
-	export { className as class };
+	interface Props {
+		class?: $$Props["class"];
+		value?: $$Props["value"];
+		[key: string]: any
+	}
+
+	let { class: className = undefined, value = $bindable([0]), ...rest }: Props = $props();
+	
 </script>
 
 <SliderPrimitive.Root
@@ -15,7 +20,7 @@
 		"relative flex w-full touch-none select-none items-center",
 		className
 	)}
-	{...$$restProps}
+	{...rest}
 >
 	<span
 		class="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary"
