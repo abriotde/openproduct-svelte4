@@ -21,7 +21,7 @@ export const load:PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(zod(signUpSchema));
+	const form = await superValidate(signUpSchema, zod);
 	return {
 		form
 	};
@@ -29,7 +29,7 @@ export const load:PageServerLoad = async (event) => {
 
 export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(signUpSchema));
+		const form = await superValidate(event, signUpSchema, zod);
 		//console.log(form);
 
 		if (!form.valid) {

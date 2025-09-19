@@ -7,7 +7,7 @@ import type { PageServerLoad, Actions } from './$types.js';
 import { zod } from 'sveltekit-superforms/adapters';
 
 export const load:PageServerLoad = async (event) => {
-	const form = await superValidate(zod(userUpdatePasswordSchema));
+	const form = await superValidate(userUpdatePasswordSchema, zod);
 	return {
 		form
 	};
@@ -15,7 +15,7 @@ export const load:PageServerLoad = async (event) => {
 
 export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(userUpdatePasswordSchema));
+		const form = await superValidate(event, userUpdatePasswordSchema, zod);
 
 		if (!form.valid) {
 			return fail(400, {

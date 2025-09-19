@@ -9,7 +9,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 const resetPasswordSchema = userSchema.pick({ email: true });
 
 export const load:PageServerLoad = async (event) => {
-	const form = await superValidate(zod(resetPasswordSchema));
+	const form = await superValidate(resetPasswordSchema, zod);
 	return {
 		form
 	};
@@ -17,7 +17,7 @@ export const load:PageServerLoad = async (event) => {
 
 export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(resetPasswordSchema));
+		const form = await superValidate(event, resetPasswordSchema, zod);
 		console.log("Form : ",form);
 		if (!form.valid) {
 			return fail(400, {
