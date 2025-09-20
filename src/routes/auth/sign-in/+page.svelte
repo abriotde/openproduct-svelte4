@@ -52,11 +52,7 @@
 					{#snippet children()}
 						<Form.Item>
 							<Form.Label>Email</Form.Label>
-							<Form.Control>
-								{#snippet children()}
-									<Form.Input type="email" />
-								{/snippet}
-							</Form.Control>
+							<Form.Input type="email" />
 							<Form.Validation />
 						</Form.Item>
 					{/snippet}
@@ -66,11 +62,7 @@
 					{#snippet children()}
 						<Form.Item>
 							<Form.Label>Password</Form.Label>
-							<Form.Control>
-								{#snippet children()}
-									<Form.Input type="password" />
-								{/snippet}
-							</Form.Control>
+							<Form.Input type="password" />
 							<Form.Validation />
 						</Form.Item>
 					{/snippet}
