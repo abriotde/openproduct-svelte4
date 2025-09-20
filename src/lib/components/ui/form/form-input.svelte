@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { getFormField } from "formsnap";
+	import { useFormField } from "formsnap";
 	import type { HTMLInputAttributes } from "svelte/elements";
 	import { Input, type InputEvents } from "$lib/components/ui/input";
+	
 	interface Props {
 		[key: string]: any
 	}
@@ -11,12 +12,12 @@
 	type $$Props = HTMLInputAttributes;
 	type $$Events = InputEvents;
 
-	const { attrStore, value } = getFormField();
+	const field = useFormField();
 </script>
 
 <Input
-	{...$attrStore}
-	bind:value={$value}
+	{...field.getAttrs()}
+	bind:value={field.getValue()}
 	{...rest}
 	on:blur
 	on:change

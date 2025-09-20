@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Label as LabelPrimitive } from "bits-ui";
-	import { getFormField } from "formsnap";
+	import { useFormField } from "formsnap";
 	import { cn } from "$lib/utils";
 	import { Label } from "$lib/components/ui/label";
 
@@ -14,13 +14,12 @@
 
 	let { class: className = undefined, children, ...rest }: Props = $props();
 	
-
-	const { errors, ids } = getFormField();
+	const field = useFormField();
 </script>
 
 <Label
-	for={$ids.input}
-	class={cn($errors && "text-destructive", className)}
+	for={field.getIds().input}
+	class={cn(field.getErrors() && "text-destructive", className)}
 	{...rest}
 >
 	{@render children?.()}

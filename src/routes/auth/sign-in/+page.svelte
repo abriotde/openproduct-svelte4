@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { Field, Control, Label, FieldErrors } from 'formsnap';
+	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import { userSchema } from '$lib/config/zod-schemas';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
@@ -50,44 +48,44 @@
 					</Alert.Root>
 				{/if}
 				
-				<Field form={formData} name="email">
-					{#snippet children({ labelAttrs, inputAttrs })}
-						<div class="space-y-2">
-							<Label {...labelAttrs}>Email</Label>
-							<Control>
-								{#snippet children({ attrs })}
-									<Input {...attrs} {...inputAttrs} type="email" />
+				<Form.Field form={formData} name="email">
+					{#snippet children()}
+						<Form.Item>
+							<Form.Label>Email</Form.Label>
+							<Form.Control>
+								{#snippet children()}
+									<Form.Input type="email" />
 								{/snippet}
-							</Control>
-							<FieldErrors />
-						</div>
+							</Form.Control>
+							<Form.Validation />
+						</Form.Item>
 					{/snippet}
-				</Field>
+				</Form.Field>
 
-				<Field form={formData} name="password">
-					{#snippet children({ labelAttrs, inputAttrs })}
-						<div class="space-y-2">
-							<Label {...labelAttrs}>Password</Label>
-							<Control>
-								{#snippet children({ attrs })}
-									<Input {...attrs} {...inputAttrs} type="password" />
+				<Form.Field form={formData} name="password">
+					{#snippet children()}
+						<Form.Item>
+							<Form.Label>Password</Form.Label>
+							<Form.Control>
+								{#snippet children()}
+									<Form.Input type="password" />
 								{/snippet}
-							</Control>
-							<FieldErrors />
-						</div>
+							</Form.Control>
+							<Form.Validation />
+						</Form.Item>
 					{/snippet}
-				</Field>
+				</Form.Field>
 			</Card.Content>
 			<Card.Footer>
 				<div class="block w-full">
-					<Button class="w-full" disabled={$submitting} type="submit">
+					<Form.Button class="w-full" disabled={$submitting}>
 						{#if $submitting}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 							Please wait
 						{:else}
 							Sign In
 						{/if}
-					</Button>
+					</Form.Button>
 
 					<div class="mt-6 text-center text-sm">
 						<a href="/auth/password/reset" class="underline">Forgot your password?</a>
