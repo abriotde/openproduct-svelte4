@@ -4,9 +4,10 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { userSchema } from '$lib/config/zod-schemas';
 	import { superForm } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { zod } from 'sveltekit-superforms/adapters';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { Loader2, AlertCircle } from 'lucide-svelte';
+	import { z } from 'zod';
 
 	const signInSchema = userSchema.pick({
 		email: true,
@@ -22,7 +23,7 @@
 	let { form }: Props = $props();
 
 	const { form: formData, enhance, errors, submitting } = superForm(form, {
-		validators: zodClient(signInSchema)
+		validators: zod(signInSchema)
 	});
 </script>
 

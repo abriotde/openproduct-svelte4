@@ -6,7 +6,7 @@ import { Argon2id } from 'oslo/password';
 import { userSchema } from '$lib/config/zod-schemas';
 import { getUserByEmail } from '$lib/server/database/user-model';
 import type { PageServerLoad, Actions } from './$types.js';
-import { zod4, type ZodValidationSchema } from 'sveltekit-superforms/adapters';
+import { zod } from 'sveltekit-superforms/adapters';
 import * as z from 'zod';
 
 const signInSchema = userSchema.pick({
@@ -18,7 +18,7 @@ export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(event, zod4(signInSchema));
+	const form = await superValidate(event, zod(signInSchema));
 	return {
 		form
 	};
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions:Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod4(signInSchema));
+		const form = await superValidate(event, zod(signInSchema));
 		console.log("Form sign-in : ", form);
 
 		if (!form.valid) {
