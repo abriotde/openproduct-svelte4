@@ -12,3 +12,4 @@ vite.config.ts.timestamp-*
 *.swp
 static/data/producers_*.json
 bun.lock
+pnpm-lock.yaml

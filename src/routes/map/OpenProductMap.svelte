@@ -3,14 +3,11 @@
 	import { browser } from '$app/environment';
 	// import { Sidepanel } from 'svelte-mui'; // https://svelte-mui.vercel.app/side-panel
 	import { page } from "$app/state";
-	import { Button } from '$lib/components/ui/button'; 
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar
  
-  let { children } = $props();
-	let activeUrl = $state(page.url.pathname);
-	let isSideBarOpen = $state(true);
+  	let open = $state(false);
 
-	let mapContainer = $state<HTMLDivElement>();
+ 	let mapContainer = $state<HTMLDivElement>();
 	let filterSelect = $state<HTMLSelectElement>();
 	let addressInput = $state<HTMLInputElement>();
 	let subfilterDiv = $state<HTMLDivElement>();
@@ -540,7 +537,7 @@
 	}
 </script>
 
-<Sidebar.Provider>
+<Sidebar.Provider bind:open>
 	<Sidebar.Root>
 		<Sidebar.Content>
    			<Sidebar.Group>
@@ -605,12 +602,15 @@
 			</Sidebar.Group>
 		</Sidebar.Content>
 	</Sidebar.Root>
-</Sidebar.Provider>
+	<main class="w-full">
+		<Sidebar.Trigger />
 
 		<div bind:this={mapContainer} 
 			class="w-full h-96 md:h-[600px] border border-gray-300 rounded-lg"
 			style="min-height: 400px;">
 		</div>
+	</main>
+</Sidebar.Provider>
 <style>
 	:global(.openproduct-pin) {
 		background: transparent !important;
