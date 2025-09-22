@@ -50,11 +50,6 @@
 				>
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
-					href="/map"
-					class:active={'/map' === currentPage}>Carte</a
-				>
-				<a
-					class="flex items-center text-sm font-medium text-muted-foreground"
 					href="/dashboard"
 					class:active={'/dashboard' === currentPage}>Mon Profil</a
 				>
