@@ -7,4 +7,8 @@
 	<meta name="description" content="Carte interactive des producteurs locaux OpenProduct" />
 </svelte:head>
 
-<OpenProductMap />
+<div class="flex-1">
+	<section class="container grid items-center gap-6">
+		<OpenProductMap />
+	</section>
+</div>

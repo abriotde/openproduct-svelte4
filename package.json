@@ -64,6 +64,7 @@
 		"nodemailer": "^7.0.6",
 		"oslo": "^1.2.1",
 		"pg": "^8.16.3",
+		"svelte-mui": "^0.5.12",
 		"svelte-sonner": "^1.0.5",
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^3.1.1",

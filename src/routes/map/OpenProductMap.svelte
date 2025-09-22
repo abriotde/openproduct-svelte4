@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { Sidepanel } from 'svelte-mui'; // https://svelte-mui.vercel.app/side-panel
+	import { page } from "$app/state";
+	import { Button } from '$lib/components/ui/button'; 
+	// import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar
+ 
+  let { children } = $props();
+	let activeUrl = $state(page.url.pathname);
+	let isSideBarOpen = $state(true);
 
 	let mapContainer = $state<HTMLDivElement>();
 	let filterSelect = $state<HTMLSelectElement>();
@@ -532,83 +540,80 @@
 	}
 </script>
 
-<div class="container mx-auto p-4">
-	<!-- <h1 class="text-3xl font-bold mb-6">Carte des producteurs</h1> -->
-	
-	<div class="mb-4 flex flex-wrap gap-4 items-center">
-		<!-- Filtre par catégorie -->
-		<div class="flex items-center gap-2">
-			<label for="categoryFilter" class="font-medium">Filtre :</label>
-			<select 
-				bind:this={filterSelect}
-				id="categoryFilter" 
-				class="border border-gray-300 rounded px-3 py-1"
-				onchange={handleFilterChange}
-			>
-				<option value="">Toutes</option>
-				<option value="A">Alimentaire</option>
-				<option value="_A">Tout sauf alimentaire</option>
-				<option value="H">Habillement</option>
-				<option value="3">Produits ménagers / de beauté / médicinal</option>
-				<option value="4">Plantes (Fleurs, arbustes)</option>
-				<option value="O">Artisans / Artistes</option>
-				<option value="I">Petites et moyennes entreprises (PME)</option>
-			</select>
-		</div>
+	<div class="container mx-auto p-4">
+		<Sidepanel left bind:visible={isSideBarOpen} --bg-color="black">
+			<div class="flex items-center gap-2">
+				<label for="categoryFilter" class="font-medium">Filtre :</label>
+				<select 
+					bind:this={filterSelect}
+					id="categoryFilter" 
+					class="border border-gray-300 rounded px-3 py-1"
+					onchange={handleFilterChange}
+				>
+					<option value="">Toutes</option>
+					<option value="A">Alimentaire</option>
+					<option value="_A">Tout sauf alimentaire</option>
+					<option value="H">Habillement</option>
+					<option value="3">Produits ménagers / de beauté / médicinal</option>
+					<option value="4">Plantes (Fleurs, arbustes)</option>
+					<option value="O">Artisans / Artistes</option>
+					<option value="I">Petites et moyennes entreprises (PME)</option>
+				</select>
+			</div>
+			<div bind:this={subfilterDiv} id="subfilter"></div>
 
-		<!-- Sous-filtre dynamique -->
-		<div bind:this={subfilterDiv} id="subfilter"></div>
-
-		<!-- Recherche d'adresse -->
-		<div class="flex items-center gap-2">
-			<label for="addressSearch" class="font-medium">Adresse :</label>
-			<input 
-				bind:this={addressInput}
-				id="addressSearch"
-				type="text" 
-				placeholder="Rechercher une adresse..."
-				class="border border-gray-300 rounded px-3 py-1"
-				onkeypress={handleKeyPress}
-			>
+			<div class="flex items-center gap-2">
+				<label for="addressSearch" class="font-medium">Adresse :</label>
+				<input 
+					bind:this={addressInput}
+					id="addressSearch"
+					type="text" 
+					placeholder="Rechercher une adresse..."
+					class="border border-gray-300 rounded px-3 py-1"
+					onkeypress={handleKeyPress}
+				>
+				<button 
+					type="button"
+					class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+					onclick={searchAddress}
+				>
+					Rechercher
+				</button>
+			</div>
+		
 			<button 
+				bind:this={geolocationButton}
 				type="button"
-				class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-				onclick={searchAddress}
+				class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+				onclick={getCurrentLocation}
 			>
-				Rechercher
+				Ma position
 			</button>
-		</div>
 
-		<!-- Géolocalisation -->
-		<button 
-			bind:this={geolocationButton}
-			type="button"
-			class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-			onclick={getCurrentLocation}
-		>
-			Ma position
-		</button>
+			<div class="flex items-center gap-2">
+				<label for="produceFilter" class="font-medium">Produit :</label>
+				<input 
+					bind:this={produceFilterInput}
+					id="produceFilter"
+					type="text" 
+					placeholder="Rechercher un produit..."
+					class="border border-gray-300 rounded px-3 py-1"
+				>
+			</div>
+		</Sidepanel>
 
-		<!-- Filtre par produit -->
-		<div class="flex items-center gap-2">
-			<label for="produceFilter" class="font-medium">Produit :</label>
-			<input 
-				bind:this={produceFilterInput}
-				id="produceFilter"
-				type="text" 
-				placeholder="Rechercher un produit..."
-				class="border border-gray-300 rounded px-3 py-1"
-			>
-		</div>
+		<Button on:click={() => {console.log("Sidebar"); isSideBarOpen=!isSideBarOpen;}}>
+			Filtres
+			{#if isSideBarOpen}
+				&#xAB;
+			{:else}
+				&#xBB;
+			{/if}
+		</Button>
+		<div bind:this={mapContainer} 
+			class="w-full h-96 md:h-[600px] border border-gray-300 rounded-lg"
+			style="min-height: 400px;"></div>
 	</div>
-
-	<div 
-		bind:this={mapContainer}
-		class="w-full h-96 md:h-[600px] border border-gray-300 rounded-lg"
-		style="min-height: 400px;"
-	></div>
-</div>
-
 <style>
 	:global(.openproduct-pin) {
 		background: transparent !important;
