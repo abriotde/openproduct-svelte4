@@ -1,41 +1,46 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
+	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from "svelte/elements";
+	import type { WithElementRef } from "bits-ui";
+	import { cn } from "$lib/utils.js";
 
-	const bubble = createBubbler();
-	import type { HTMLInputAttributes } from "svelte/elements";
-	import { cn } from "$lib/utils";
-	import type { InputEvents } from ".";
+	type InputType = Exclude<HTMLInputTypeAttribute, "file">;
 
-	type $$Props = HTMLInputAttributes;
-	type $$Events = InputEvents;
+	type Props = WithElementRef<
+		Omit<HTMLInputAttributes, "type"> &
+			({ type: "file"; files?: FileList } | { type?: InputType; files?: undefined })
+	>;
 
-	interface Props {
-		class?: $$Props["class"];
-		value?: $$Props["value"];
-		[key: string]: any
-	}
-
-	let { class: className = undefined, value = $bindable(undefined), ...rest }: Props = $props();
-	
+	let {
+		ref = $bindable(null),
+		value = $bindable(),
+		type,
+		files = $bindable(),
+		class: className,
+		...restProps
+	}: Props = $props();
 </script>
 
-<input
-	class={cn(
-		"flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0  file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-		className
-	)}
-	bind:value
-	onblur={bubble('blur')}
-	onchange={bubble('change')}
-	onclick={bubble('click')}
-	onfocus={bubble('focus')}
-	onkeydown={bubble('keydown')}
-	onkeypress={bubble('keypress')}
-	onkeyup={bubble('keyup')}
-	onmouseover={bubble('mouseover')}
-	onmouseenter={bubble('mouseenter')}
-	onmouseleave={bubble('mouseleave')}
-	onpaste={bubble('paste')}
-	oninput={bubble('input')}
-	{...rest}
-/>
+{#if type === "file"}
+	<input
+		bind:this={ref}
+		class={cn(
+			"border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+			className
+		)}
+		type="file"
+		bind:files
+		bind:value
+		{...restProps}
+	/>
+{:else}
+	<input
+		bind:this={ref}
+		class={cn(
+			"border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-base file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+			className
+		)}
+		{type}
+		bind:value
+		{...restProps}
+	/>
+{/if}

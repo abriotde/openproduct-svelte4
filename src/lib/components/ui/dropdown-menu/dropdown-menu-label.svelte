@@ -2,7 +2,7 @@
 	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
 	import { cn } from "$lib/utils";
 
-	type $$Props = DropdownMenuPrimitive.LabelProps & {
+	type $$Props = DropdownMenuPrimitive.GroupHeadingProps & {
 		inset?: boolean;
 	};
 
@@ -17,9 +17,9 @@
 	
 </script>
 
-<DropdownMenuPrimitive.Label
+<DropdownMenuPrimitive.GroupHeading
 	class={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}
 	{...rest}
 >
 	{@render children?.()}
-</DropdownMenuPrimitive.Label>
+</DropdownMenuPrimitive.GroupHeading>

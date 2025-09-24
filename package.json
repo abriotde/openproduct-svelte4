@@ -15,10 +15,10 @@
 		"migrate": "drizzle-kit push:pg --config drizzle.config.ts"
 	},
 	"devDependencies": {
+		"@lucide/svelte": "^0.482.0",
 		"@sveltejs/adapter-auto": "^6.1.0",
 		"@sveltejs/kit": "^2.42.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
-		"@tailwindcss/postcss": "^4.1.13",
 		"@types/nodemailer": "^7.0.1",
 		"@types/pg": "^8.15.5",
 		"@typescript-eslint/eslint-plugin": "^8.44.0",
@@ -37,7 +37,7 @@
 		"svelte-check": "^4.3.1",
 		"sveltekit-flash-message": "^2.4.6",
 		"sveltekit-superforms": "^2.27.1",
-		"tailwindcss": "^4.1.13",
+		"tailwindcss": "^3.4.17",
 		"tslib": "^2.8.1",
 		"typescript": "^5.9.2",
 		"vite": "^7.1.6",
@@ -50,9 +50,10 @@
 		"@internationalized/date": "^3.9.0",
 		"@lucia-auth/adapter-drizzle": "^1.1.0",
 		"@melt-ui/svelte": "^0.86.6",
+		"@sveltejs/enhanced-img": "^0.8.1",
 		"@types/leaflet": "^1.9.20",
 		"arctic": "^3.7.0",
-		"bits-ui": "^2.10.0",
+		"bits-ui": "^1.4.7",
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.19",
 		"drizzle-orm": "^0.44.5",
@@ -64,9 +65,10 @@
 		"nodemailer": "^7.0.6",
 		"oslo": "^1.2.1",
 		"pg": "^8.16.3",
+		"svelte-mui": "^0.5.12",
 		"svelte-sonner": "^1.0.5",
 		"tailwind-merge": "^3.3.1",
-		"tailwind-variants": "^3.1.1",
+		"tailwind-variants": "^0.2.1",
 		"vaul-svelte": "^0.3.2"
 	}
 }

@@ -21,7 +21,7 @@ export const load: PageServerLoad = async (event) => {
 		});
 	}
 
-	const form = await superValidate(zod(profileSchema));
+	const form = await superValidate(profileSchema, zod);
 
 	return {
 		form
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(profileSchema));
+		const form = await superValidate(event, profileSchema, zod);
 		//console.log(form);
 
 		if (!form.valid) {

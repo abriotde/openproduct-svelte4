@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		website1: producer.website1 || '',
 		website2: producer.website2 || '',
 		website3: producer.website3 || ''
-	} : {}, zod(producerSchema));
+	} : {}, producerSchema, zod);
 
 	return {
 		form,
@@ -72,7 +72,7 @@ export const actions: Actions = {
 			return fail(401, { message: 'Unauthorized' });
 		}
 
-		const form = await superValidate(request, zod(producerSchema));
+		const form = await superValidate(request, producerSchema, zod);
 
 		if (!form.valid) {
 			return fail(400, { form });

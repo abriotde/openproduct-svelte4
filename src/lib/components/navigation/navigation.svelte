@@ -31,7 +31,7 @@
 	}
 </script>
 
-<header class="bg-background sticky top-0 z-40 w-full border-b">
+<header class="bg-background sticky top-0 block w-full border-b">
 	<div class="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
 		<div class="flex gap-6 md:gap-10">
 			<a class="flex items-center space-x-2" href="/"
@@ -50,11 +50,6 @@
 				>
 				<a
 					class="flex items-center text-sm font-medium text-muted-foreground"
-					href="/map"
-					class:active={'/map' === currentPage}>Carte</a
-				>
-				<a
-					class="flex items-center text-sm font-medium text-muted-foreground"
 					href="/dashboard"
 					class:active={'/dashboard' === currentPage}>Mon Profil</a
 				>
@@ -65,18 +60,14 @@
 				{#if !user}
 					<Button on:click={() => goto('/auth/sign-in')}>Connection</Button>
 					<DropdownMenu.Root>
-							<DropdownMenu.Trigger asChild>
-								{#snippet children(props)}
-									<Button {...props} variant="ghost" size="icon">
-										<Sun
-											class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-										/>
-										<Moon
-											class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-										/>
-										<span class="sr-only">Toggle theme</span>
-									</Button>
-								{/snippet}
+							<DropdownMenu.Trigger class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10">
+								<Sun
+									class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+								/>
+								<Moon
+									class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+								/>
+								<span class="sr-only">Toggle theme</span>
 							</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end">
 							<DropdownMenu.Item on:click={() => setMode('light')}>Light</DropdownMenu.Item>
@@ -86,14 +77,10 @@
 					</DropdownMenu.Root>
 				{:else}
 					<DropdownMenu.Root>
-							<DropdownMenu.Trigger asChild>
-								{#snippet children(props)}
-									<Button variant="ghost" {...props} class="relative h-8 w-8 rounded-full">
-										<Avatar.Root class="h-8 w-8">
-											<Avatar.Fallback>{initials}</Avatar.Fallback>
-										</Avatar.Root>
-									</Button>
-								{/snippet}
+							<DropdownMenu.Trigger class="inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground relative h-8 w-8">
+								<Avatar.Root class="h-8 w-8">
+									<Avatar.Fallback>{initials}</Avatar.Fallback>
+								</Avatar.Root>
 							</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56" align="end">
 							<DropdownMenu.Label class="font-normal">

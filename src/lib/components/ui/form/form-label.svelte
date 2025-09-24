@@ -1,27 +1,16 @@
 <script lang="ts">
-	import type { Label as LabelPrimitive } from "bits-ui";
-	import { getFormField } from "formsnap";
+	import { Label as FormLabel } from "formsnap";
 	import { cn } from "$lib/utils";
-	import { Label } from "$lib/components/ui/label";
-
-	type $$Props = LabelPrimitive.Props;
 
 	interface Props {
-		class?: $$Props["class"];
+		class?: string | undefined | null;
 		children?: import('svelte').Snippet;
 		[key: string]: any
 	}
 
 	let { class: className = undefined, children, ...rest }: Props = $props();
-	
-
-	const { errors, ids } = getFormField();
 </script>
 
-<Label
-	for={$ids.input}
-	class={cn($errors && "text-destructive", className)}
-	{...rest}
->
+<FormLabel class={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)} {...rest}>
 	{@render children?.()}
-</Label>
+</FormLabel>

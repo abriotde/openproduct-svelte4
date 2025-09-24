@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { User2 } from 'lucide-svelte';
-	interface Props {
-		size: string;
-	}
-
-	let { size }: Props = $props();
+	import MyImage from '$lib/assets/img/logoOpenProduct.png?enhanced';
+	let size = $props();
+	// ../../assets/img/logoOpenProduct.png
 </script>
 
-<User2 {size} />
+<enhanced:img
+  class="logo-img"
+  src="{MyImage}"
+  sizes="min(24px, 100vw)"
+  alt="OpenProduct"
+/>
+<style>
+	img.logo-img {
+		width: 24px;
+		height: auto;
+	}
+</style>

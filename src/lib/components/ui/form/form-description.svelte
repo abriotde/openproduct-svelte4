@@ -1,22 +1,19 @@
 <script lang="ts">
-	import { Form as FormPrimitive } from "formsnap";
+	import { Field } from "formsnap";
 	import { cn } from "$lib/utils";
 	import type { HTMLAttributes } from "svelte/elements";
 
 	type $$Props = HTMLAttributes<HTMLSpanElement>;
 	interface Props {
 		class?: string | undefined | null;
-		children?: import('svelte').Snippet;
-		[key: string]: any
+		children?: import("svelte").Snippet;
 	}
 
-	let { class: className = undefined, children, ...rest }: Props = $props();
-	
+	let { class: className = undefined, children }: Props = $props();
 </script>
 
-<FormPrimitive.Description
-	class={cn("text-sm text-muted-foreground", className)}
-	{...rest}
->
-	{@render children?.()}
-</FormPrimitive.Description>
+<Field name="" let:description>
+	<span {...description} class={cn("text-sm text-muted-foreground", className)}>
+		{@render children?.()}
+	</span>
+</Field>

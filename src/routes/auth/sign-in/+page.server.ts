@@ -7,17 +7,18 @@ import { userSchema } from '$lib/config/zod-schemas';
 import { getUserByEmail } from '$lib/server/database/user-model';
 import type { PageServerLoad, Actions } from './$types.js';
 import { zod } from 'sveltekit-superforms/adapters';
+import * as z from 'zod';
 
 const signInSchema = userSchema.pick({
 	email: true,
 	password: true
 });
 
-export const load:PageServerLoad = async (event) => {
+export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(zod(signInSchema));
+	const form = await superValidate(event, zod(signInSchema));
 	return {
 		form
 	};

@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { Form as FormPrimitive } from "formsnap";
+	import { FieldErrors } from "formsnap";
 	import { cn } from "$lib/utils";
 	import type { HTMLAttributes } from "svelte/elements";
 
 	type $$Props = HTMLAttributes<HTMLParagraphElement>;
 	interface Props {
 		class?: string | undefined | null;
-		[key: string]: any
 	}
 
-	let { class: className = undefined, ...rest }: Props = $props();
-	
+	let { class: className = undefined }: Props = $props();
 </script>
 
-<FormPrimitive.Validation
-	class={cn("text-sm font-medium text-destructive", className)}
-	{...rest}
-/>
+<FieldErrors class={cn("text-sm font-medium text-destructive", className)} />
+
