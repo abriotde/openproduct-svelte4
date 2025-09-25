@@ -20,7 +20,6 @@ export const userSchema = z.object({
 		.string({ error: 'Password is required' })
 		.min(6, { message: 'Password must be at least 6 characters' })
 		.trim(),
-	//terms: z.boolean({ required_error: 'You must accept the terms and privacy policy' }),
 	role: z
 		.enum(['USER', 'PREMIUM', 'ADMIN'])
 		.default('USER'),
@@ -53,7 +52,8 @@ export const userUpdatePasswordSchema = userSchema
 		}
 	});
 
-	export type UserUpdatePasswordSchema = typeof userUpdatePasswordSchema;
+export type UserUpdatePasswordSchema = typeof userUpdatePasswordSchema;
+
 export const producerSchema = z.object({
 	companyName: z
 		.string({ error: 'Company name is required' })
@@ -82,6 +82,8 @@ export const producerSchema = z.object({
 		.optional(),
 	postCode: z
 		.string()
+		.min(5, { message: 'Post code must be 5 digits' })
+		.max(5, { message: 'Post code must be 5 digits' })
 		.regex(/^\d{5}$/, { message: 'Post code must be 5 digits' })
 		.optional(),
 	city: z
@@ -111,21 +113,21 @@ export const producerSchema = z.object({
 		.optional(),
 	siretNumber: z
 		.string()
+		.length(14, { message: 'SIRET number must be 14 digits' })
 		.regex(/^\d{14}$/, { message: 'SIRET number must be 14 digits' })
 		.optional(),
 	website1: z
+		.string()
 		.url({ message: 'Please enter a valid URL' })
-		.optional()
-		.or(z.literal('')),
+		.optional(),
 	website2: z
+		.string()
 		.url({ message: 'Please enter a valid URL' })
-		.optional()
-		.or(z.literal('')),
+		.optional(),
 	website3: z
+		.string()
 		.url({ message: 'Please enter a valid URL' })
 		.optional()
-		.or(z.literal(''))
 });
 
 export type ProducerSchema = typeof producerSchema;
-

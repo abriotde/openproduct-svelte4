@@ -13,12 +13,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	// Récupérer le profil producteur existant
+	// console.log("DB is ", db);
+	// $inspect(db).with(console.trace);
 	const existingProducer = await db
 		.select()
 		.from(producerTable)
 		.where(eq(producerTable.userId, locals.user.id))
 		.limit(1);
 	const producer = existingProducer[0] || null;
+
+	/* const producer = await db.producers.findUnique({
+		where: { userId: locals.user.id }
+	}); */
 
 	// Initialiser le formulaire avec les données existantes
 	const form = await superValidate(producer ? {
