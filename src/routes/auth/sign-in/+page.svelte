@@ -2,19 +2,9 @@
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Loader2, AlertCircle } from 'lucide-svelte';
+	import { LoaderCircle, CircleAlert } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-
-	interface Props {
-		form: {
-			data: {
-				email: string;
-				password: string;
-			};
-			errors: Record<string, string>;
-			valid: boolean;
-		};
-	}
+	import { type Props } from './+page.server' 
 
 	let { form }: Props = $props();
 	let submitting = $state(false);
@@ -39,9 +29,9 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
-				{#if form.errors.general}
+				{#if form?.errors?.general}
 					<Alert.Root variant="destructive">
-						<AlertCircle class="h-4 w-4" />
+						<CircleAlert class="h-4 w-4" />
 						<Alert.Title>Error</Alert.Title>
 						<Alert.Description>
 							{form.errors.general}
@@ -95,7 +85,7 @@
 			<Card.Footer>
 				<Form.Button type="submit" class="w-full" disabled={submitting}>
 					{#if submitting}
-						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+						<LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
 						Signing in...
 					{:else}
 						Sign in
