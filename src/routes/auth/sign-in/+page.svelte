@@ -4,7 +4,17 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { LoaderCircle, CircleAlert } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { type Props } from './+page.server' 
+
+	interface Props {
+		form: {
+			data: {
+				email: string;
+				password: string;
+			};
+			errors: Record<string, string>;
+			valid: boolean;
+		};
+	}
 
 	let { form }: Props = $props();
 	let submitting = $state(false);
@@ -29,7 +39,7 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
-				{#if form?.errors?.general}
+				{#if form.errors.general}
 					<Alert.Root variant="destructive">
 						<CircleAlert class="h-4 w-4" />
 						<Alert.Title>Error</Alert.Title>

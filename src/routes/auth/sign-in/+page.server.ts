@@ -5,19 +5,6 @@ import { Argon2id } from 'oslo/password';
 import { getUserByEmail } from '$lib/server/database/user-model';
 import type { PageServerLoad, Actions } from './$types.js';
 
-
-export interface Props {
-		form: {
-			data: {
-				email: string;
-				password: string;
-			};
-			errors: Record<string, string>;
-			valid: boolean;
-	};
-}
-
-
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
@@ -59,7 +46,7 @@ export const actions: Actions = {
 			return fail(400, {
 				form: {
 					data: { email, password },
-					errors: errors,
+					errors,
 					valid: false
 				}
 			});
