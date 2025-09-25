@@ -3,7 +3,7 @@
 	import { browser } from '$app/environment';
 	// import { Sidepanel } from 'svelte-mui'; // https://svelte-mui.vercel.app/side-panel
 	import { page } from "$app/state";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar
+	import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar : $ bun x shadcn-svelte@latest add sidebar
  
   	let open = $state(false);
 
