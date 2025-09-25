@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Button } from '$lib/components/ui/button';
 	import { APP_NAME } from '$lib/config/constants';
 </script>
 
@@ -18,33 +16,25 @@
 			<h1 class="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
 				{APP_NAME}
 			</h1>
-			<p class="max-w-[700px] text-lg text-muted-foreground">
-				This is a sveltekit auth starter. It is an <a
-					href="https://github.com/delay/sveltekit-auth-starter">open source auth starter project</a
-				>
-				utilizing
-				<a href="https://lucia-auth.com/" class="underline">Lucia</a> for authentication,
-				<a href="https://www.shadcn-svelte.com" class="underline">shadcn-svelte</a> for ui elements,
-				<a href="https://orm.drizzle.team/" class="underline">Drizzle</a>
-				for database connectivity and type safety,
-				<a href="https://lucide.dev/" class="underline">Lucide</a>
-				for icons, <a href="https://superforms.rocks/" class="underline">Superforms</a>
-				for working with forms, <a href="https://zod.dev/" class="underline">Zod</a>
-				for typescript schema validation and
-				<a href="https://kit.svelte.dev/" class="underline">Sveltekit</a> for the javascript
-				framework. It has email verification, password reset, and will send an email out if the user
-				changes their email address to re-verify it. It also has a custom logging feature which I
-				wrote in depth on
-				<a
-					href="https://jeffmcmorris.medium.com/awesome-logging-in-sveltekit-6afa29c5892c"
-					class="underline">here</a
-				>. It is released as open source under an MIT license. The source code is available on
-				<a href="https://github.com/delay/sveltekit-auth" class="underline">github</a>.
-			</p>
-		</div>
-		<div class="flex gap-4">
-			<Button on:click={() => goto('/auth/sign-in')}>Sign in</Button>
-			<Button on:click={() => goto('/auth/sign-up')} variant="outline">Sign up</Button>
+			<h3>Qui sommes nous?</h3>
+			<p>OpenProduct est une association à but non-lucrative (loi 1901) qui souhaite promouvoir les producteurs locaux et les circuits court en permettant à tous de trouver tous les producteurs de chez lui.</p>
+			<h3>Comment?</h3>
+			<p>L'inscription et l'utilisation est gratuite pour tous les producteur afin de n'en laisser aucun de côté.</p>
+			<p>La base de donnée est open-source et l'accès est libre et simple pour tous les utilisateurs sur notre site.</p>
+			<h3>Quels financements?</h3>
+			<p>Les producteurs peuvent donner une cotisation annuelle libre. Celle-ci est mise en avant sur le site de manière à sensibiliser le consommateur aux producteurs qui s'engagent. Cela fait office de publicité.</p>
+			<p>Les consommateurs peuvent aussi faire un don déductible. Si vous voulez faire un don <a href="https://fr.ulule.com/openproduct/" target="_blank">ici</a>, soyez assuré de sa bonne utilisation. Nous vous en remerçions. Les comptes sont publics ce qui vous assure qu'il y aura toujours du monde pour vérifier le bon usage de l'argent.</p>
+			<p>Nous voulons créé un label pour mettre en valeur les producteurs qui jouent la carte de la transparence. Il permet au conssomateur d'avoir une certaine garanti que la production est réellement local. En effet, certains peuvent être tenté d'importer les produits et de faire localement qu'une infime partie.</p>
+			<p>Nous comptons aussi sur la comunauté des utilisateurs pour nous aider à les recenser tous : Ecrivez nous par email à <a href="mailto:contact@openproduct.fr">contact@openproduct.fr</a> et devenez ambassadeur OpenProduct.</p>
 		</div>
 	</section>
 </div>
+
+<style>
+h3 {
+	font-weight:bold;
+}
+a {
+	color: cyan;
+}
+</style>
