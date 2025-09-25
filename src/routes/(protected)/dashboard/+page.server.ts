@@ -1,11 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
-import { producerSchema } from '$lib/config/zod-schemas.js';
 import db from '$lib/server/database/drizzle.js';
 import { producerTable } from '$lib/server/database/drizzle-schemas.js';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
-import { zod } from 'sveltekit-superforms/adapters';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -21,23 +18,43 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const producer = existingProducer[0] || null;
 
 	// Initialiser le formulaire avec les données existantes
-	const form = await superValidate(producer ? {
-		companyName: producer.companyName,
-		firstName: producer.firstName || '',
-		lastName: producer.lastName || '',
-		shortDescription: producer.shortDescription || '',
-		description: producer.description || '',
-		postCode: producer.postCode || '',
-		city: producer.city || '',
-		address: producer.address || '',
-		category: producer.category || '',
-		phoneNumber1: producer.phoneNumber1 || '',
-		phoneNumber2: producer.phoneNumber2 || '',
-		siretNumber: producer.siretNumber || '',
-		website1: producer.website1 || '',
-		website2: producer.website2 || '',
-		website3: producer.website3 || ''
-	} : {}, producerSchema, zod);
+	const form = {
+		data: producer ? {
+			companyName: producer.companyName,
+			firstName: producer.firstName || '',
+			lastName: producer.lastName || '',
+			shortDescription: producer.shortDescription || '',
+			description: producer.description || '',
+			postCode: producer.postCode || '',
+			city: producer.city || '',
+			address: producer.address || '',
+			category: producer.category || '',
+			phoneNumber1: producer.phoneNumber1 || '',
+			phoneNumber2: producer.phoneNumber2 || '',
+			siretNumber: producer.siretNumber || '',
+			website1: producer.website1 || '',
+			website2: producer.website2 || '',
+			website3: producer.website3 || ''
+		} : {
+			companyName: '',
+			firstName: '',
+			lastName: '',
+			shortDescription: '',
+			description: '',
+			postCode: '',
+			city: '',
+			address: '',
+			category: '',
+			phoneNumber1: '',
+			phoneNumber2: '',
+			siretNumber: '',
+			website1: '',
+			website2: '',
+			website3: ''
+		},
+		errors: {},
+		valid: true
+	};
 
 	return {
 		form,
@@ -46,12 +63,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 };
 
-async function getXYFromAddress(address:string) {
-	const url = "https://api-adresse.data.gouv.fr/search/?q="+encodeURI(address);
+async function getXYFromAddress(address: string) {
+	const url = "https://api-adresse.data.gouv.fr/search/?q=" + encodeURI(address);
 	console.log("Url : ", url);
 	const response = await fetch(url);
 	const res = await response.json();
-	if (res.features.length==0) return null;
+	if (res.features.length == 0) return null;
 	const feature = res.features[0];
 	const coordinates = feature.geometry.coordinates;
 	let addr = feature.properties;
@@ -66,10 +83,40 @@ export const actions: Actions = {
 			return fail(401, { message: 'Unauthorized' });
 		}
 
-		const form = await superValidate(request, producerSchema, zod);
+		const formData = await request.formData();
+		const data = {
+			companyName: formData.get('companyName')?.toString() || '',
+			firstName: formData.get('firstName')?.toString() || '',
+			lastName: formData.get('lastName')?.toString() || '',
+			shortDescription: formData.get('shortDescription')?.toString() || '',
+			description: formData.get('description')?.toString() || '',
+			postCode: formData.get('postCode')?.toString() || '',
+			city: formData.get('city')?.toString() || '',
+			address: formData.get('address')?.toString() || '',
+			category: formData.get('category')?.toString() || '',
+			phoneNumber1: formData.get('phoneNumber1')?.toString() || '',
+			phoneNumber2: formData.get('phoneNumber2')?.toString() || '',
+			siretNumber: formData.get('siretNumber')?.toString() || '',
+			website1: formData.get('website1')?.toString() || '',
+			website2: formData.get('website2')?.toString() || '',
+			website3: formData.get('website3')?.toString() || ''
+		};
 
-		if (!form.valid) {
-			return fail(400, { form });
+		// Validation simple
+		const errors: Record<string, string> = {};
+		
+		if (!data.companyName) {
+			errors.companyName = 'Company name is required';
+		}
+
+		if (Object.keys(errors).length > 0) {
+			return fail(400, {
+				form: {
+					data,
+					errors,
+					valid: false
+				}
+			});
 		}
 
 		try {
@@ -80,10 +127,10 @@ export const actions: Actions = {
 				.where(eq(producerTable.userId, locals.user.id))
 				.limit(1);
 
-			const address = form.data.address || null;
-			const postCode = form.data.postCode || null;
-			const city = form.data.city || null;
-			const addr = await getXYFromAddress(address+", "+postCode+" "+city)
+			const address = data.address || null;
+			const postCode = data.postCode || null;
+			const city = data.city || null;
+			const addr = await getXYFromAddress(address + ", " + postCode + " " + city)
 			let latitude = 0.0;
 			let longitude = 0.0;
 			if (addr) {
@@ -93,21 +140,21 @@ export const actions: Actions = {
 
 			const producerData = {
 				userId: locals.user.id,
-				companyName: form.data.companyName,
-				firstName: form.data.firstName || null,
-				lastName: form.data.lastName || null,
-				shortDescription: form.data.shortDescription || null,
-				description: form.data.description || null,
+				companyName: data.companyName,
+				firstName: data.firstName || null,
+				lastName: data.lastName || null,
+				shortDescription: data.shortDescription || null,
+				description: data.description || null,
 				postCode: postCode,
 				city: city,
 				address: address,
-				category: form.data.category || null,
-				phoneNumber1: form.data.phoneNumber1 || null,
-				phoneNumber2: form.data.phoneNumber2 || null,
-				siretNumber: form.data.siretNumber || null,
-				website1: form.data.website1 || null,
-				website2: form.data.website2 || null,
-				website3: form.data.website3 || null,
+				category: data.category || null,
+				phoneNumber1: data.phoneNumber1 || null,
+				phoneNumber2: data.phoneNumber2 || null,
+				siretNumber: data.siretNumber || null,
+				website1: data.website1 || null,
+				website2: data.website2 || null,
+				website3: data.website3 || null,
 				updatedAt: new Date(),
 				latitude: latitude,
 				longitude: longitude,
@@ -130,12 +177,22 @@ export const actions: Actions = {
 					});
 			}
 
-			return { form, success: true };
+			return { 
+				form: {
+					data,
+					errors: {},
+					valid: true
+				}, 
+				success: true 
+			};
 		} catch (error) {
 			console.error('Error saving producer profile:', error);
-			return fail(500, { 
-				form, 
-				message: 'An error occurred while saving your profile. Please try again.' 
+			return fail(500, {
+				form: {
+					data,
+					errors: { general: 'An error occurred while saving your profile. Please try again.' },
+					valid: false
+				}
 			});
 		}
 	}

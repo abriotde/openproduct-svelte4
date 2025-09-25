@@ -1,59 +1,88 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
-import { setError, superValidate } from 'sveltekit-superforms';
 import { lucia } from '$lib/server/lucia';
 import { Argon2id } from 'oslo/password';
-import { userSchema } from '$lib/config/zod-schemas';
 import { getUserByEmail } from '$lib/server/database/user-model';
 import type { PageServerLoad, Actions } from './$types.js';
-import { zod } from 'sveltekit-superforms/adapters';
-import * as z from 'zod';
-
-const signInSchema = userSchema.pick({
-	email: true,
-	password: true
-});
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(302, '/dashboard');
 	}
-	const form = await superValidate(event, zod(signInSchema));
 	return {
-		form
+		form: {
+			data: {
+				email: '',
+				password: ''
+			},
+			errors: {},
+			valid: true
+		}
 	};
 };
 
-export const actions:Actions = {
+export const actions: Actions = {
 	default: async (event) => {
-		const form = await superValidate(event, zod(signInSchema));
-		console.log("Form sign-in : ", form);
+		const formData = await event.request.formData();
+		const email = formData.get('email')?.toString() || '';
+		const password = formData.get('password')?.toString() || '';
 
-		if (!form.valid) {
+		// Validation simple
+		const errors: Record<string, string> = {};
+		
+		if (!email) {
+			errors.email = 'Email is required';
+		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+			errors.email = 'Please enter a valid email address';
+		}
+		
+		if (!password) {
+			errors.password = 'Password is required';
+		} else if (password.length < 6) {
+			errors.password = 'Password must be at least 6 characters';
+		}
+
+		if (Object.keys(errors).length > 0) {
 			return fail(400, {
-				form
+				form: {
+					data: { email, password },
+					errors,
+					valid: false
+				}
 			});
 		}
 
-		//add user to db
+		// Authentification
 		try {
-			const email = form.data.email.toLowerCase();
-			const existingUser = await getUserByEmail(email);
+			const emailLower = email.toLowerCase();
+			const existingUser = await getUserByEmail(emailLower);
 			if (!existingUser) {
 				setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
-				return setError(form, 'The email or password is incorrect.');
+				return fail(400, {
+					form: {
+						data: { email, password },
+						errors: { general: 'The email or password is incorrect.' },
+						valid: false
+					}
+				});
 			}
 
 			if (existingUser.password) {
 				const validPassword = await new Argon2id().verify(
 					existingUser.password,
-					form.data.password
+					password
 				);
 				if (!validPassword) {
 					setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
-					return setError(form, 'The email or password is incorrect.');
+					return fail(400, {
+						form: {
+							data: { email, password },
+							errors: { general: 'The email or password is incorrect.' },
+							valid: false
+						}
+					});
 				} else {
-					//password valid - set session
+					// Mot de passe valide - créer la session
 					const session = await lucia.createSession(existingUser.id, {});
 					const sessionCookie = lucia.createSessionCookie(session.id);
 					event.cookies.set(sessionCookie.name, sessionCookie.value, {
@@ -61,17 +90,27 @@ export const actions:Actions = {
 						...sessionCookie.attributes
 					});
 					setFlash({ type: 'success', message: 'Sign in successful.' }, event);
+					redirect(302, '/dashboard');
 				}
 			}
 		} catch (e) {
-			//TODO: need to return error message to client
 			console.error(e);
-			// email already in use
-			//const { fieldErrors: errors } = e.flatten();
 			setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
-			return setError(form, 'The email or password is incorrect.');
+			return fail(400, {
+				form: {
+					data: { email, password },
+					errors: { general: 'The email or password is incorrect.' },
+					valid: false
+				}
+			});
 		}
 
-		return { form };
+		return {
+			form: {
+				data: { email, password },
+				errors: {},
+				valid: true
+			}
+		};
 	}
 };

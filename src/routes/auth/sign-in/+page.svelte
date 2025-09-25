@@ -2,88 +2,105 @@
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
 	import * as Alert from '$lib/components/ui/alert';
-	import { userSchema } from '$lib/config/zod-schemas';
-	import { superForm } from 'sveltekit-superforms';
-	import { zod } from 'sveltekit-superforms/adapters';
-	import type { SuperValidated } from 'sveltekit-superforms';
 	import { Loader2, AlertCircle } from 'lucide-svelte';
-	import { z } from 'zod';
-
-	const signInSchema = userSchema.pick({
-		email: true,
-		password: true
-	});
-
-	type SignInSchema = typeof signInSchema;
+	import { enhance } from '$app/forms';
 
 	interface Props {
-		form: SuperValidated<SignInSchema>;
+		form: {
+			data: {
+				email: string;
+				password: string;
+			};
+			errors: Record<string, string>;
+			valid: boolean;
+		};
 	}
 
 	let { form }: Props = $props();
-
-	const { form: formData, enhance, errors, submitting } = superForm(form, {
-		validators: zod(signInSchema)
-	});
+	let submitting = $state(false);
 </script>
 
 <div class="flex items-center justify-center mx-auto max-w-2xl">
-	<form method="POST" use:enhance>
+	<form 
+		method="POST" 
+		use:enhance={() => {
+			submitting = true;
+			return async ({ update }) => {
+				await update();
+				submitting = false;
+			};
+		}}
+	>
 		<Card.Root>
 			<Card.Header class="space-y-1">
 				<Card.Title class="text-2xl">Sign in</Card.Title>
 				<Card.Description>
-					Don't have an account yet? <a href="/auth/sign-up" class="underline">Sign up here.</a>
+					Enter your email below to sign in to your account
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
-				{#if $errors?._errors?.length}
+				{#if form.errors.general}
 					<Alert.Root variant="destructive">
 						<AlertCircle class="h-4 w-4" />
 						<Alert.Title>Error</Alert.Title>
 						<Alert.Description>
-							{#each $errors._errors as error}
-								{error}
-							{/each}
+							{form.errors.general}
 						</Alert.Description>
 					</Alert.Root>
 				{/if}
 				
-				<Form.Field form={formData} name="email">
-					{#snippet children()}
-						<Form.Item>
-							<Form.Label>Email</Form.Label>
-							<Form.Input type="email" />
-							<Form.Validation />
-						</Form.Item>
-					{/snippet}
-				</Form.Field>
-
-				<Form.Field form={formData} name="password">
-					{#snippet children()}
-						<Form.Item>
-							<Form.Label>Password</Form.Label>
-							<Form.Input type="password" />
-							<Form.Validation />
-						</Form.Item>
-					{/snippet}
-				</Form.Field>
+				<div class="grid gap-2">
+					<Form.Field>
+						<Form.Label for="email">Email</Form.Label>
+						<Form.Control let:attrs>
+							<Form.Input
+								{...attrs}
+								id="email"
+								name="email"
+								type="email"
+								placeholder="m@example.com"
+								value={form.data.email}
+								class={form.errors.email ? 'border-red-500' : ''}
+							/>
+						</Form.Control>
+						{#if form.errors.email}
+							<Form.FieldErrors class="text-red-500 text-sm">
+								{form.errors.email}
+							</Form.FieldErrors>
+						{/if}
+					</Form.Field>
+				</div>
+				
+				<div class="grid gap-2">
+					<Form.Field>
+						<Form.Label for="password">Password</Form.Label>
+						<Form.Control let:attrs>
+							<Form.Input
+								{...attrs}
+								id="password"
+								name="password"
+								type="password"
+								value={form.data.password}
+								class={form.errors.password ? 'border-red-500' : ''}
+							/>
+						</Form.Control>
+						{#if form.errors.password}
+							<Form.FieldErrors class="text-red-500 text-sm">
+								{form.errors.password}
+							</Form.FieldErrors>
+						{/if}
+					</Form.Field>
+				</div>
 			</Card.Content>
 			<Card.Footer>
-				<div class="block w-full">
-					<Form.Button class="w-full" disabled={$submitting}>
-						{#if $submitting}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-							Please wait
-						{:else}
-							Sign In
-						{/if}
-					</Form.Button>
-
-					<div class="mt-6 text-center text-sm">
-						<a href="/auth/password/reset" class="underline">Forgot your password?</a>
-					</div>
-				</div>
+				<Form.Button type="submit" class="w-full" disabled={submitting}>
+					{#if submitting}
+						<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+						Signing in...
+					{:else}
+						Sign in
+					{/if}
+				</Form.Button>
 			</Card.Footer>
 		</Card.Root>
 	</form>
