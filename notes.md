@@ -1,12 +1,15 @@
 
 
 Front:
-+ Shadcn
-* Flowbite
-* Selte-mui
-* 
+x Shadcn -
+* Flowbite +
+* Svelte-mui
+* Melt UI -
+* DaisyUI +
+* Skeleton UI +
 
 Middle:
+* SuperForms : Validation de formulaires
 * Bits-ui : Headless
 
 Back:
