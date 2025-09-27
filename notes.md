@@ -17,6 +17,7 @@ Back:
 * Drizzle : TypeScript ORM
 
 $ npm outdated
+$ npm ls --depth=10
 
 
 Oui mais il y a toujours une erreur 500 : "Cannot read properties of undefined (reading 'errors')"
