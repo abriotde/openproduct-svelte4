@@ -14,6 +14,12 @@
 	
 </script>
 
-<div class="card w-full max-w-md preset-filled-surface-100-900 p-4 text-center">
+<div
+	class={cn(
+		"rounded-lg border bg-card text-card-foreground shadow-sm",
+		className
+	)}
+	{...rest}
+>
 	{@render children?.()}
 </div>
