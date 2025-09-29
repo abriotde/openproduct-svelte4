@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Loader2, AlertCircle } from 'lucide-svelte';
+	import { Loader, CircleAlert } from 'lucide-svelte';
 
 	interface Props {
 		form?: {
@@ -34,7 +34,7 @@
 		{#if formData.errors.general}
 			<aside class="alert variant-filled-error mb-4">
 				<div class="alert-message">
-					<AlertCircle class="w-4 h-4" />
+					<CircleAlert class="w-4 h-4" />
 					<p>{formData.errors.general}</p>
 				</div>
 			</aside>
@@ -86,7 +86,7 @@
 				disabled={submitting}
 			>
 				{#if submitting}
-					<Loader2 class="w-4 h-4 animate-spin mr-2" />
+					<Loader class="w-4 h-4 animate-spin mr-2" />
 					Connexion en cours...
 				{:else}
 					Se connecter

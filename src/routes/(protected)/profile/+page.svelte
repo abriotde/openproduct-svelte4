@@ -5,8 +5,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { userSchema } from '$lib/config/zod-schemas';
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
-	import { Loader2 } from 'lucide-svelte';
-	import { AlertCircle } from 'lucide-svelte';
+	import { Loader, CircleAlert } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 
 	const profileSchema = userSchema.pick({
@@ -34,7 +33,7 @@
 				<Card.Content class="grid gap-4">
 					{#if errors?._errors?.length}
 						<Alert.Root variant="destructive">
-							<AlertCircle class="h-4 w-4" />
+							<CircleAlert class="h-4 w-4" />
 							<Alert.Title>Error</Alert.Title>
 							<Alert.Description>
 								{#each errors._errors as error}
@@ -69,7 +68,7 @@
 					<div class="block w-full">
 						<Form.Button class="w-full" disabled={submitting}
 							>{#if submitting}
-								<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+								<Loader class="mr-2 h-4 w-4 animate-spin" />
 								Please wait
 							{:else}
 								Update profile

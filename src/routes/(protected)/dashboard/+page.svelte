@@ -8,7 +8,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { AlertCircle, CheckCircle2, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
+	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
 
 	export let data: PageData;
@@ -57,7 +57,7 @@
 		<!-- Message de succès -->
 		{#if showSuccessMessage}
 			<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-				<CheckCircle2 class="h-5 w-5 text-green-600" />
+				<CircleCheck class="h-5 w-5 text-green-600" />
 				<span class="text-green-800">Profil sauvegardé avec succès !</span>
 			</div>
 		{/if}
@@ -65,7 +65,7 @@
 		<!-- Message d'erreur global -->
 		{#if $message}
 			<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-				<AlertCircle class="h-5 w-5 text-red-600" />
+				<CircleAlert class="h-5 w-5 text-red-600" />
 				<span class="text-red-800">{$message}</span>
 			</div>
 		{/if}
