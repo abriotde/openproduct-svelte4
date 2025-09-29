@@ -25,7 +25,8 @@
 						showSuccessMessage = false;
 					}, 5000);
 				}
-			}
+			},
+			dataType: 'json'
 		}
 	);
 
