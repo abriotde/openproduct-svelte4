@@ -27,11 +27,9 @@
 	}
 </script>
 
-<ModeWatcher />
-<Toaster richColors />
-<div class="relative flex min-h-screen flex-col">
+<div class="card border-surface-100-900 grid h-[640px] w-full grid-cols-[auto_1fr] border-[1px]">
 	<Navigation {user} />
-	<div class="mt-8 md:mt-12">
-		<slot />
+	<div class="flex items-center justify-center">
+		<p class="opacity-20"><slot /></p>
 	</div>
 </div>
