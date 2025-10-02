@@ -7,7 +7,8 @@
 	import IconUserEdit from '@lucide/svelte/icons/user-pen';
 	import IconPlug from '@lucide/svelte/icons/unplug';
 	import IconSettings from '@lucide/svelte/icons/settings';
-	import MyLogo from '$lib/assets/img/logoOpenProduct.png?enhanced';
+	// import MyLogo from '$lib/assets/img/logoOpenProduct.png?enhanced';
+	import { PUBLIC_ROOT_URL } from '$env/static/public';
 	let user: any = $props();
 	let value = $state('/');
 </script>
@@ -18,16 +19,16 @@
     	<Navigation.Tile href="#" title="Menu"><IconMenu /></Navigation.Tile>
     {/snippet}
     {#snippet tiles()}
-		<Navigation.Tile label="Accueil" href="/"><IconFolder /></Navigation.Tile>
-		<Navigation.Tile label="Carte" href="/map"><IconMap /></Navigation.Tile>
+		<Navigation.Tile label="Accueil" href="{PUBLIC_ROOT_URL}/"><IconFolder /></Navigation.Tile>
+		<Navigation.Tile label="Carte" href="{PUBLIC_ROOT_URL}/map"><IconMap /></Navigation.Tile>
 	{/snippet}
     {#snippet footer()}
 		{#if user}
-			<Navigation.Tile label="Mon Profil" href="/dashboard"><IconUserEdit /></Navigation.Tile>
-			<Navigation.Tile label="Deconnexion" href="/auth/sign-out"><IconPlug /></Navigation.Tile>
+			<Navigation.Tile label="Mon Profil" href="{PUBLIC_ROOT_URL}/dashboard"><IconUserEdit /></Navigation.Tile>
+			<Navigation.Tile label="Deconnexion" href="{PUBLIC_ROOT_URL}/auth/sign-out"><IconPlug /></Navigation.Tile>
 		{:else}
-			<Navigation.Tile label="Connection" href="/auth/sign-in"><IconPlug /></Navigation.Tile>
+			<Navigation.Tile label="Connection" href="{PUBLIC_ROOT_URL}/auth/sign-in"><IconPlug /></Navigation.Tile>
 		{/if}
-      <Navigation.Tile labelExpanded="A propos" href="/about" title="settings"><IconSettings /></Navigation.Tile>
+      <Navigation.Tile labelExpanded="A propos" href="{PUBLIC_ROOT_URL}/about" title="settings"><IconSettings /></Navigation.Tile>
     {/snippet}
   </Navigation.Rail>
