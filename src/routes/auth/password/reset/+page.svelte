@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import type { ActionData } from './$types.js';
 
 	export let form: ActionData;
@@ -68,7 +69,7 @@
 		<footer class="card-footer text-center mt-6 pt-4 border-t border-surface-300-600-token">
 			<p class="text-sm">
 				Remember your password? 
-				<a href="/auth/sign-in" class="anchor text-primary-500 hover:text-primary-600">Sign in</a>
+				<a href={resolve("/auth/sign-in")} class="anchor text-primary-500 hover:text-primary-600">Sign in</a>
 			</p>
 		</footer>
 	</div>
