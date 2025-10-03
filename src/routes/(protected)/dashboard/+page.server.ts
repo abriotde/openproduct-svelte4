@@ -3,10 +3,11 @@ import db from '$lib/server/database/drizzle.js';
 import { producerTable } from '$lib/server/database/drizzle-schemas.js';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
-		redirect(302, '/auth/sign-in');
+		redirect(302, resolve('/auth/sign-in'));
 	}
 
 	// Récupérer le profil producteur existant

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { APP_NAME } from '$lib/config/constants';
+	import { resolve } from '$app/paths';
 	let { data } = $props();
 </script>
 
@@ -12,7 +13,7 @@
 			Please check your email account for a message to confirm your email address for {APP_NAME}. If
 			you did not receive the email,
 			{#if data.user}
-				<a href="/auth/verify/resend-email-{encodeURIComponent(data.user.email)}" class="underline"
+				<a href={resolve("/auth/verify/resend-email-[email]", {email: encodeURIComponent(data.user.email)})} class="underline"
 					>click here</a
 				> to resend it.
 			{/if}

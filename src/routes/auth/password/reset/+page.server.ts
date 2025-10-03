@@ -5,6 +5,7 @@ import { sendPasswordResetEmail } from '$lib/config/email-messages';
 import { getUserByEmail, updateUser } from '$lib/server/database/user-model.js';
 import type { PageServerLoad, Actions } from './$types.js';
 import { zod } from 'sveltekit-superforms/adapters';
+import { resolve } from '$app/paths';
 
 const resetPasswordSchema = userSchema.pick({ email: true });
 
@@ -41,6 +42,6 @@ export const actions:Actions = {
 				'The was a problem resetting your password. Please contact support if you need further help.'
 			);
 		}
-		redirect(302, '/auth/password/reset/success');
+		redirect(302, resolve('/auth/password/reset/success'));
 	}
 };

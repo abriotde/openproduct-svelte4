@@ -5,6 +5,8 @@ import { getUserByToken, updateUser } from '$lib/server/database/user-model.js';
 import { Argon2id } from 'oslo/password';
 import type { PageServerLoad, Actions } from './$types.js';
 import { zod } from 'sveltekit-superforms/adapters';
+import { resolve } from '$app/paths';
+
 
 export const load:PageServerLoad = async (event) => {
 	const form = await superValidate(userUpdatePasswordSchema, zod);
@@ -50,7 +52,7 @@ export const actions:Actions = {
 			);
 		}
 		const token = event.params.token as string;
-		redirect(302, `/auth/password/update-${token}/success`);
+		redirect(302, resolve(`/auth/password/update-${token}/success`));
 		//		return { form };
 	}
 };

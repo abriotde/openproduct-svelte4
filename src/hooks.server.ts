@@ -3,6 +3,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import type { HandleServerError } from '@sveltejs/kit';
 
 import log from '$lib/server/log';
+import { resolve } from '$app/paths';
 
 export const handleError: HandleServerError = async ({ error, event }) => {
 	const errorId = crypto.randomUUID();
@@ -48,11 +49,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.session = session;
 
 	if (event.route.id?.startsWith('/(protected)')) {
-		if (!user) redirect(302, '/auth/sign-in');
-		if (!user.verified) redirect(302, '/auth/verify/email');
+		if (!user) redirect(302, resolve('/auth/sign-in'));
+		if (!user.verified) redirect(302, resolve('/auth/verify/email'));
 	}
 	if (event.route.id?.startsWith('/(admin)')) {
-		if (user?.role !== 'ADMIN') redirect(302, '/auth/sign-in');
+		if (user?.role !== 'ADMIN') redirect(302, resolve('/auth/sign-in'));
 	}
 
 	const response = await resolve(event);

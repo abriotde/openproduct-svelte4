@@ -7,6 +7,7 @@
 	import type { SuperValidated, Infer } from 'sveltekit-superforms';
 	import { Loader, CircleAlert } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	const profileSchema = userSchema.pick({
 		firstName: true,
@@ -75,7 +76,7 @@
 							{/if}
 						</Form.Button>
 						<div class="mt-6 text-center text-sm">
-							<Button on:click={() => goto('/auth/password/reset')} class="w-full" variant="outline"
+							<Button on:click={() => goto(resolve("/auth/password/reset"))} class="w-full" variant="outline"
 								>Change your password</Button
 							>
 						</div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Loader, CircleAlert } from 'lucide-svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		form?: {
@@ -34,7 +35,7 @@
 			<h1 class="h2 font-bold">Créer un compte</h1>
 			<p class="text-surface-600-300-token">
 				Déjà un compte ? 
-				<a href="/auth/sign-in" class="anchor">Se connecter ici</a>
+				<a href="{resolve("/auth/sign-in")}" class="anchor">Se connecter ici</a>
 			</p>
 		</header>
 

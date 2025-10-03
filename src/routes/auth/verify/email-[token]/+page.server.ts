@@ -2,6 +2,7 @@ import { getUserByToken, updateUser } from '$lib/server/database/user-model.js';
 import { fail } from '@sveltejs/kit';
 import { sendWelcomeEmail } from '$lib/config/email-messages';
 import type { User } from '$lib/server/database/drizzle-schemas';
+import { resolve } from '$app/paths';
 
 export async function load({ params }) {
 	try {
@@ -20,7 +21,7 @@ export async function load({ params }) {
 			sendWelcomeEmail(user.email);
 			heading = 'Email Verified';
 			message =
-				'Your email has been verified. You can now <a href="/auth/sign-in" class="underline">sign in</a>';
+				'Your email has been verified. You can now <a href="'+resolve('/auth/sign-in')+'" class="underline">sign in</a>';
 			await updateUser(user.id, { verified: true });
 		}
 		return { heading, message };
