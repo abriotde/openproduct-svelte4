@@ -1,10 +1,48 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	// import { Sidepanel } from 'svelte-mui'; // https://svelte-mui.vercel.app/side-panel
-	import { page } from "$app/state";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar : $ bun x shadcn-svelte@latest add sidebar
- 
+	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+	import { Search, MapPin, DollarSign, Home, Calendar } from 'lucide-svelte';
+
+	initializeStores();
+	const drawerStore = getDrawerStore();
+	let filters = $state({
+		location: '',
+		priceMin: '',
+		priceMax: '',
+		type: '',
+		date: ''
+	});
+	function openFilters() {
+		drawerStore.open({
+		id: 'filter-drawer',
+		position: 'bottom',
+		height: 'h-full',
+		bgDrawer: 'bg-surface-50-900-token',
+		bgBackdrop: 'bg-surface-backdrop-token',
+		padding: 'p-0'
+		});
+	}
+
+	function closeFilters() {
+		drawerStore.close();
+	}
+
+	function resetFilters() {
+		filters = {
+		location: '',
+		priceMin: '',
+		priceMax: '',
+		type: '',
+		date: ''
+		};
+	}
+
+	function applyFilters() {
+		console.log('Filtres appliqués:', filters);
+		closeFilters();
+	}
+
   	let open = $state(false);
 
  	let mapContainer = $state<HTMLDivElement>();
@@ -537,80 +575,129 @@
 	}
 </script>
 
-<Sidebar.Provider bind:open>
-	<Sidebar.Root>
-		<Sidebar.Content>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Catégories</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<select 
-						bind:this={filterSelect}
-						id="categoryFilter" 
-						class="border border-gray-300 rounded px-3 py-1"
-						onchange={handleFilterChange}
-					>
-						<option value="">Toutes</option>
-						<option value="A">Alimentaire</option>
-						<option value="_A">Tout sauf alimentaire</option>
-						<option value="H">Habillement</option>
-						<option value="3">Produits ménagers / de beauté / médicinal</option>
-						<option value="4">Plantes (Fleurs, arbustes)</option>
-						<option value="O">Artisans / Artistes</option>
-						<option value="I">Petites et moyennes entreprises (PME)</option>
-					</select>
-					<div bind:this={subfilterDiv} id="subfilter"></div>
-				</Sidebar.GroupContent>
-   			</Sidebar.Group>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Adresse</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<input 
-						bind:this={addressInput}
-						id="addressSearch"
-						type="text" 
-						placeholder="Rechercher une adresse..."
-						class="border border-gray-300 rounded px-3 py-1"
-						onkeypress={handleKeyPress}
-					>
-					<button 
-						type="button"
-						class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-						onclick={searchAddress}
-					>
-						Rechercher
-					</button>
-					<button 
-						bind:this={geolocationButton}
-						type="button"
-						class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-						onclick={getCurrentLocation}
-					>Ma position
-					</button>
-				</Sidebar.GroupContent>
-   			</Sidebar.Group>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Produit</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<input 
-						bind:this={produceFilterInput}
-						id="produceFilter"
-						type="text" 
-						placeholder="Rechercher un produit..."
-						class="border border-gray-300 rounded px-3 py-1"
-					>
-				</Sidebar.GroupContent>
-			</Sidebar.Group>
-		</Sidebar.Content>
-	</Sidebar.Root>
-	<main class="w-full">
-		<Sidebar.Trigger />
-
-		<div bind:this={mapContainer} 
-			class="w-full h-96 md:h-[600px] border border-gray-300 rounded-lg"
+<div class="relative w-full h-screen overflow-hidden">
+	<!-- Carte en plein écran -->
+	<div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-success-50 to-primary-100">
+		<div class="absolute inset-0 flex items-center justify-center">
+		<MapPin size={64} class="text-primary-500 opacity-50" />
+		</div>
+		<div class="absolute top-4 left-4">
+		<div class="card p-4 variant-filled-surface" bind:this={mapContainer} 
 			style="min-height: 400px;">
 		</div>
-	</main>
-</Sidebar.Provider>
+		</div>
+	</div>
+
+	<!-- Bouton de recherche flottant -->
+	<button type="button"
+			class="btn variant-filled-primary absolute top-4 right-4 shadow-xl"
+			onclick={openFilters}>
+		<Search size={20} />
+		<span>Filtres</span>
+	</button>
+</div>
+
+<!-- Drawer de filtres -->
+<Drawer>
+	{#if $drawerStore.id === 'filter-drawer'}
+		<div class="flex flex-col h-full">
+		<!-- Header -->
+		<header class="bg-primary-500 text-white p-4 flex items-center justify-between">
+			<h2 class="h2">Filtrer les résultats</h2>
+			<button type="button"
+				class="btn-icon variant-filled-primary"
+				onclick={closeFilters}>
+			<span class="text-2xl">&times;</span>
+			</button>
+		</header>
+
+		<!-- Contenu des filtres -->
+		<div class="flex-1 overflow-y-auto p-6">
+			<div class="max-w-2xl mx-auto space-y-6">
+			
+			<!-- Localisation -->
+			<label class="label">
+				<span class="flex items-center gap-2">
+				<MapPin size={20} />
+				<span>Localisation</span>
+				</span>
+				<input 
+				class="input" 
+				type="text" 
+				bind:value={filters.location}
+				placeholder="Ville, code postal..." 
+				/>
+			</label>
+
+			<!-- Prix -->
+			<label class="label">
+				<span class="flex items-center gap-2">
+				<DollarSign size={20} />
+				<span>Fourchette de prix</span>
+				</span>
+				<div class="grid grid-cols-2 gap-4">
+				<input 
+					class="input" 
+					type="number" 
+					bind:value={filters.priceMin}
+					placeholder="Min" 
+				/>
+				<input 
+					class="input" 
+					type="number" 
+					bind:value={filters.priceMax}
+					placeholder="Max" 
+				/>
+				</div>
+			</label>
+
+			<!-- Type de bien -->
+			<label class="label">
+				<span class="flex items-center gap-2">
+				<Home size={20} />
+				<span>Type de bien</span>
+				</span>
+				<select class="select" bind:value={filters.type}>
+				<option value="">Tous les types</option>
+				<option value="appartement">Appartement</option>
+				<option value="maison">Maison</option>
+				<option value="studio">Studio</option>
+				<option value="loft">Loft</option>
+				</select>
+			</label>
+
+			<!-- Date -->
+			<label class="label">
+				<span class="flex items-center gap-2">
+				<Calendar size={20} />
+				<span>Date de disponibilité</span>
+				</span>
+				<input 
+				class="input" 
+				type="date" 
+				bind:value={filters.date}
+				/>
+			</label>
+
+			</div>
+		</div>
+
+		<!-- Footer avec boutons -->
+		<footer class="border-t border-surface-300-600-token p-4 flex gap-3">
+			<button type="button"
+					class="btn variant-ghost-surface flex-1"
+					onclick={resetFilters}>
+				Réinitialiser
+			</button>
+			<button type="button"
+					class="btn variant-filled-primary flex-1"
+					onclick={applyFilters}>
+				Appliquer les filtres
+			</button>
+		</footer>
+		</div>
+	{/if}
+</Drawer>
 <style>
 	:global(.openproduct-pin) {
 		background: transparent !important;
