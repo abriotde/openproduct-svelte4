@@ -2,25 +2,24 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-	import { Search, MapPin, DollarSign, Home, Calendar } from 'lucide-svelte';
+	import { Search, MapPin, DollarSign, Home, Calendar, X } from 'lucide-svelte';
 
 	initializeStores();
 	const drawerStore = getDrawerStore();
+	
 	let filters = $state({
-		location: '',
-		priceMin: '',
-		priceMax: '',
-		type: '',
-		date: ''
+		category: '',
+		address: ''
 	});
+	
 	function openFilters() {
 		drawerStore.open({
-		id: 'filter-drawer',
-		position: 'bottom',
-		height: 'h-full',
-		bgDrawer: 'bg-surface-50-900-token',
-		bgBackdrop: 'bg-surface-backdrop-token',
-		padding: 'p-0'
+			id: 'filter-drawer',
+			position: 'bottom',
+			height: 'h-auto max-h-[80vh]',
+			bgDrawer: 'bg-surface-50-900-token',
+			bgBackdrop: 'bg-surface-backdrop-token',
+			padding: 'p-0'
 		});
 	}
 
@@ -30,20 +29,23 @@
 
 	function resetFilters() {
 		filters = {
-		location: '',
-		priceMin: '',
-		priceMax: '',
-		type: '',
-		date: ''
+			category: '',
+			address: ''
 		};
+		if (filterSelect) filterSelect.value = '';
+		if (addressInput) addressInput.value = '';
+		filterProducers('');
 	}
 
 	function applyFilters() {
-		console.log('Filtres appliqués:', filters);
+		if (filters.category) {
+			filterProducers(filters.category);
+		}
+		if (filters.address) {
+			searchAddress();
+		}
 		closeFilters();
 	}
-
-  	let open = $state(false);
 
  	let mapContainer = $state<HTMLDivElement>();
 	let filterSelect = $state<HTMLSelectElement>();
@@ -538,9 +540,9 @@
 
 	// Recherche d'adresse
 	async function searchAddress() {
-		if (!addressInput || !addressInput.value.trim()) return;
+		const address = filters.address || (addressInput ? addressInput.value.trim() : '');
+		if (!address) return;
 
-		const address = addressInput.value.trim();
 		const encodedAddress = encodeURIComponent(address);
 		const url = `https://api-adresse.data.gouv.fr/search/?q=${encodedAddress}`;
 
@@ -575,133 +577,124 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Carte des producteurs</title>
+</svelte:head>
+
 <div class="relative w-full h-screen overflow-hidden">
 	<!-- Carte en plein écran -->
-	<div class="absolute inset-0 bg-gradient-to-br from-primary-100 via-success-50 to-primary-100">
-		<div class="absolute inset-0 flex items-center justify-center">
-		<MapPin size={64} class="text-primary-500 opacity-50" />
-		</div>
-		<div class="absolute top-4 left-4">
-		<div class="card p-4 variant-filled-surface" bind:this={mapContainer} 
-			style="min-height: 400px;">
-		</div>
-		</div>
-	</div>
+	<div bind:this={mapContainer} class="absolute inset-0 z-0"></div>
 
-	<!-- Bouton de recherche flottant -->
-	<button type="button"
-			class="btn variant-filled-primary absolute top-4 right-4 shadow-xl"
-			onclick={openFilters}>
-		<Search size={20} />
-		<span>Filtres</span>
-	</button>
+	<!-- Boutons flottants -->
+	<div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+		<button type="button"
+				class="btn variant-filled-primary shadow-xl"
+				onclick={openFilters}>
+			<Search size={20} />
+			<span>Filtres</span>
+		</button>
+		
+		<button type="button"
+				class="btn variant-filled-secondary shadow-xl"
+				onclick={getCurrentLocation}
+				bind:this={geolocationButton}>
+			<MapPin size={20} />
+			<span>Ma position</span>
+		</button>
+	</div>
 </div>
 
 <!-- Drawer de filtres -->
 <Drawer>
 	{#if $drawerStore.id === 'filter-drawer'}
-		<div class="flex flex-col h-full">
-		<!-- Header -->
-		<header class="bg-primary-500 text-white p-4 flex items-center justify-between">
-			<h2 class="h2">Filtrer les résultats</h2>
-			<button type="button"
-				class="btn-icon variant-filled-primary"
-				onclick={closeFilters}>
-			<span class="text-2xl">&times;</span>
-			</button>
-		</header>
+		<div class="flex flex-col h-full bg-surface-50-900-token">
+			<!-- Header -->
+			<header class="bg-primary-500 text-white p-4 flex items-center justify-between">
+				<h2 class="h3 font-bold">Filtrer les producteurs</h2>
+				<button type="button"
+					class="btn-icon variant-filled hover:variant-filled-error"
+					onclick={closeFilters}>
+					<X size={24} />
+				</button>
+			</header>
 
-		<!-- Contenu des filtres -->
-		<div class="flex-1 overflow-y-auto p-6">
-			<div class="max-w-2xl mx-auto space-y-6">
-			
-			<!-- Localisation -->
-			<label class="label">
-				<span class="flex items-center gap-2">
-				<MapPin size={20} />
-				<span>Localisation</span>
-				</span>
-				<input 
-				class="input" 
-				type="text" 
-				bind:value={filters.location}
-				placeholder="Ville, code postal..." 
-				/>
-			</label>
+			<!-- Contenu des filtres -->
+			<div class="flex-1 overflow-y-auto p-6">
+				<div class="max-w-2xl mx-auto space-y-6">
+					
+					<!-- Catégorie -->
+					<label class="label">
+						<span class="font-semibold mb-2">Catégorie de producteur</span>
+						<select 
+							class="select" 
+							bind:value={filters.category}
+							bind:this={filterSelect}
+							onchange={handleFilterChange}>
+							<option value="">Toutes les catégories</option>
+							<option value="A">Alimentaire</option>
+							<option value="H">Habillement</option>
+							<option value="O">Artisans / Artistes</option>
+							<option value="P">Produits ménagers / beauté</option>
+							<option value="I">PME</option>
+						</select>
+					</label>
 
-			<!-- Prix -->
-			<label class="label">
-				<span class="flex items-center gap-2">
-				<DollarSign size={20} />
-				<span>Fourchette de prix</span>
-				</span>
-				<div class="grid grid-cols-2 gap-4">
-				<input 
-					class="input" 
-					type="number" 
-					bind:value={filters.priceMin}
-					placeholder="Min" 
-				/>
-				<input 
-					class="input" 
-					type="number" 
-					bind:value={filters.priceMax}
-					placeholder="Max" 
-				/>
+					<!-- Recherche d'adresse -->
+					<label class="label">
+						<span class="font-semibold mb-2 flex items-center gap-2">
+							<MapPin size={20} />
+							<span>Rechercher une adresse</span>
+						</span>
+						<div class="input-group input-group-divider grid-cols-[1fr_auto]">
+							<input 
+								class="input" 
+								type="text" 
+								bind:value={filters.address}
+								bind:this={addressInput}
+								onkeypress={handleKeyPress}
+								placeholder="Ville, code postal, adresse..." 
+							/>
+							<button 
+								type="button" 
+								class="variant-filled-primary"
+								onclick={searchAddress}>
+								<Search size={20} />
+							</button>
+						</div>
+					</label>
+
+					<!-- Sous-filtres (pour les produits spécifiques) -->
+					<div bind:this={subfilterDiv}></div>
+
 				</div>
-			</label>
-
-			<!-- Type de bien -->
-			<label class="label">
-				<span class="flex items-center gap-2">
-				<Home size={20} />
-				<span>Type de bien</span>
-				</span>
-				<select class="select" bind:value={filters.type}>
-				<option value="">Tous les types</option>
-				<option value="appartement">Appartement</option>
-				<option value="maison">Maison</option>
-				<option value="studio">Studio</option>
-				<option value="loft">Loft</option>
-				</select>
-			</label>
-
-			<!-- Date -->
-			<label class="label">
-				<span class="flex items-center gap-2">
-				<Calendar size={20} />
-				<span>Date de disponibilité</span>
-				</span>
-				<input 
-				class="input" 
-				type="date" 
-				bind:value={filters.date}
-				/>
-			</label>
-
 			</div>
-		</div>
 
-		<!-- Footer avec boutons -->
-		<footer class="border-t border-surface-300-600-token p-4 flex gap-3">
-			<button type="button"
-					class="btn variant-ghost-surface flex-1"
-					onclick={resetFilters}>
-				Réinitialiser
-			</button>
-			<button type="button"
-					class="btn variant-filled-primary flex-1"
-					onclick={applyFilters}>
-				Appliquer les filtres
-			</button>
-		</footer>
+			<!-- Footer avec boutons -->
+			<footer class="border-t border-surface-300-600-token p-4 flex gap-3">
+				<button type="button"
+						class="btn variant-ghost-surface flex-1"
+						onclick={resetFilters}>
+					Réinitialiser
+				</button>
+				<button type="button"
+						class="btn variant-filled-primary flex-1"
+						onclick={applyFilters}>
+					Appliquer
+				</button>
+			</footer>
 		</div>
 	{/if}
 </Drawer>
+
 <style>
 	:global(.openproduct-pin) {
 		background: transparent !important;
 		border: none !important;
 	}
+	
+	/* S'assurer que Leaflet prend toute la hauteur */
+	:global(.leaflet-container) {
+		height: 100%;
+		width: 100%;
+	}
 </style>
-
