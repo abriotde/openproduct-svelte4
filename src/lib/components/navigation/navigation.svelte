@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { APP_NAME } from '$lib/config/constants';
 	import { Navigation } from '@skeletonlabs/skeleton-svelte';
+	import { MapPin } from 'lucide-svelte';
 	import IconMenu from '@lucide/svelte/icons/menu';
 	import IconFolder from '@lucide/svelte/icons/folder';
 	import IconMap from '@lucide/svelte/icons/map';
@@ -20,7 +21,7 @@
     {/snippet}
     {#snippet tiles()}
 		<Navigation.Tile label="Accueil" href={resolve("/")}><IconFolder /></Navigation.Tile>
-		<Navigation.Tile label="Carte" href={resolve("/map")}><IconMap /></Navigation.Tile>
+		<Navigation.Tile label="Carte" href={resolve("/map")}><MapPin /></Navigation.Tile>
 	{/snippet}
     {#snippet footer()}
 		{#if user}

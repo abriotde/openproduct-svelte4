@@ -4,6 +4,10 @@ import { producerTable } from '$lib/server/database/drizzle-schemas.js';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
 import { resolve } from '$app/paths';
+import { producerSchema } from '$lib/config/zod-schemas.js';
+import { superValidate } from 'sveltekit-superforms';
+import { zod4, zodClient } from 'sveltekit-superforms/adapters';
+
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -83,43 +87,9 @@ export const actions: Actions = {
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
 		}
+    	const form = await superValidate(request, zod4(producerSchema));
 
-		const formData = await request.formData();
-		const data = {
-			companyName: formData.get('companyName')?.toString() || '',
-			firstName: formData.get('firstName')?.toString() || '',
-			lastName: formData.get('lastName')?.toString() || '',
-			shortDescription: formData.get('shortDescription')?.toString() || '',
-			description: formData.get('description')?.toString() || '',
-			postCode: formData.get('postCode')?.toString() || '',
-			city: formData.get('city')?.toString() || '',
-			address: formData.get('address')?.toString() || '',
-			category: formData.get('category')?.toString() || '',
-			phoneNumber1: formData.get('phoneNumber1')?.toString() || '',
-			phoneNumber2: formData.get('phoneNumber2')?.toString() || '',
-			siretNumber: formData.get('siretNumber')?.toString() || '',
-			website1: formData.get('website1')?.toString() || '',
-			website2: formData.get('website2')?.toString() || '',
-			website3: formData.get('website3')?.toString() || ''
-		};
-
-		// Validation simple
-		const errors: Record<string, string> = {};
-		
-		if (!data.companyName) {
-			errors.companyName = 'Company name is required';
-		}
-
-		if (Object.keys(errors).length > 0) {
-			return fail(400, {
-				form: {
-					data,
-					errors,
-					valid: false
-				}
-			});
-		}
-
+		const data = form.data;
 		try {
 			// Vérifier si un profil producteur existe déjà
 			const existingProducer = await db
@@ -178,14 +148,7 @@ export const actions: Actions = {
 					});
 			}
 
-			return { 
-				form: {
-					data,
-					errors: {},
-					valid: true
-				}, 
-				success: true 
-			};
+			return {form};
 		} catch (error) {
 			console.error('Error saving producer profile:', error);
 			return fail(500, {

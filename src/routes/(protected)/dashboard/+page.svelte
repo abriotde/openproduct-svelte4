@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { producerSchema } from '$lib/config/zod-schemas.js';
+	import { producerSchema, type ProducerSchema } from '$lib/config/zod-schemas.js';
 	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
-
-	export let data: PageData;
-
+ 
+	let { data } = $props();
+	let showSuccessMessage = $state(false);
+	
 	const { form, errors, enhance, submitting, message } = superForm(
-		data.form,
+		data.form.data,
 		{
-			validators: zodClient(producerSchema),
+			// validators: zodClient(producerSchema),
 			resetForm: false,
 			onUpdated: ({ form }) => {
 				if (form.valid) {
@@ -23,8 +24,6 @@
 			dataType: 'json'
 		}
 	);
-
-	let showSuccessMessage = false;
 
 	const categories = [
 		{ value: 'A', label: 'Alimentaire', color: 'bg-green-100 text-green-800' },
@@ -387,13 +386,12 @@
 
 						<div>
 							<label class="label">
-								<span class="font-semibold">Site web secondaire</span>
-								<input
-									class="input px-4 py-2 rounded-lg {$errors.website2 ? 'input-error border-error-500' : ''}"
+								<span class="font-semibold">Site web secondaire (réseau social) </span>
+								<input class="input px-4 py-2 rounded-lg {$errors.website2 ? 'input-error border-error-500' : ''}"
 									type="url"
 									name="website2"
 									bind:value={$form.website2}
-									placeholder="https://www.boutique.fr"
+									placeholder="https://www.facebook.fr/toto"
 									disabled={$submitting}
 								/>
 								{#if $errors.website2}
@@ -404,9 +402,8 @@
 
 						<div>
 							<label class="label">
-								<span class="font-semibold">Site web tertiaire</span>
-								<input
-									class="input px-4 py-2 rounded-lg {$errors.website3 ? 'input-error border-error-500' : ''}"
+								<span class="font-semibold">Site web tertiaire (réseau social)</span>
+								<input class="input px-4 py-2 rounded-lg {$errors.website3 ? 'input-error border-error-500' : ''}"
 									type="url"
 									name="website3"
 									bind:value={$form.website3}

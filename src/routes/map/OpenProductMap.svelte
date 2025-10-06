@@ -2,14 +2,15 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-	import { Search, MapPin, DollarSign, Home, Calendar, X } from 'lucide-svelte';
+	import { Search, MapPin, X } from 'lucide-svelte';
 
 	initializeStores();
 	const drawerStore = getDrawerStore();
 	
 	let filters = $state({
 		category: '',
-		address: ''
+		address: '',
+		produce: ''
 	});
 	
 	function openFilters() {
@@ -30,7 +31,8 @@
 	function resetFilters() {
 		filters = {
 			category: '',
-			address: ''
+			address: '',
+			produce: ''
 		};
 		if (filterSelect) filterSelect.value = '';
 		if (addressInput) addressInput.value = '';
@@ -60,7 +62,6 @@
 	let loadedAreas: number[] = [];
 	let loadingAreas: number[] = [];
 	let areasToCheck: number[] | null = null;
-	let categoriesFilters: any = null;
 	let filterChar = "";
 	let filterProduce: any = {};
 	let filterProducesLoaded: any = {};
@@ -593,14 +594,6 @@
 			<Search size={20} />
 			<span>Filtres</span>
 		</button>
-		
-		<button type="button"
-				class="btn variant-filled-secondary shadow-xl"
-				onclick={getCurrentLocation}
-				bind:this={geolocationButton}>
-			<MapPin size={20} />
-			<span>Ma position</span>
-		</button>
 	</div>
 </div>
 
@@ -622,21 +615,25 @@
 			<div class="flex-1 overflow-y-auto p-6">
 				<div class="max-w-2xl mx-auto space-y-6">
 					
-					<!-- Catégorie -->
+					<!-- Category -->
 					<label class="label">
 						<span class="font-semibold mb-2">Catégorie de producteur</span>
-						<select 
-							class="select" 
+						<select id="categoryFilter" 
 							bind:value={filters.category}
 							bind:this={filterSelect}
-							onchange={handleFilterChange}>
-							<option value="">Toutes les catégories</option>
+							class="border border-gray-300 rounded px-3 py-1"
+							onchange={handleFilterChange}
+						>
+							<option value="">Toutes</option>
 							<option value="A">Alimentaire</option>
+							<option value="_A">Tout sauf alimentaire</option>
 							<option value="H">Habillement</option>
+							<option value="3">Produits ménagers / de beauté / médicinal</option>
+							<option value="4">Plantes (Fleurs, arbustes)</option>
 							<option value="O">Artisans / Artistes</option>
-							<option value="P">Produits ménagers / beauté</option>
-							<option value="I">PME</option>
+							<option value="I">Petites et moyennes entreprises (PME)</option>
 						</select>
+						<div bind:this={subfilterDiv} id="subfilter"></div>
 					</label>
 
 					<!-- Recherche d'adresse -->
@@ -646,8 +643,8 @@
 							<span>Rechercher une adresse</span>
 						</span>
 						<div class="input-group input-group-divider grid-cols-[1fr_auto]">
-							<input 
-								class="input" 
+							<input class="input" 
+								id="addressSearch"
 								type="text" 
 								bind:value={filters.address}
 								bind:this={addressInput}
@@ -664,8 +661,15 @@
 					</label>
 
 					<!-- Sous-filtres (pour les produits spécifiques) -->
-					<div bind:this={subfilterDiv}></div>
-
+					<label class="label">
+						<span class="font-semibold mb-2">Produit</span>
+						<input class="input"
+							id="produceFilter"
+							bind:value={filters.produce}
+							bind:this={produceFilterInput}
+							placeholder="Exp : Pull, Fromage, Cuir..."
+						>
+					</label>
 				</div>
 			</div>
 
