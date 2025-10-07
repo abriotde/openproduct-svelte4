@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { getUserByToken, updateUser } from '$lib/server/database/user-model.js';
 import { Argon2id } from 'oslo/password';
-import resolve from '$app/paths'
+import { resolve } from '$app/paths'
 import type { Actions } from './$types.js';
 
 export const actions: Actions = {
