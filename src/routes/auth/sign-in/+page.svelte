@@ -97,8 +97,8 @@
 
 		<footer class="card-footer text-center mt-6">
 			<p class="text-surface-600-300-token">
-				Mot e passe oublié ?
-				<a href="{resolve("/auth/password/reset")}" class="anchor">S'inscrire</a>
+				Mot de passe oublié ?
+				<a href="{resolve("/auth/password/reset")}" class="anchor">Renvoyer</a>
 			</p>
 			<p class="text-surface-600-300-token">
 				Pas encore de compte ?
