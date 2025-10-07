@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import '../app.pcss';
-	import { page } from '$app/stores';
-	import { ModeWatcher } from 'mode-watcher';
+	import { page } from '$app/state';
 	import { getFlash } from 'sveltekit-flash-message';
-	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import Navigation from '$lib/components/navigation/navigation.svelte';
 
