@@ -48,10 +48,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.session = session;
 
 	if (event.route.id?.startsWith('/(protected)')) {
-		if (!user) redirect(302, resolveUrl('/auth/sign-in'));
-		if (!user.verified) redirect(302, resolveUrl('/auth/verify/email'));
+		console.log('request protected area but not authentificate');
+		if (!user) {
+			redirect(302, resolveUrl('/auth/sign-in'));
+		}
+		if (!user.verified) {
+			console.log('request protected area but email is not verified');
+			redirect(302, resolveUrl('/auth/verify/email'));
+		}
 	}
 	if (event.route.id?.startsWith('/(admin)')) {
+		console.log('request admin area but no right');
 		if (user?.role !== 'ADMIN') redirect(302, resolveUrl('/'));
 	}
 

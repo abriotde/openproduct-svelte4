@@ -4,7 +4,7 @@
 	import { MapPin } from 'lucide-svelte';
 	import IconMenu from '@lucide/svelte/icons/menu';
 	import IconFolder from '@lucide/svelte/icons/folder';
-	import IconMap from '@lucide/svelte/icons/map';
+	import signOut from '$lib/components/navigation/sign-out';
 	import IconUserEdit from '@lucide/svelte/icons/user-pen';
 	import IconPlug from '@lucide/svelte/icons/unplug';
 	import IconSettings from '@lucide/svelte/icons/settings';
@@ -13,6 +13,7 @@
 	let user: any = $props();
 	let value = $state('/');
 	import { resolve } from '$app/paths';
+
 </script>
 
   <Navigation.Rail>
@@ -28,7 +29,7 @@
 			<Navigation.Tile label="Mon Profil" href={resolve("/dashboard")}><IconUserEdit /></Navigation.Tile>
 			<Navigation.Tile label="Deconnexion" href={resolve("/auth/sign-out")}><IconPlug /></Navigation.Tile>
 		{:else}
-			<Navigation.Tile label="Connection" href={resolve("/auth/sign-in")}><IconPlug /></Navigation.Tile>
+			<Navigation.Tile label="Connection" onclick={signOut}><IconPlug /></Navigation.Tile>
 		{/if}
       <Navigation.Tile labelExpanded="A propos" href={resolve("/about")} title="settings"><IconSettings /></Navigation.Tile>
     {/snippet}

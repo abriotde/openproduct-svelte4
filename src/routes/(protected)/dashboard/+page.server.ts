@@ -10,8 +10,8 @@ import { zod4, zodClient } from 'sveltekit-superforms/adapters';
 
 
 export const load: PageServerLoad = async ({ locals }) => {
-	console.log('Dashboard in process');
 	if (!locals.user) {
+		console.log('request Dashboard but not authentificate');
 		redirect(302, resolve('/auth/sign-in'));
 	}
 

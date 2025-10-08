@@ -25,6 +25,7 @@ export const load: PageServerLoad = async (event) => {
 	};
 };
 
+/** @satisfies {import('./$types').Actions} */
 export const actions: Actions = {
 	default: async (event) => {
 		const formData = await event.request.formData();
