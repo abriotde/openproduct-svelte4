@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import db from '$lib/server/database/drizzle.js';
 import { producerTable } from '$lib/server/database/drizzle-schemas.js';
 import { eq } from 'drizzle-orm';
@@ -7,12 +7,16 @@ import { resolve } from '$app/paths';
 import { producerSchema } from '$lib/config/zod-schemas.js';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4, zodClient } from 'sveltekit-superforms/adapters';
+import { sql } from 'drizzle-orm';
 
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		console.log('request Dashboard but not authentificate');
 		redirect(302, resolve('/auth/sign-in'));
+	}
+	if (!db) {
+		return fail(400, {error: 'No database connection.'});
 	}
 
 	// Récupérer le profil producteur existant
@@ -61,10 +65,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 		errors: {},
 		valid: true
 	};
-
+	const productResult = await db?.execute(
+		sql`SELECT p.name
+			FROM producers_products pp 
+			INNER JOIN products p on p.id=pp.product_id
+			WHERE pp.producer_id = ${producer?.id}`
+	);
 	return {
 		form,
 		producer,
+		products:productResult?.rows,
 		user: locals.user
 	};
 };
@@ -87,6 +97,9 @@ export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
+		}
+		if (!db) {
+			return fail(401, { message: 'Fail connect to database' });
 		}
     	const form = await superValidate(request, zod4(producerSchema));
 
@@ -131,7 +144,6 @@ export const actions: Actions = {
 				latitude: latitude,
 				longitude: longitude,
 			};
-
 			if (existingProducer.length > 0) {
 				// Mettre à jour le profil existant
 				await db

@@ -5,19 +5,21 @@ import type { PageServerLoad, Actions } from './$types';
 export const load: PageServerLoad = async ({ url, request }) => {
 	let searchQuery = url.searchParams.get('q');
 	let searchSQLpattern = "";
-	if (!searchQuery) {
-		searchQuery = ''
-		searchSQLpattern = '%';
+	let query;
+	if (!searchQuery ) {
+		searchQuery = '';
+		query = sql`SELECT * FROM products
+			WHERE hierarchy_level<=3
+			LIMIT 20`;
 	} else {
-		searchSQLpattern = '%'+searchQuery+'%';;
+		searchSQLpattern = '%'+searchQuery+'%';
+		query = sql`SELECT * FROM products
+			WHERE name like ${searchSQLpattern}
+			LIMIT 20`;
 	}
 	try {
 		// Utiliser la fonction PostgreSQL search_products_with_children
-		const results = await db?.execute(
-			sql`SELECT * FROM products
-			WHERE name like ${searchSQLpattern}
-			LIMIT 20`
-		);
+		const results = await db?.execute(query);
 		return {
 			searchResults: results?.rows,
 			searchQuery
@@ -93,13 +95,12 @@ export const actions: Actions = {
 					FROM get_all_descendants(${productId}) d
 					ORDER BY depth, name`
 			);
-			console.log("descendantsResult?.rows:", descendantsResult?.rows);
+			// console.log("descendantsResult?.rows:", descendantsResult?.rows);
 			const ascendantsResult = await db?.execute(
 				sql`SELECT ancestor_id as id, name, d.depth
 					FROM get_all_ancestors(${productId}) d
 					ORDER BY depth, name`
 			);
-			console.log("descendantsResult?.rows:", descendantsResult?.rows);
 			return {
 				success: true,
 				product,

@@ -2,9 +2,12 @@
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { producerSchema, type ProducerSchema } from '$lib/config/zod-schemas.js';
-	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
+	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash, Pen } from 'lucide-svelte';
 	import type { PageData } from './$types.js';
- 
+	import { redirect } from '@sveltejs/kit';
+ 	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
+
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
 	
@@ -445,6 +448,42 @@
 								<small class="text-surface-500 text-xs mt-1">
 									14 chiffres sans espaces
 								</small>
+								{#if $errors.siretNumber}
+									<small class="text-error-500 text-sm mt-1">{$errors.siretNumber}</small>
+								{/if}
+							</label>
+						</div>
+					</section>
+				</div>
+
+				<!-- Informations légales -->
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
+							<Hash class="h-5 w-5" />
+							Production
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
+							Listes des produits ou catégories que vous produisez.
+						</p>
+					</header>
+					<section class="card-body p-4">
+						<div>
+							<label class="label">
+								<span class="font-semibold">Production</span>
+								<button onclick="{goto(resolve(`/product`))}" class="btn variant-filled-primary shadow-xl">
+									<Pen size={20} />
+									<span>Editer</span>
+								</button>
+								{#if data.products && data.products.length>0}
+									<ul>
+									{#each data.products as product (product.name)}
+										<li>{product.name}</li>
+									{/each}
+									</ul>
+								{:else}
+									<span>Aucun produits de définis</span>
+								{/if}
 								{#if $errors.siretNumber}
 									<small class="text-error-500 text-sm mt-1">{$errors.siretNumber}</small>
 								{/if}
