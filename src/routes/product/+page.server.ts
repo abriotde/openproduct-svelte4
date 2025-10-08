@@ -1,26 +1,25 @@
-import { db } from '$lib/server/database/drizzle';
+import db from '$lib/server/database/drizzle.js';
 import { sql } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
-	const searchQuery = url.searchParams.get('q');
-	
+export const load: PageServerLoad = async ({ url, request }) => {
+	let searchQuery = url.searchParams.get('q');
+	let searchSQLpattern = "";
 	if (!searchQuery) {
-		return {
-			searchResults: [],
-			searchQuery: ''
-		};
+		searchQuery = ''
+		searchSQLpattern = '%';
+	} else {
+		searchSQLpattern = '%'+searchQuery+'%';;
 	}
-
 	try {
 		// Utiliser la fonction PostgreSQL search_products_with_children
-		const results = await db.execute(sql`
-			SELECT * FROM search_products_with_children(${searchQuery})
-			ORDER BY is_direct_match DESC, hierarchy_level, name
-		`);
-
+		const results = await db?.execute(
+			sql`SELECT * FROM products
+			WHERE name like ${searchSQLpattern}
+			LIMIT 20`
+		);
 		return {
-			searchResults: results.rows,
+			searchResults: results?.rows,
 			searchQuery
 		};
 	} catch (error) {
@@ -32,7 +31,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		};
 	}
 };
-
+/** @satisfies {import('./$types').Actions} */
 export const actions: Actions = {
 	search: async ({ request }) => {
 		const formData = await request.formData();
@@ -46,14 +45,14 @@ export const actions: Actions = {
 		}
 
 		try {
-			const results = await db.execute(sql`
+			const results = await db?.execute(sql`
 				SELECT * FROM search_products_with_children(${query})
 				ORDER BY is_direct_match DESC, hierarchy_level, name
 			`);
 
 			return {
 				success: true,
-				results: results.rows
+				results: results?.rows
 			};
 		} catch (error) {
 			console.error('Erreur de recherche:', error);
@@ -67,6 +66,7 @@ export const actions: Actions = {
 	getProductTree: async ({ request }) => {
 		const formData = await request.formData();
 		const productId = parseInt(formData.get('productId')?.toString() || '0');
+		console.log("getProductTree(",productId,")");
 
 		if (!productId) {
 			return {
@@ -77,38 +77,34 @@ export const actions: Actions = {
 
 		try {
 			// Récupérer le produit principal
-			const productResult = await db.execute(sql`
-				SELECT * FROM products WHERE id = ${productId}
-			`);
-
-			if (productResult.rows.length === 0) {
+			const productResult = await db?.execute(
+				sql`SELECT * FROM products WHERE id = ${productId}`
+			);
+			if (productResult?.rows.length === 0) {
 				return {
 					success: false,
 					error: 'Produit non trouvé'
 				};
 			}
-
-			const product = productResult.rows[0];
-
+			const product = productResult?.rows[0];
 			// Récupérer tous les descendants
-			const descendantsResult = await db.execute(sql`
-				SELECT 
-					p.id,
-					p.name,
-					p.description,
-					p.is_collection,
-					p.hierarchy_level,
-					p.price,
-					d.depth
-				FROM get_all_descendants(${productId}) d
-				JOIN products p ON p.id = d.descendant_id
-				ORDER BY d.depth, p.name
-			`);
-
+			const descendantsResult = await db?.execute(
+				sql`SELECT descendant_id as id, name, d.depth
+					FROM get_all_descendants(${productId}) d
+					ORDER BY depth, name`
+			);
+			console.log("descendantsResult?.rows:", descendantsResult?.rows);
+			const ascendantsResult = await db?.execute(
+				sql`SELECT ancestor_id as id, name, d.depth
+					FROM get_all_ancestors(${productId}) d
+					ORDER BY depth, name`
+			);
+			console.log("descendantsResult?.rows:", descendantsResult?.rows);
 			return {
 				success: true,
 				product,
-				descendants: descendantsResult.rows
+				descendants: descendantsResult?.rows,
+				ascendants: ascendantsResult?.rows
 			};
 		} catch (error) {
 			console.error('Erreur lors de la récupération de l\'arbre:', error);

@@ -1,9 +1,9 @@
 import { DATABASE_URL } from '$env/static/private';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { building } from '$app/environment';
 
-let db:any;
+let db:NodePgDatabase|null;
 
 async function getDb() {
 	if (building) {

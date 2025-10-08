@@ -2,10 +2,12 @@
 -- STRUCTURE BASE DE DONNÉES POSTGRESQL
 -- ============================================
 
+CREATE EXTENSION IF NOT EXISTS citext;
+
 -- Table des produits
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name public.citext NOT NULL,
     description TEXT,
     is_collection BOOLEAN DEFAULT FALSE,
     hierarchy_level INT NOT NULL DEFAULT 0,
@@ -65,35 +67,40 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Fonction pour obtenir tous les descendants d'un produit
-CREATE OR REPLACE FUNCTION get_all_descendants(product_id INT)
-RETURNS TABLE(descendant_id INT, depth INT) AS $$
+CREATE OR REPLACE FUNCTION public.get_all_descendants(product_id integer)
+ RETURNS TABLE(descendant_id integer, name public.citext, depth integer)
+ LANGUAGE plpgsql
+AS $function$
 BEGIN
-    RETURN QUERY
+	RETURN QUERY
     WITH RECURSIVE descendants AS (
-        SELECT child_id as descendant_id, 1 as depth
+        SELECT child_id as desc_product_id, 1 as deep
         FROM product_relationships
         WHERE parent_id = product_id
-        
         UNION ALL
-        
-        SELECT pr.child_id, d.depth + 1
+        SELECT pr.child_id, d.deep + 1
         FROM product_relationships pr
-        INNER JOIN descendants d ON pr.parent_id = d.descendant_id
+        INNER JOIN descendants d ON pr.parent_id = d.desc_product_id
+        WHERE pr.child_id != product_id
     )
-    SELECT DISTINCT descendant_id, MIN(depth) as depth 
-    FROM descendants 
-    GROUP BY descendant_id
-    ORDER BY depth, descendant_id;
+    SELECT desc_product_id, p.name, MIN(deep) as depth 
+    FROM descendants d
+    inner join products p on p.id =d.desc_product_id
+    GROUP BY desc_product_id, p.name
+    ORDER BY depth, p.name;
 END;
-$$ LANGUAGE plpgsql;
+$function$
+;
 
 -- Fonction pour obtenir tous les ancêtres d'un produit
-CREATE OR REPLACE FUNCTION get_all_ancestors(product_id INT)
-RETURNS TABLE(ancestor_id INT, depth INT) AS $$
+CREATE OR REPLACE FUNCTION public.get_all_ancestors(product_id integer)
+ RETURNS TABLE(ancestor_id integer, name citext, depth integer)
+ LANGUAGE plpgsql
+AS $function$
 BEGIN
     RETURN QUERY
     WITH RECURSIVE ancestors AS (
-        SELECT parent_id as ancestor_id, 1 as depth
+        SELECT parent_id as asc_product_id, 1 as depth
         FROM product_relationships
         WHERE child_id = product_id
         
@@ -101,14 +108,16 @@ BEGIN
         
         SELECT pr.parent_id, a.depth + 1
         FROM product_relationships pr
-        INNER JOIN ancestors a ON pr.child_id = a.ancestor_id
+        INNER JOIN ancestors a ON pr.child_id = a.asc_product_id
     )
-    SELECT DISTINCT ancestor_id, MIN(depth) as depth 
-    FROM ancestors 
-    GROUP BY ancestor_id
+    SELECT DISTINCT a.asc_product_id as ancestor_id, p.name, MIN(a.depth) as depth 
+    FROM ancestors a
+    inner join products p on p.id =a.asc_product_id
+    GROUP BY ancestor_id, p.name
     ORDER BY depth, ancestor_id;
 END;
-$$ LANGUAGE plpgsql;
+$function$
+;
 
 -- Trigger pour vérifier la hiérarchie avant insertion
 CREATE OR REPLACE FUNCTION check_hierarchy_before_insert()

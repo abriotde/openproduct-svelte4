@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Search, Package, ChevronRight, CircleAlert } from 'lucide-svelte';
 	import type { PageData, ActionData } from './$types';
+	import { applyAction, deserialize } from '$app/forms';
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -18,15 +19,16 @@
 	}
 
 	// Gérer la recherche avec URL
-	function handleSearch() {
-		if (!searchQuery.trim()) return;
-		goto(`/product?q=${encodeURIComponent(searchQuery)}`);
+	function handleSearch(searchPattern:string) {
+		if (!searchPattern.trim()) return;
+		goto(`/product?q=${encodeURIComponent(searchPattern)}`);
+		searchQuery = searchPattern;
 	}
 
 	// Gérer la touche Enter
 	function handleKeyPress(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
-			handleSearch();
+			handleSearch(searchQuery);
 		}
 	}
 
@@ -36,18 +38,19 @@
 		try {
 			const formData = new FormData();
 			formData.append('productId', productId.toString());
-			
 			const response = await fetch('/product?/getProductTree', {
 				method: 'POST',
 				body: formData
 			});
 
-			const result = await response.json();
-			
+			/** @type {import('@sveltejs/kit').ActionResult} */
+			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				selectedProduct = result.data;
+				console.log("getProductTree1() => ", selectedProduct);
 			} else {
-				console.error('Erreur:', result.data?.error);
+				selectedProduct = null;
+				console.error('getProductTree() : Error with status : ', result.status);
 			}
 		} catch (err) {
 			console.error('Erreur:', err);
@@ -80,13 +83,12 @@
 					<div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400">
 						<Search size={20} />
 					</div>
-					<input
-						type="text"
+					<input type="text"
 						name="q"
 						placeholder="Ex: Céramique, Assiette, Cuivre..."
 						class="input pl-10 pr-4 py-3"
 						bind:value={searchQuery}
-						on:keypress={handleKeyPress}
+						onkeypress={handleKeyPress}
 					/>
 				</div>
 				<button 
@@ -119,14 +121,11 @@
 						<button
 							type="button"
 							class="p-4 border-2 rounded-lg cursor-pointer transition text-left w-full {product.is_direct_match ? 'border-primary-500 bg-primary-50' : 'border-surface-300 hover:border-primary-300'}"
-							on:click={() => viewProductTree(product.id)}
+							onclick={() => viewProductTree(product.id)}
 						>
 							<div class="flex items-center justify-between">
 								<div class="flex items-center gap-3">
-									<Package 
-										class={product.is_collection ? 'text-purple-600' : 'text-primary-600'} 
-										size={24} 
-									/>
+									<Package class='text-primary-600' size={24} />
 									<div>
 										<h3 class="h4">
 											{product.name}
@@ -137,17 +136,7 @@
 											{/if}
 										</h3>
 										<div class="flex items-center gap-2 text-sm text-surface-600-300-token mt-1">
-											<span>Niveau: {product.hierarchy_level}</span>
-											{#if product.is_collection}
-												<span class="badge variant-filled-secondary">
-													Collection
-												</span>
-											{/if}
-											{#if product.price}
-												<span class="font-medium text-success-600">
-													{parseFloat(product.price).toFixed(2)} €
-												</span>
-											{/if}
+											<span>Niveau: {product.depth}</span>
 										</div>
 									</div>
 								</div>
@@ -187,11 +176,11 @@
 							Sous-produits ({selectedProduct.descendants.length})
 						</h3>
 						{#each selectedProduct.descendants as descendant (descendant.id)}
-							<div 
-								class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
+							<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
 								style="margin-left: {descendant.depth * 20}px"
 							>
-								<div class="flex items-center justify-between">
+								<div class="flex items-center justify-between" role="button" tabindex="0"
+									onkeyup={() => viewProductTree(descendant.id)} onclick={() => viewProductTree(descendant.id)}>
 									<div class="flex items-center gap-2">
 										<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 										<span class="font-medium">{descendant.name}</span>
@@ -211,6 +200,39 @@
 				{:else}
 					<p class="text-surface-500 text-center py-8">
 						Aucun sous-produit associé
+					</p>
+				{/if}
+				<!-- Ascendants -->
+				{#if selectedProduct.ascendants && selectedProduct.ascendants.length > 0}
+					<div class="space-y-2">
+						<h3 class="h4 mb-3">
+							Sur-produits ({selectedProduct.ascendants.length})
+						</h3>
+						{#each selectedProduct.ascendants as ascendants (ascendants.id)}
+							<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
+								style="margin-left: {ascendants.depth * 20}px"
+							>
+								<div class="flex items-center justify-between" role="button" tabindex="0"
+									onkeyup={() => viewProductTree(ascendants.id)} onclick={() => viewProductTree(ascendants.id)}>
+									<div class="flex items-center gap-2">
+										<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
+										<span class="font-medium">{ascendants.name}</span>
+										<span class="text-xs text-surface-500">
+											(Profondeur: {ascendants.depth})
+										</span>
+									</div>
+									{#if ascendants.price}
+										<span class="text-success-600 font-medium">
+											{parseFloat(ascendants.price).toFixed(2)} €
+										</span>
+									{/if}
+								</div>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p class="text-surface-500 text-center py-8">
+						Aucun sur-produit associé
 					</p>
 				{/if}
 			</div>
