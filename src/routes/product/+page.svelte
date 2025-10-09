@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { Search, Package, ChevronRight, CircleAlert } from 'lucide-svelte';
 	import type { PageData, ActionData } from './$types';
+	import { deserialize } from '$app/forms';
 	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte';
 
 	export let data: PageData;
@@ -9,15 +10,13 @@
 
 	let searchQuery = data.searchQuery || '';
 	let searchResults = data.searchResults || [];
-	let selectedProduct: any = $state(null);
-	let loading = $state(false);
+	let selectedProduct: any = null;
+	let loading = false;
 
 	// Mettre à jour les résultats quand les données changent
-	$effect(() => {
-		if (data.searchResults) {
-			searchResults = data.searchResults;
-		}
-	});
+	$: if (data.searchResults) {
+		searchResults = data.searchResults;
+	}
 
 	// Gérer la recherche avec URL
 	function handleSearch(searchPattern: string) {
@@ -33,13 +32,28 @@
 		}
 	}
 
-	// Référence au composant ProductExplorer
-	let productExplorer: ProductExplorer;
-
 	// Voir l'arbre d'un produit
 	async function viewProductTree(productId: number) {
-		if (productExplorer) {
-			selectedProduct = await productExplorer.getProductTree(productId);
+		loading = true;
+		try {
+			const formData = new FormData();
+			formData.append('productId', productId.toString());
+			const response = await fetch('/product?/getProductTree', {
+				method: 'POST',
+				body: formData
+			});
+
+			const result = deserialize(await response.text());
+			if (result.type === 'success' && result.data) {
+				selectedProduct = result.data;
+			} else {
+				selectedProduct = null;
+				console.error('getProductTree() : Error with status : ', result.status);
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+		} finally {
+			loading = false;
 		}
 	}
 </script>
@@ -133,11 +147,7 @@
 		{/if}
 
 		<!-- Composant Arbre du produit -->
-		<ProductExplorer 
-			bind:this={productExplorer}
-			bind:loading={loading}
-			bind:selectedProduct={selectedProduct}
-		/>
+		<ProductExplorer {selectedProduct} />
 
 		<!-- Message si pas de recherche -->
 		{#if searchResults.length === 0 && !selectedProduct && !data.searchQuery}

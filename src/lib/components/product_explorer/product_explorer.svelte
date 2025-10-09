@@ -1,38 +1,13 @@
 <script lang="ts">
-	import { deserialize } from '$app/forms';
 	import { Package } from 'lucide-svelte';
 
-	let {loading = $bindable(), selectedProduct = $bindable()} = $props();
+	export let selectedProduct: any = null;
 
-	// Voir l'arbre d'un produit
-	export async function getProductTree(productId: number) {
-		loading = true;
-		try {
-			const formData = new FormData();
-			formData.append('productId', productId.toString());
-			const response = await fetch('/product?/getProductTree', {
-				method: 'POST',
-				body: formData
-			});
-
-			/** @type {import('@sveltejs/kit').ActionResult} */
-			const result = deserialize(await response.text());
-			if (result.type === 'success' && result.data) {
-				const prod = result.data;
-				console.log("getProductTree1() => ", prod);
-				return prod;
-			} else {
-				console.error('getProductTree() : Error with status : ', result.status);
-				return null;
-			}
-		} catch (err) {
-			console.error('Erreur:', err);
-		} finally {
-			loading = false;
-		}
+	// Fonction pour afficher l'arbre d'un sous-produit
+	export function selectProduct(product: any) {
+		selectedProduct = product;
 	}
 </script>
-
 
 <!-- Arbre du produit sélectionné -->
 {#if selectedProduct}
@@ -65,8 +40,7 @@
 					<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
 						style="margin-left: {descendant.depth * 20}px"
 					>
-						<div class="flex items-center justify-between" role="button" tabindex="0"
-							onkeyup={() => selectedProduct=getProductTree(descendant.id)} onclick={() => selectedProduct=getProductTree(descendant.id)}>
+						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 								<span class="font-medium">{descendant.name}</span>
@@ -88,28 +62,28 @@
 				Aucun sous-produit associé
 			</p>
 		{/if}
+
 		<!-- Ascendants -->
 		{#if selectedProduct.ascendants && selectedProduct.ascendants.length > 0}
-			<div class="space-y-2">
+			<div class="space-y-2 mt-6">
 				<h3 class="h4 mb-3">
 					Sur-produits ({selectedProduct.ascendants.length})
 				</h3>
-				{#each selectedProduct.ascendants as ascendants (ascendants.id)}
+				{#each selectedProduct.ascendants as ascendant (ascendant.id)}
 					<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
-						style="margin-left: {ascendants.depth * 20}px"
+						style="margin-left: {ascendant.depth * 20}px"
 					>
-						<div class="flex items-center justify-between" role="button" tabindex="0"
-							onkeyup={() => selectedProduct=getProductTree(ascendants.id)} onclick={() => selectedProduct=getProductTree(ascendants.id)}>
+						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
-								<span class="font-medium">{ascendants.name}</span>
+								<span class="font-medium">{ascendant.name}</span>
 								<span class="text-xs text-surface-500">
-									(Profondeur: {ascendants.depth})
+									(Profondeur: {ascendant.depth})
 								</span>
 							</div>
-							{#if ascendants.price}
+							{#if ascendant.price}
 								<span class="text-success-600 font-medium">
-									{parseFloat(ascendants.price).toFixed(2)} €
+									{parseFloat(ascendant.price).toFixed(2)} €
 								</span>
 							{/if}
 						</div>
@@ -117,9 +91,10 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-surface-500 text-center py-8">
+			<p class="text-surface-500 text-center py-8 mt-6">
 				Aucun sur-produit associé
 			</p>
 		{/if}
 	</div>
 {/if}
+
