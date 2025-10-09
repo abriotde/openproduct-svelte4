@@ -94,7 +94,7 @@ export const actions: Actions = {
 			const newUser = await createUser(user);
 			if (newUser) {
 				await sendVerificationEmail(newUser.email, token);
-				const session = await lucia.createSession(newUser.id, {});
+				const session = await lucia.createSession(newUser.id, {producerId: null});
 				const sessionCookie = lucia.createSessionCookie(session.id);
 				event.cookies.set(sessionCookie.name, sessionCookie.value, {
 					path: '.',

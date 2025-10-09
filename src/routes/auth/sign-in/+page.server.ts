@@ -83,7 +83,7 @@ export const actions: Actions = {
 					});
 				} else {
 					// Mot de passe valide - créer la session
-					const session = await lucia.createSession(existingUser.id, {});
+					const session = await lucia.createSession(existingUser.id, {producerId: null});
 					const sessionCookie = lucia.createSessionCookie(session.id);
 					event.cookies.set(sessionCookie.name, sessionCookie.value, {
 						path: '.',

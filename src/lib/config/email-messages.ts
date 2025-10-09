@@ -50,7 +50,7 @@ export const updateEmailAddressSuccessEmail = async (
 	sendEmail(email, subject, htmlEmail, textEmail);
 
 	// Envoi d'un email à l'utilisateur concernant le changement d'email
-	const url =  BASE_URL + resolve("/");
+	const url =  BASE_URL + resolve(`/`);
 	const textEmailChange = `L'adresse email de votre compte ${APP_NAME} a été modifiée de ${oldEmail} à ${email}. Si vous N'AVEZ PAS demandé cette modification, veuillez contacter le support à : `+resolve("/")+` pour annuler les changements.`;
 	const htmlEmailChange = `<p>L'adresse email de votre compte ${APP_NAME} a été modifiée de ${oldEmail} à ${email}.</p><p>Si vous N'AVEZ PAS demandé cette modification, veuillez contacter le support à :`
 		+` <a href='`+url+`'>`+url+`</a> pour annuler les changements.</p>`;

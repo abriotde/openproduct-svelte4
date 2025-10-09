@@ -6,9 +6,25 @@ import type { PageServerLoad, Actions } from './$types.js';
 import { resolve } from '$app/paths';
 import { producerSchema } from '$lib/config/zod-schemas.js';
 import { superValidate } from 'sveltekit-superforms';
-import { zod4, zodClient } from 'sveltekit-superforms/adapters';
+import { zod4 } from 'sveltekit-superforms/adapters';
 import { sql } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 
+async function getProducts(producer_id: string) {
+	console.log("getProducts(",producer_id,")");
+	if(producer_id==""|| producer_id==null) {
+		return null;
+	}
+	const productResult = await db?.execute(
+		sql`SELECT p.id, p.name
+			FROM producers_products pp 
+			INNER JOIN products p on p.id=pp.product_id
+			WHERE pp.producer_id = ${producer_id}`
+	);
+	const rows = productResult?.rows;
+	console.log("getProducts(",producer_id,") => ",rows);
+	return rows;
+}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -65,16 +81,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 		errors: {},
 		valid: true
 	};
-	const productResult = await db?.execute(
-		sql`SELECT p.name
-			FROM producers_products pp 
-			INNER JOIN products p on p.id=pp.product_id
-			WHERE pp.producer_id = ${producer?.id}`
-	);
+	if (locals.session && producer?.id!=null) {
+		locals.user.producerId = producer.id;
+	}
+	const products = await getProducts(locals.user.producerId);
 	return {
 		form,
 		producer,
-		products:productResult?.rows,
+		products: products,
 		user: locals.user
 	};
 };
@@ -94,7 +108,7 @@ async function getXYFromAddress(address: string) {
 }
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	update: async ({ request, locals }) => {
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
 		}
@@ -160,7 +174,6 @@ export const actions: Actions = {
 						createdAt: new Date()
 					});
 			}
-
 			return {form};
 		} catch (error) {
 			console.error('Error saving producer profile:', error);
@@ -172,5 +185,20 @@ export const actions: Actions = {
 				}
 			});
 		}
+	},
+	removeProduct: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const product_id = formData.get('id')?.toString();
+		if (!locals.user) return [];
+		const producerId = locals.user.producerId;
+		const query = sql`DELETE FROM producers_products
+				WHERE producer_id = ${producerId} AND product_id=${product_id}`;
+		const pgDialect = new PgDialect();
+		console.log("SQL: ", pgDialect.sqlToQuery(query), locals.user);
+		const result = await db?.execute(query);
+		if (!result) {
+			console.log("SQL Errors ")
+		}
+		return getProducts(producerId);
 	}
 };

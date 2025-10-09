@@ -13,6 +13,7 @@ export const userTable = pgTable('users', {
 	receiveEmail: boolean('receive_email').notNull().default(true),
 	password: text('password'),
 	token: text('token').unique(),
+	producerId: text('producer_id').unique().notNull(),
 	createdAt: timestamp('created_at', {
 		withTimezone: true,
 		mode: 'date'
@@ -25,9 +26,7 @@ export const userTable = pgTable('users', {
 
 export const sessionTable = pgTable('sessions', {
 	id: text('id').notNull().primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => userTable.id),
+	userId: text('user_id').notNull().references(() => userTable.id),
 	expiresAt: timestamp('expires_at', {
 		withTimezone: true,
 		mode: 'date'

@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { producerSchema, type ProducerSchema } from '$lib/config/zod-schemas.js';
-	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash, Pen } from 'lucide-svelte';
-	import type { PageData } from './$types.js';
-	import { redirect } from '@sveltejs/kit';
+	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash, CirclePlus, CircleX } from 'lucide-svelte';
+	import { deserialize } from '$app/forms';
  	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
 	
+	console.log("Data", data);
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form.data,
 		{
@@ -35,6 +33,28 @@
 		{ value: 'P', label: 'Produits ménagers / beauté', color: 'bg-red-100 text-red-800' },
 		{ value: 'I', label: 'PME', color: 'bg-cyan-100 text-cyan-800' }
 	];
+	async function removeProduct(product_id: number) {
+		try {
+			const formData = new FormData();
+			formData.append('id', product_id.toString());
+			const response = await fetch('/dashboard?/removeProduct', {
+				method: 'POST',
+				body: formData
+			});
+			/** @type {import('@sveltejs/kit').ActionResult} */
+			const result = deserialize(await response.text());
+			if (result.type === 'success' && result.data) {
+				console.log("removeProduct() => ", result.data);
+				data.products = result.data;
+			} else {
+				console.error('removeProduct() : Error with status : ', result.status);
+				return null;
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+		} finally {
+		}
+	}
 </script>
 
 <svelte:head>
@@ -98,7 +118,7 @@
 		</div>
 
 		<!-- Formulaire de profil producteur -->
-		<form method="POST" use:enhance>
+		<form method="POST" use:enhance action="?/update">
 			<div class="space-y-8">
 				<!-- Informations de base -->
 				<div class="card">
@@ -470,19 +490,25 @@
 					<section class="card-body p-4">
 						<div>
 							<label class="label">
-								<span class="font-semibold">Production</span>
-								<button onclick="{goto(resolve(`/product`))}" class="btn variant-filled-primary shadow-xl">
-									<Pen size={20} />
-									<span>Editer</span>
+								<div class="font-semibold">Production</div>
+								<button onclick="{() => goto(resolve(`/product`))}" class="btn variant-filled-primary shadow-xl">
+									<CirclePlus size={20} />
+									<span>Ajouter</span>
 								</button>
 								{#if data.products && data.products.length>0}
-									<ul>
-									{#each data.products as product (product.name)}
-										<li>{product.name}</li>
+									{#each data.products as product (product.id, product.name)}
+										<div class="flex items-center justify-between">
+											<div class="flex items-center gap-2">
+												<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
+												<span class="font-medium">{product.name}</span>
+												<button onclick={() => removeProduct(product.id)} class="text-xs text-surface-500">
+													<CircleX />
+												</button>
+											</div>
+										</div>
 									{/each}
-									</ul>
 								{:else}
-									<span>Aucun produits de définis</span>
+									<div>Aucun produits de définis</div>
 								{/if}
 								{#if $errors.siretNumber}
 									<small class="text-error-500 text-sm mt-1">{$errors.siretNumber}</small>
