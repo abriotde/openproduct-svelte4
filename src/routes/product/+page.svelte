@@ -4,11 +4,11 @@
 	import type { PageData, ActionData } from './$types';
 	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte';
 
-	export let data: PageData;
-	export let form: ActionData;
+	let { data, form } = $props();
+	
 
-	let searchQuery = data.searchQuery || '';
-	let searchResults = data.searchResults || [];
+	let searchQuery = $state(data.searchQuery || '');
+	let searchResults = $state(data.searchResults || []);
 	let selectedProduct: any = $state(null);
 	let loading = $state(false);
 
@@ -19,27 +19,23 @@
 		}
 	});
 
-	// Gérer la recherche avec URL
+	// Allow search by URL (At page init)
 	function handleSearch(searchPattern: string) {
 		if (!searchPattern.trim()) return;
 		goto(`/product?q=${encodeURIComponent(searchPattern)}`);
 		searchQuery = searchPattern;
 	}
-
-	// Gérer la touche Enter
+	// Search on enter press
 	function handleKeyPress(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
 			handleSearch(searchQuery);
 		}
 	}
 
-	// Référence au composant ProductExplorer
 	let productExplorer: ProductExplorer;
-
-	// Voir l'arbre d'un produit
 	async function viewProductTree(productId: number) {
 		if (productExplorer) {
-			selectedProduct = await productExplorer.getProductTree(productId);
+			await productExplorer.setProductTree(productId);
 		}
 	}
 </script>
@@ -133,11 +129,7 @@
 		{/if}
 
 		<!-- Composant Arbre du produit -->
-		<ProductExplorer 
-			bind:this={productExplorer}
-			bind:loading={loading}
-			bind:selectedProduct={selectedProduct}
-		/>
+		<ProductExplorer bind:this={productExplorer}/>
 
 		<!-- Message si pas de recherche -->
 		{#if searchResults.length === 0 && !selectedProduct && !data.searchQuery}

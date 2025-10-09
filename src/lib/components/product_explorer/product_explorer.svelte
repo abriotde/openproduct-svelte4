@@ -5,7 +5,7 @@
 	let {loading = $bindable(), selectedProduct = $bindable()} = $props();
 
 	// Voir l'arbre d'un produit
-	export async function getProductTree(productId: number) {
+	export async function setProductTree(productId: number) {
 		loading = true;
 		try {
 			const formData = new FormData();
@@ -20,7 +20,7 @@
 			if (result.type === 'success' && result.data) {
 				const prod = result.data;
 				console.log("getProductTree1() => ", prod);
-				return prod;
+				selectedProduct = prod;
 			} else {
 				console.error('getProductTree() : Error with status : ', result.status);
 				return null;
@@ -66,7 +66,7 @@
 						style="margin-left: {descendant.depth * 20}px"
 					>
 						<div class="flex items-center justify-between" role="button" tabindex="0"
-							onkeyup={() => selectedProduct=getProductTree(descendant.id)} onclick={() => selectedProduct=getProductTree(descendant.id)}>
+							onkeyup={() => setProductTree(descendant.id)} onclick={() => setProductTree(descendant.id)}>
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 								<span class="font-medium">{descendant.name}</span>
@@ -99,7 +99,7 @@
 						style="margin-left: {ascendants.depth * 20}px"
 					>
 						<div class="flex items-center justify-between" role="button" tabindex="0"
-							onkeyup={() => selectedProduct=getProductTree(ascendants.id)} onclick={() => selectedProduct=getProductTree(ascendants.id)}>
+							onkeyup={() => setProductTree(ascendants.id)} onclick={() => setProductTree(ascendants.id)}>
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 								<span class="font-medium">{ascendants.name}</span>
