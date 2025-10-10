@@ -95,7 +95,6 @@
 					class="input pl-10 pr-4 py-3 w-full"
 					bind:value={searchQuery}
 					onkeypress={handleKeyPress}
-					autofocus
 				/>
 			</div>
 			<button 

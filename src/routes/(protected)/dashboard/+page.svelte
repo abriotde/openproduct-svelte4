@@ -12,8 +12,6 @@
 
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
-	
-	console.log("Data", data);
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form.data,
 		{
@@ -600,8 +598,8 @@
 	{#if $drawerStore.id === 'product-selector'}
 		<ProductSelector 
 			existingProductIds={$drawerStore.meta?.existingProductIds || []}
-			on:validate={handleProductValidation}
-			on:cancel={handleProductCancel}
+			onvalidate={handleProductValidation}
+			oncancel={handleProductCancel}
 		/>
 	{/if}
 </Drawer>
