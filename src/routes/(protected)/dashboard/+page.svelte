@@ -4,6 +4,11 @@
 	import { deserialize } from '$app/forms';
  	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
+	
+	initializeStores();
+	const drawerStore = getDrawerStore();
 
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
@@ -54,6 +59,56 @@
 			console.error('Erreur:', err);
 		} finally {
 		}
+	}
+
+	// Ouvrir le drawer de sélection de produits
+	function openProductSelector() {
+		const existingIds = data.products?.map((p: any) => p.id) || [];
+		
+		drawerStore.open({
+			id: 'product-selector',
+			position: 'right',
+			width: 'w-full md:w-3/4 lg:w-2/3',
+			padding: 'p-0',
+			bgDrawer: 'bg-surface-50',
+			meta: {
+				existingProductIds: existingIds
+			}
+		});
+	}
+
+	// Ajouter des produits sélectionnés
+	async function addProducts(productIds: number[]) {
+		try {
+			const formData = new FormData();
+			formData.append('productIds', JSON.stringify(productIds));
+			const response = await fetch('/dashboard?/addProducts', {
+				method: 'POST',
+				body: formData
+			});
+			
+			const result = deserialize(await response.text());
+			if (result.type === 'success' && result.data) {
+				console.log("addProducts() => ", result.data);
+				data.products = result.data;
+				drawerStore.close();
+			} else {
+				console.error('addProducts() : Error with status : ', result.status);
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+		}
+	}
+
+	// Gérer la validation du ProductSelector
+	function handleProductValidation(event: CustomEvent) {
+		const { productIds } = event.detail;
+		addProducts(productIds);
+	}
+
+	// Gérer l'annulation du ProductSelector
+	function handleProductCancel() {
+		drawerStore.close();
 	}
 </script>
 
@@ -491,7 +546,7 @@
 						<div>
 							<label class="label">
 								<div class="font-semibold">Production</div>
-								<button onclick="{() => goto(resolve(`/product`))}" class="btn variant-filled-primary shadow-xl">
+								<button type="button" onclick={openProductSelector} class="btn variant-filled-primary shadow-xl">
 									<CirclePlus size={20} />
 									<span>Ajouter</span>
 								</button>
@@ -537,3 +592,17 @@
 		</form>
 	</div>
 </div>
+
+
+
+<!-- Drawer pour la sélection de produits -->
+<Drawer>
+	{#if $drawerStore.id === 'product-selector'}
+		<ProductSelector 
+			existingProductIds={$drawerStore.meta?.existingProductIds || []}
+			on:validate={handleProductValidation}
+			on:cancel={handleProductCancel}
+		/>
+	{/if}
+</Drawer>
+

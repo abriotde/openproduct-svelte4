@@ -200,5 +200,38 @@ export const actions: Actions = {
 			console.log("SQL Errors ")
 		}
 		return getProducts(producerId);
+	},
+	addProducts: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const productIdsJson = formData.get('productIds')?.toString();
+		
+		if (!locals.user || !locals.user.producerId) {
+			return fail(401, { message: 'Unauthorized' });
+		}
+		
+		if (!productIdsJson) {
+			return fail(400, { message: 'No products selected' });
+		}
+		
+		try {
+			const productIds = JSON.parse(productIdsJson);
+			const producerId = locals.user.producerId;
+			
+			// Insérer les nouvelles relations (ignorer les doublons)
+			for (const productId of productIds) {
+				const query = sql`
+					INSERT INTO producers_products (producer_id, product_id)
+					VALUES (${producerId}, ${productId})
+					ON CONFLICT (producer_id, product_id) DO NOTHING
+				`;
+				await db?.execute(query);
+			}
+			
+			// Retourner la liste mise à jour des produits
+			return getProducts(producerId);
+		} catch (error) {
+			console.error('Error adding products:', error);
+			return fail(500, { message: 'Failed to add products' });
+		}
 	}
 };
