@@ -58,11 +58,9 @@
 		} finally {
 		}
 	}
-
 	// Ouvrir le drawer de sélection de produits
 	function openProductSelector() {
 		const existingIds = data.products?.map((p: any) => p.id) || [];
-		
 		drawerStore.open({
 			id: 'product-selector',
 			position: 'right',
@@ -73,10 +71,11 @@
 				existingProductIds: existingIds
 			}
 		});
+		// searchProducts();
 	}
-
 	// Ajouter des produits sélectionnés
 	async function addProducts(productIds: number[]) {
+		console.log("addProducts(",productIds,")")
 		try {
 			const formData = new FormData();
 			formData.append('productIds', JSON.stringify(productIds));
@@ -88,8 +87,8 @@
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				console.log("addProducts() => ", result.data);
-				data.products = result.data;
 				drawerStore.close();
+				data.products = result.data;
 			} else {
 				console.error('addProducts() : Error with status : ', result.status);
 			}
@@ -100,8 +99,8 @@
 
 	// Gérer la validation du ProductSelector
 	function handleProductValidation(event: CustomEvent) {
-		const { productIds } = event.detail;
-		addProducts(productIds);
+		console.log(event);
+		addProducts(event.productIds);
 	}
 
 	// Gérer l'annulation du ProductSelector

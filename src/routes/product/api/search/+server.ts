@@ -5,11 +5,6 @@ import { sql } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const searchPattern = url.searchParams.get('q') || '';
-	
-	if (!searchPattern.trim()) {
-		return json({ results: [], error: 'Search query is required' }, { status: 400 });
-	}
-
 	if (!db) {
 		return json({ results: [], error: 'Database connection failed' }, { status: 500 });
 	}

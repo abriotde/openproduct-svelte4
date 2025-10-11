@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Search, Package, CircleAlert, Check } from 'lucide-svelte';
+	import { Search, Package, CircleAlert, Check, ArrowRight } from 'lucide-svelte';
+	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte'
 	
 	let {existingProductIds, onvalidate, oncancel} = $props();
 	
@@ -8,18 +9,13 @@
 	let selectedProductIds = $state(new Set<number>(existingProductIds));
 	let loading = $state(false);
 	let error = $state('');
+	let productDetail:number = $state(0);
 
 	// Rechercher des produits via l'action serveur
 	async function handleSearch() {
-		if (!searchQuery.trim()) {
-			error = 'Veuillez entrer un terme de recherche';
-			return;
-		}
-		
 		loading = true;
 		error = '';
 		searchResults = [];
-		
 		try {
 			// Utiliser l'endpoint existant de la page product
 			const response = await fetch(`/product/api/search?q=${encodeURIComponent(searchQuery)}`);
@@ -41,7 +37,6 @@
 			loading = false;
 		}
 	}
-
 	// Gérer la touche Enter
 	function handleKeyPress(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
@@ -49,9 +44,9 @@
 			handleSearch();
 		}
 	}
-
 	// Toggle sélection d'un produit
 	function toggleProduct(productId: number) {
+		// console.log("toggleProduct(",productId,");");
 		const newSet = new Set(selectedProductIds);
 		if (newSet.has(productId)) {
 			newSet.delete(productId);
@@ -60,17 +55,22 @@
 		}
 		selectedProductIds = newSet; // Trigger reactivity with new Set
 	}
-
 	// Valider la sélection
 	function handleValidate() {
-		onvalidate?.({
-			productIds: Array.from(selectedProductIds)
-		});
+		// console.log("selectedProductIds",selectedProductIds);
+		const arr = Array.from(selectedProductIds);
+		onvalidate?.({productIds: arr});
 	}
-
 	// Annuler
 	function handleCancel() {
 		oncancel?.();
+	}
+	let productExplorer: ProductExplorer;
+	async function viewProductTree(productId: number) {
+		productDetail = productId;
+		if (productExplorer) {
+			await productExplorer.setProductTree(productId);
+		}
 	}
 </script>
 
@@ -102,7 +102,7 @@
 				type="button"
 				class="btn variant-filled-primary"
 				onclick={handleSearch}
-				disabled={loading || !searchQuery.trim()}
+				disabled={loading}
 			>
 				{loading ? 'Recherche...' : 'Rechercher'}
 			</button>
@@ -126,38 +126,32 @@
 					{selectedProductIds.size} produit(s) sélectionné(s) sur {searchResults.length} résultat(s)
 				</p>
 				{#each searchResults as product (product.id)}
-					<button
-						type="button"
-						class="w-full p-4 border-2 rounded-lg cursor-pointer transition text-left bg-white {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-surface-300 hover:border-primary-300 hover:shadow'}"
-						onclick={() => toggleProduct(product.id)}
-					>
 						<div class="flex items-center justify-between">
-							<div class="flex items-center gap-3">
+							<div class="flex items-center gap-3 w-full p-4 border-2 rounded-lg transition text-left bg-white {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-surface-300 hover:border-primary-300 hover:shadow'}">
 								<!-- Checkbox -->
-								<div class="w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
-									{#if selectedProductIds.has(product.id)}
-										<Check size={16} class="text-white" />
-									{/if}
-								</div>
-								
-								<Package class='text-primary-600' size={24} />
-								
-								<div>
-									<h3 class="font-semibold text-surface-900">
-										{product.name}
-										{#if product.is_direct_match}
-											<span class="badge variant-filled-primary ml-2 text-xs">
-												Correspondance directe
-											</span>
+								<button type="button" onclick={() => toggleProduct(product.id)}>
+									<div class="w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
+										{#if selectedProductIds.has(product.id)}
+											<Check size={16} class="text-white" />
 										{/if}
-									</h3>
-									<div class="flex items-center gap-2 text-sm text-surface-600-300-token mt-1">
-										<span>Niveau hiérarchique: {product.depth}</span>
 									</div>
+								</button>
+								<Package class='text-primary-600' size={24} />
+								<h3 class="font-semibold text-surface-900">
+									{product.name}
+									<button type="button" class="cursor-pointer" onclick={() => viewProductTree(product.id)}>
+										<span class="badge variant-filled-primary ml-2 text-xs">
+											<ArrowRight />
+										</span>
+									</button>
+								</h3>
+								<div>
+									{#if productDetail==product.id}
+										<ProductExplorer bind:this={productExplorer} {productId}/>
+									{/if}
 								</div>
 							</div>
 						</div>
-					</button>
 				{/each}
 			</div>
 		{:else if loading}

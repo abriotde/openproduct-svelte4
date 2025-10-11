@@ -204,16 +204,15 @@ export const actions: Actions = {
 	addProducts: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const productIdsJson = formData.get('productIds')?.toString();
-		
 		if (!locals.user || !locals.user.producerId) {
 			return fail(401, { message: 'Unauthorized' });
 		}
-		
 		if (!productIdsJson) {
 			return fail(400, { message: 'No products selected' });
 		}
-		
 		try {
+			console.log("formData:",formData);
+			console.log("productIdsJson:",productIdsJson);
 			const productIds = JSON.parse(productIdsJson);
 			const producerId = locals.user.producerId;
 			
@@ -226,8 +225,6 @@ export const actions: Actions = {
 				`;
 				await db?.execute(query);
 			}
-			
-			// Retourner la liste mise à jour des produits
 			return getProducts(producerId);
 		} catch (error) {
 			console.error('Error adding products:', error);

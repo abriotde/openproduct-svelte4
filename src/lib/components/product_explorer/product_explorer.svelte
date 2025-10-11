@@ -2,7 +2,7 @@
 	import { deserialize } from '$app/forms';
 	import { Package } from 'lucide-svelte';
 
-	let {loading = $bindable(), selectedProduct = $bindable()} = $props();
+	let {loading = $bindable(), selectedProduct = $bindable(), productId} = $props();
 
 	// Voir l'arbre d'un produit
 	export async function setProductTree(productId: number) {
@@ -96,8 +96,7 @@
 				</h3>
 				{#each selectedProduct.ascendants as ascendants (ascendants.id)}
 					<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
-						style="margin-left: {ascendants.depth * 20}px"
-					>
+							style="margin-left: {ascendants.depth * 20}px">
 						<div class="flex items-center justify-between" role="button" tabindex="0"
 							onkeyup={() => setProductTree(ascendants.id)} onclick={() => setProductTree(ascendants.id)}>
 							<div class="flex items-center gap-2">
