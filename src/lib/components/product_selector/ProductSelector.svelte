@@ -52,12 +52,13 @@
 
 	// Toggle sélection d'un produit
 	function toggleProduct(productId: number) {
-		if (selectedProductIds.has(productId)) {
-			selectedProductIds.delete(productId);
+		const newSet = new Set(selectedProductIds);
+		if (newSet.has(productId)) {
+			newSet.delete(productId);
 		} else {
-			selectedProductIds.add(productId);
+			newSet.add(productId);
 		}
-		selectedProductIds = selectedProductIds; // Trigger reactivity
+		selectedProductIds = newSet; // Trigger reactivity with new Set
 	}
 
 	// Valider la sélection
