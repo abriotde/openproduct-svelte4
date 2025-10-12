@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { deserialize } from '$app/forms';
-	import { Package } from 'lucide-svelte';
+	import { Package, Check } from 'lucide-svelte';
+  	import { onMount } from 'svelte';
 
-	let {loading = $bindable(), selectedProduct = $bindable(), productId} = $props();
+	let {loading = $bindable(), selectedProduct = $bindable(), productId, selectedProductIds = $bindable()} = $props();
 
 	// Voir l'arbre d'un produit
 	export async function setProductTree(productId: number) {
@@ -31,6 +32,22 @@
 			loading = false;
 		}
 	}
+	function toggleProduct(productId: number) {
+		// console.log("toggleProduct(",productId,");");
+		const newSet = new Set(selectedProductIds);
+		if (newSet.has(productId)) {
+			newSet.delete(productId);
+		} else {
+			newSet.add(productId);
+		}
+		selectedProductIds = newSet; // Trigger reactivity with new Set
+	}
+
+  
+	onMount(() => {
+		console.log('ProductExplorer initialized');
+		setProductTree(productId);
+	});
 </script>
 
 
@@ -46,6 +63,15 @@
 			<div class="flex items-center gap-3">
 				<Package size={28} />
 				<div>
+					{#if selectedProductIds}
+						<button type="button" onclick={() => toggleProduct(selectedProduct.product.id)}>
+							<div class="w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
+								{#if selectedProductIds.has(selectedProduct.product.id)}
+									<Check size={16} class="text-white" />
+								{/if}
+							</div>
+						</button>
+					{/if}
 					<h3 class="h3 text-white">{selectedProduct.product.name}</h3>
 					<p class="text-primary-100">
 						{selectedProduct.product.is_collection ? 'Collection' : 'Produit'} - 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Search, Package, CircleAlert, Check, ArrowRight } from 'lucide-svelte';
 	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte'
+  	import { onMount } from 'svelte';
 	
 	let {existingProductIds, onvalidate, oncancel} = $props();
 	
@@ -72,6 +73,10 @@
 			await productExplorer.setProductTree(productId);
 		}
 	}
+	onMount(() => {
+		console.log('ProductSelector initialized');
+		handleSearch();
+	});
 </script>
 
 <div class="h-full flex flex-col bg-surface-50">
@@ -147,7 +152,7 @@
 								</h3>
 								<div>
 									{#if productDetail==product.id}
-										<ProductExplorer bind:this={productExplorer} {productId}/>
+										<ProductExplorer bind:this={productExplorer} productId={product.id} bind:selectedProductIds/>
 									{/if}
 								</div>
 							</div>
