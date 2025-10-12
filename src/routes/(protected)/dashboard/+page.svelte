@@ -12,6 +12,7 @@
 
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
+	let products = $state(data.products || []);
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form.data,
 		{
@@ -48,7 +49,7 @@
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				console.log("removeProduct() => ", result.data);
-				data.products = result.data;
+				products = result.data; // Mise à jour de la variable $state
 			} else {
 				console.error('removeProduct() : Error with status : ', result.status);
 				return null;
@@ -60,7 +61,7 @@
 	}
 	// Ouvrir le drawer de sélection de produits
 	function openProductSelector() {
-		const existingIds = data.products?.map((p: any) => p.id) || [];
+		const existingIds = products?.map((p: any) => p.id) || [];
 		drawerStore.open({
 			id: 'product-selector',
 			position: 'right',
@@ -87,8 +88,8 @@
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				console.log("addProducts() => ", result.data);
+				products = result.data; // Mise à jour de la variable $state
 				drawerStore.close();
-				data.products = result.data;
 			} else {
 				console.error('addProducts() : Error with status : ', result.status);
 			}
@@ -547,8 +548,8 @@
 									<CirclePlus size={20} />
 									<span>Ajouter</span>
 								</button>
-								{#if data.products && data.products.length>0}
-									{#each data.products as product (product.id, product.name)}
+								{#if products && products.length>0}
+									{#each products as product (product.id, product.name)}
 										<div class="flex items-center justify-between">
 											<div class="flex items-center gap-2">
 												<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
