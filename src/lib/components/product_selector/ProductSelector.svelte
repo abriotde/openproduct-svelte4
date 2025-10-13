@@ -4,7 +4,7 @@
   	import { onMount } from 'svelte';
 	
 	let {selectedProductIds = $bindable()} = $props();
-	
+
 	let searchQuery = $state('');
 	let searchResults: any[] = $state([]);
 	let loading = $state(false);
@@ -46,8 +46,7 @@
 	}
 	// Toggle sélection d'un produit
 	function toggleProduct(productId: number, productName: string) {
-		console.log("toggleProduct(",productId, productName,") in ",selectedProductIds,";");
-		// Créer un nouveau Map pour déclencher la réactivité Svelte 5
+		console.log("ProductSelector.toggleProduct(",productId, productName,") in ",selectedProductIds,";");
 		const newMap = new Map(selectedProductIds);
 		if (newMap.has(productId)) {
 			newMap.delete(productId);

@@ -13,7 +13,7 @@
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
 	let products = $state(data.products || []);
-	let selectedProductIds:Map<number, string> = new Map();
+	let selectedProductIds:Map<number, string> = $state(new Map());
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form.data,
 		{
@@ -62,8 +62,8 @@
 	}
 	// Ouvrir le drawer de sélection de produits
 	function openProductSelector() {
-		const existingIds = new Map<number, string>();
-		products?.forEach(p => existingIds.set(p.id, p.name));
+		const selectedProductIds = new Map<number, string>();
+		products?.forEach(p => selectedProductIds.set(p.id, p.name));
 		drawerStore.open({
 			id: 'product-selector',
 			position: 'right',
@@ -71,7 +71,7 @@
 			padding: 'p-0',
 			bgDrawer: 'bg-surface-50',
 			meta: {
-				existingProductIds: existingIds
+				existingProductIds: selectedProductIds
 			}
 		});
 		// searchProducts();
@@ -81,7 +81,9 @@
 		console.log("addProducts(",selectedProductIds,")")
 		try {
 			const formData = new FormData();
-			formData.append('productIds', JSON.stringify(Object.keys(selectedProductIds)));
+			const productIds = Array.from(selectedProductIds.keys());
+			console.log("addProducts2(",productIds,")")
+			formData.append('productIds', JSON.stringify(productIds));
 			const response = await fetch('/dashboard?/addProducts', {
 				method: 'POST',
 				body: formData
@@ -604,7 +606,7 @@
 				Recherchez et sélectionnez les produits que vous produisez
 			</p>
 		</div>
-		<ProductSelector bind:selectedProductIds={$drawerStore.meta.existingProductIds}/>
+		<ProductSelector bind:selectedProductIds/>
 		<!-- Boutons d'action -->
 		<div class="p-6 bg-white border-t border-surface-300 flex justify-end gap-4">
 			<button

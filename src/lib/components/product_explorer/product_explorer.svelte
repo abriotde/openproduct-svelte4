@@ -20,10 +20,10 @@
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				const prod = result.data;
-				console.log("getProductTree1() => ", prod);
+				console.log("setProductTree() => ", prod);
 				selectedProduct = prod;
 			} else {
-				console.error('getProductTree() : Error with status : ', result.status);
+				console.error('setProductTree() : Error with status : ', result.status);
 				return null;
 			}
 		} catch (err) {
@@ -33,15 +33,17 @@
 		}
 	}
 	function toggleProduct(productId: number, productName:string) {
-		console.log("toggleProduct(",productId, productName,") in ",selectedProductIds,";");
-		if (selectedProductIds.has(productId)) {
-			selectedProductIds.delete(productId);
+		console.log("ProductExplorer.toggleProduct(",productId, productName,") in ",selectedProductIds,";");
+		console.log("selectedProduct.product.id:",selectedProduct.product.id);
+		const newMap = new Map(selectedProductIds);
+		if (newMap.has(productId)) {
+			newMap.delete(productId);
 		} else {
-			selectedProductIds.add(productId, productName);
+			newMap.set(productId, productName);
 		}
+		selectedProductIds = newMap;
+		console.log("ProductExplorer.toggleProduct() => ",selectedProductIds,";");
 	}
-
-  
 	onMount(() => {
 		console.log('ProductExplorer initialized');
 		setProductTree(productId);
@@ -54,23 +56,17 @@
 	<div class="card p-6">
 		<div class="p-4 bg-gradient-to-r from-primary-500 to-secondary-600 text-white rounded-lg mb-4">
 			<div class="flex items-center gap-3">
+				{#if selectedProductIds}
+					<button type="button" onclick={() => toggleProduct(selectedProduct.product.id, selectedProduct.product.name)}>
+						<span class="bg-white w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
+							{#if selectedProductIds.has(selectedProduct.product.id)}
+								<Check size={16} class="text-white" />
+							{/if}
+						</span>
+					</button>
+				{/if}
 				<Package size={28} />
-				<div>
-					{#if selectedProductIds}
-						<button type="button" onclick={() => toggleProduct(selectedProduct.product.id, selectedProduct.product.name)}>
-							<div class="bg-white w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
-								{#if selectedProductIds.has(selectedProduct.product.id)}
-									<Check size={16} class="text-white" />
-								{/if}
-							</div>
-						</button>
-					{/if}
-					<h3 class="h3 text-white">{selectedProduct.product.name}</h3>
-					<p class="text-primary-100">
-						{selectedProduct.product.is_collection ? 'Collection' : 'Produit'} - 
-						Niveau {selectedProduct.product.hierarchy_level}
-					</p>
-				</div>
+				<h3 class="h3 text-white">{selectedProduct.product.name}</h3>
 			</div>
 		</div>
 
