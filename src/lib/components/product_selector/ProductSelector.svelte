@@ -47,11 +47,14 @@
 	// Toggle sélection d'un produit
 	function toggleProduct(productId: number, productName: string) {
 		console.log("toggleProduct(",productId, productName,") in ",selectedProductIds,";");
-		if (selectedProductIds.has(productId)) {
-			selectedProductIds.delete(productId);
+		// Créer un nouveau Map pour déclencher la réactivité Svelte 5
+		const newMap = new Map(selectedProductIds);
+		if (newMap.has(productId)) {
+			newMap.delete(productId);
 		} else {
-			selectedProductIds.set(productId, productName);
+			newMap.set(productId, productName);
 		}
+		selectedProductIds = newMap; // Assigner le nouveau Map pour déclencher la réactivité
 	}
 	let productExplorer: ProductExplorer;
 	async function viewProductTree(productId: number) {
