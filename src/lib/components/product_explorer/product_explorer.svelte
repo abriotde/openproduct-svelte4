@@ -58,9 +58,9 @@
 			<div class="flex items-center gap-3">
 				{#if selectedProductIds}
 					<button type="button" onclick={() => toggleProduct(selectedProduct.product.id, selectedProduct.product.name)}>
-						<span class="bg-white w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
+						<span class="z-20 w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'bg-white border-surface-400'}">
 							{#if selectedProductIds.has(selectedProduct.product.id)}
-								<Check size={16} class="text-white" />
+								<Check size={16} class="text-white z-10" />
 							{/if}
 						</span>
 					</button>
@@ -78,8 +78,7 @@
 				</h3>
 				{#each selectedProduct.descendants as descendant (descendant.id)}
 					<div class="p-3 border border-surface-300 rounded-lg hover:border-primary-300 transition"
-						style="margin-left: {descendant.depth * 20}px"
-					>
+							style="margin-left: {descendant.depth * 20}px">
 						<div class="flex items-center justify-between" role="button" tabindex="0"
 							onkeyup={() => setProductTree(descendant.id)} onclick={() => setProductTree(descendant.id)}>
 							<div class="flex items-center gap-2">

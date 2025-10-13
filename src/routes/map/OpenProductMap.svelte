@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+	import { initializeStores, Drawer, getDrawerStore, filter } from '@skeletonlabs/skeleton';
 	import { Search, MapPin, X, CirclePlus, CircleX } from 'lucide-svelte';
 	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
 
@@ -36,14 +36,57 @@
 		};
 		if (filterSelect) filterSelect.value = '';
 		if (addressInput) addressInput.value = '';
-		filterProducers('');
+		filterProducersByCategory('');
 	}
 
 	function applyFilters() {
-		if (filters.category) {
-			filterProducers(filters.category);
+		console.log("applyFilters();");
+		if (filters.produces.size>0) {
+			console.log("applyFilters(products:",filters.produces,");");
+			myfilter = filterByProduct;
+			let someInCache = false;
+			producersFilterByProduct = new Map();
+				console.log("applyFilters() : areasToCheck ",loadedAreas,";");
+			for (const myArea of loadedAreas) {
+				console.log("applyFilters() : area ",myArea,";");
+				let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+				for (const product of filters.produces.keys()) {
+					const producers = datas.get(product);
+					if (!producers) {
+						fetch('/data/products_'+product+'_'+myArea+'.json')
+							.then(response => response.json())
+							.then(producers => {
+								let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+								datas.set(product, producers);
+								productsByAreas.set(myArea, datas);
+								for (const p of producers) {
+									producersFilterByProduct.set(p, true);
+								}
+								displayProducers(producersLoaded);
+							})
+							.catch(error => {
+								console.error(
+									'Erreur lors du chargement du département ',
+									myArea, ' for product ', product, ' : ', error
+								);
+							});
+					} else {
+						for (const p of producers) {
+							producersFilterByProduct.set(p, true);
+						}
+						someInCache = true;
+					}
+				}
+			}
+			if (someInCache) {
+				displayProducers(producersLoaded);
+			}
+		} else if (filters.category) {
+			console.log("applyFilters(category:",filters.category,");");
+			filterProducersByCategory(filters.category);
 		}
 		if (filters.address) {
+			console.log("applyFilters(address:",filters.address,");");
 			searchAddress();
 		}
 		closeFilters();
@@ -74,7 +117,9 @@
 	let areas: any;
 	let loadedAreas: number[] = [];
 	let loadingAreas: number[] = [];
-	let areasToCheck: number[] | null = null;
+	let areasToCheck: number[]|null = null;
+	let productsByAreas: Map<number,Map<number, number[]>> = new Map(); // Map<AreaId, Map<ProductId, Producers[]>>
+	let producersFilterByProduct: Map<number, boolean> = new Map();
 	let filterChar = "";
 	let markersLoaded: any = {};
 	let producersLoaded: any[] = [];
@@ -323,7 +368,6 @@
 		for (const areaId of areaIds) {
 			if (!loadingAreas.includes(areaId) && !loadedAreas.includes(areaId)) {
 				loadingAreas.push(areaId);
-				
 				try {
 					const response = await fetch(`/data/producers_${areaId}.json`);
 					if (response.ok) {
@@ -489,6 +533,9 @@
 		return str.includes(middle);
 	}
 
+	const filterByProduct = (producer: any) => {
+		return producersFilterByProduct.get(producer.id) || false;
+	};
 	const charFilter = (producer: any) => {
 		let inverse = false;
 		let filter = filterChar;
@@ -505,16 +552,14 @@
 		return false;
 	};
 
-	async function filterProducers(filter: string) {
-		if (DEBUG) console.log("filterProducers(", filter, ")");
-		
+	async function filterProducersByCategory(filter: string) {
+		if (DEBUG) console.log("filterProducersByCategory(", filter, ")");
 		filterChar = filter;
 		if (produceFilterInput) {
 			produceFilterInput.value = "";
 		}
-
 		if (filter == "") {
-			console.log("filterProducers(", filter, ") : no category filter");
+			console.log("filterProducersByCategory(", filter, ") : no category filter");
 			myfilter = noFilter;
 			if (subfilterDiv) {
 				subfilterDiv.innerHTML = "";
@@ -525,7 +570,6 @@
 				subfilterDiv.innerHTML = "";
 			}
 		}
-
 		// Réappliquer le filtre sur tous les producteurs chargés
 		displayProducers(producersLoaded);
 	}
@@ -578,7 +622,7 @@
 	function handleFilterChange() {
 		if (!filterSelect) return;
 		const selectedValue = filterSelect.value;
-		filterProducers(selectedValue);
+		filterProducersByCategory(selectedValue);
 	}
 
 	function handleKeyPress(event: KeyboardEvent) {
