@@ -12,7 +12,6 @@
 		address: '',
 		produces: new Map<number, string>()
 	});
-	let selectedProductIds = $state(filters.produces);
 	
 	function openFilters() {
 		drawerStore.open({
@@ -54,9 +53,12 @@
 		console.log("handleProductValidation(",event,");");
 	}
 	async function removeProduct(product_id: number) {
-		if (selectedProductIds.has(product_id)) {
-			selectedProductIds.delete(product_id);
+		// Créer un nouveau Map pour déclencher la réactivité
+		const newMap = new Map(filters.produces);
+		if (newMap.has(product_id)) {
+			newMap.delete(product_id);
 		}
+		filters.produces = newMap;
 	}
 
 
@@ -671,8 +673,8 @@
 					<!-- Sous-filtres (pour les produits spécifiques) -->
 					<label class="label">
 						<span class="font-semibold mb-2">Produit</span>
-							{#if selectedProductIds && selectedProductIds.size>0}
-								{#each [...selectedProductIds] as [id, name]}
+							{#if filters.produces && filters.produces.size>0}
+								{#each [...filters.produces] as [id, name]}
 									<div class="flex items-center justify-between">
 										<div class="flex items-center gap-2">
 											<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
@@ -686,7 +688,7 @@
 							{:else}
 								<div>Aucun produits de définis</div>
 							{/if}
-							<ProductSelector bind:selectedProductIds/>
+							<ProductSelector bind:selectedProductIds={filters.produces}/>
 					</label>
 				</div>
 			</div>

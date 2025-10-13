@@ -55,7 +55,7 @@
 		}
 		selectedProductIds = newMap; // Assigner le nouveau Map pour déclencher la réactivité
 	}
-	let productExplorer: ProductExplorer;
+	let productExplorer = $state<ProductExplorer>();
 	async function viewProductTree(productId: number) {
 		productDetail = productId;
 		if (productExplorer) {
