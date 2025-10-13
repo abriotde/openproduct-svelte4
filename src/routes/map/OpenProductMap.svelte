@@ -53,7 +53,7 @@
 				for (const product of filters.produces.keys()) {
 					const producers = datas.get(product);
 					if (!producers) {
-						fetch('/data/products_'+product+'_'+myArea+'.json')
+						fetch('/data/products/p'+product+'.json')
 							.then(response => response.json())
 							.then(producers => {
 								let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
