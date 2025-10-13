@@ -3,11 +3,10 @@
 	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte'
   	import { onMount } from 'svelte';
 	
-	let {existingProductIds, onvalidate, oncancel} = $props();
+	let {selectedProductIds = $bindable()} = $props();
 	
 	let searchQuery = $state('');
 	let searchResults: any[] = $state([]);
-	let selectedProductIds = $state(new Set<number>(existingProductIds));
 	let loading = $state(false);
 	let error = $state('');
 	let productDetail:number = $state(0);
@@ -46,25 +45,13 @@
 		}
 	}
 	// Toggle sélection d'un produit
-	function toggleProduct(productId: number) {
-		// console.log("toggleProduct(",productId,");");
-		const newSet = new Set(selectedProductIds);
-		if (newSet.has(productId)) {
-			newSet.delete(productId);
+	function toggleProduct(productId: number, productName: string) {
+		console.log("toggleProduct(",productId, productName,") in ",selectedProductIds,";");
+		if (selectedProductIds.has(productId)) {
+			selectedProductIds.delete(productId);
 		} else {
-			newSet.add(productId);
+			selectedProductIds.set(productId, productName);
 		}
-		selectedProductIds = newSet; // Trigger reactivity with new Set
-	}
-	// Valider la sélection
-	function handleValidate() {
-		// console.log("selectedProductIds",selectedProductIds);
-		const arr = Array.from(selectedProductIds);
-		onvalidate?.({productIds: arr});
-	}
-	// Annuler
-	function handleCancel() {
-		oncancel?.();
 	}
 	let productExplorer: ProductExplorer;
 	async function viewProductTree(productId: number) {
@@ -74,20 +61,12 @@
 		}
 	}
 	onMount(() => {
-		console.log('ProductSelector initialized');
+		console.log('ProductSelector initialized', selectedProductIds);
 		handleSearch();
 	});
 </script>
 
 <div class="h-full flex flex-col bg-surface-50">
-	<!-- En-tête -->
-	<div class="p-6 bg-white border-b border-surface-300">
-		<h2 class="h2 mb-2">Sélectionner des produits</h2>
-		<p class="text-surface-600-300-token">
-			Recherchez et sélectionnez les produits que vous produisez
-		</p>
-	</div>
-
 	<!-- Barre de recherche -->
 	<div class="p-6 bg-white border-b border-surface-300">
 		<div class="flex gap-4">
@@ -130,11 +109,11 @@
 				<p class="text-sm text-surface-600-300-token mb-4 font-medium">
 					{selectedProductIds.size} produit(s) sélectionné(s) sur {searchResults.length} résultat(s)
 				</p>
-				{#each searchResults as product (product.id)}
+				{#each searchResults as product (product.id, product.name)}
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-3 w-full p-4 border-2 rounded-lg transition text-left bg-white {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-surface-300 hover:border-primary-300 hover:shadow'}">
 								<!-- Checkbox -->
-								<button type="button" onclick={() => toggleProduct(product.id)}>
+								<button type="button" onclick={() => toggleProduct(product.id, product.name)}>
 									<div class="w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
 										{#if selectedProductIds.has(product.id)}
 											<Check size={16} class="text-white" />
@@ -187,25 +166,6 @@
 				</p>
 			</div>
 		{/if}
-	</div>
-
-	<!-- Boutons d'action -->
-	<div class="p-6 bg-white border-t border-surface-300 flex justify-end gap-4">
-		<button
-			type="button"
-			class="btn variant-ghost-surface"
-			onclick={handleCancel}
-		>
-			Annuler
-		</button>
-		<button
-			type="button"
-			class="btn variant-filled-primary"
-			onclick={handleValidate}
-			disabled={selectedProductIds.size === 0}
-		>
-			Valider la sélection ({selectedProductIds.size})
-		</button>
 	</div>
 </div>
 

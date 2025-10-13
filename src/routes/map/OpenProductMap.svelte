@@ -2,16 +2,17 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
-	import { Search, MapPin, X } from 'lucide-svelte';
+	import { Search, MapPin, X, CirclePlus, CircleX } from 'lucide-svelte';
+	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
 
 	initializeStores();
 	const drawerStore = getDrawerStore();
-	
 	let filters = $state({
 		category: '',
 		address: '',
-		produce: ''
+		produces: new Map<number, string>()
 	});
+	let selectedProductIds = $state(filters.produces);
 	
 	function openFilters() {
 		drawerStore.open({
@@ -32,7 +33,7 @@
 		filters = {
 			category: '',
 			address: '',
-			produce: ''
+			produces: new Map<number, string>()
 		};
 		if (filterSelect) filterSelect.value = '';
 		if (addressInput) addressInput.value = '';
@@ -48,6 +49,16 @@
 		}
 		closeFilters();
 	}
+	// Gérer la validation du ProductSelector
+	function handleProductValidation(event: CustomEvent) {
+		console.log("handleProductValidation(",event,");");
+	}
+	async function removeProduct(product_id: number) {
+		if (selectedProductIds.has(product_id)) {
+			selectedProductIds.delete(product_id);
+		}
+	}
+
 
  	let mapContainer = $state<HTMLDivElement>();
 	let filterSelect = $state<HTMLSelectElement>();
@@ -63,11 +74,8 @@
 	let loadingAreas: number[] = [];
 	let areasToCheck: number[] | null = null;
 	let filterChar = "";
-	let filterProduce: any = {};
-	let filterProducesLoaded: any = {};
 	let markersLoaded: any = {};
 	let producersLoaded: any[] = [];
-	let producesList: any[] = [];
 	let mapInitialized = false;
 	let mapIcons: any = {};
 
@@ -663,12 +671,22 @@
 					<!-- Sous-filtres (pour les produits spécifiques) -->
 					<label class="label">
 						<span class="font-semibold mb-2">Produit</span>
-						<input class="input"
-							id="produceFilter"
-							bind:value={filters.produce}
-							bind:this={produceFilterInput}
-							placeholder="Exp : Pull, Fromage, Cuir..."
-						>
+							{#if selectedProductIds && selectedProductIds.size>0}
+								{#each [...selectedProductIds] as [id, name]}
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
+											<span class="font-medium">{name}</span>
+											<button onclick={() => removeProduct(id)} class="text-xs text-surface-500">
+												<CircleX />
+											</button>
+										</div>
+									</div>
+								{/each}
+							{:else}
+								<div>Aucun produits de définis</div>
+							{/if}
+							<ProductSelector bind:selectedProductIds/>
 					</label>
 				</div>
 			</div>

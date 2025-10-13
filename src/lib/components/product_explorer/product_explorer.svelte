@@ -32,15 +32,13 @@
 			loading = false;
 		}
 	}
-	function toggleProduct(productId: number) {
-		// console.log("toggleProduct(",productId,");");
-		const newSet = new Set(selectedProductIds);
-		if (newSet.has(productId)) {
-			newSet.delete(productId);
+	function toggleProduct(productId: number, productName:string) {
+		console.log("toggleProduct(",productId, productName,") in ",selectedProductIds,";");
+		if (selectedProductIds.has(productId)) {
+			selectedProductIds.delete(productId);
 		} else {
-			newSet.add(productId);
+			selectedProductIds.add(productId, productName);
 		}
-		selectedProductIds = newSet; // Trigger reactivity with new Set
 	}
 
   
@@ -54,18 +52,13 @@
 <!-- Arbre du produit sélectionné -->
 {#if selectedProduct}
 	<div class="card p-6">
-		<h2 class="h2 mb-4">
-			Arbre du produit
-		</h2>
-		
-		<!-- Produit principal -->
 		<div class="p-4 bg-gradient-to-r from-primary-500 to-secondary-600 text-white rounded-lg mb-4">
 			<div class="flex items-center gap-3">
 				<Package size={28} />
 				<div>
 					{#if selectedProductIds}
-						<button type="button" onclick={() => toggleProduct(selectedProduct.product.id)}>
-							<div class="w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
+						<button type="button" onclick={() => toggleProduct(selectedProduct.product.id, selectedProduct.product.name)}>
+							<div class="bg-white w-6 h-6 border-2 rounded flex items-center justify-center transition {selectedProductIds.has(selectedProduct.product.id) ? 'border-primary-500 bg-primary-500' : 'border-surface-400'}">
 								{#if selectedProductIds.has(selectedProduct.product.id)}
 									<Check size={16} class="text-white" />
 								{/if}
@@ -96,15 +89,7 @@
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 								<span class="font-medium">{descendant.name}</span>
-								<span class="text-xs text-surface-500">
-									(Profondeur: {descendant.depth})
-								</span>
 							</div>
-							{#if descendant.price}
-								<span class="text-success-600 font-medium">
-									{parseFloat(descendant.price).toFixed(2)} €
-								</span>
-							{/if}
 						</div>
 					</div>
 				{/each}
@@ -128,15 +113,7 @@
 							<div class="flex items-center gap-2">
 								<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
 								<span class="font-medium">{ascendants.name}</span>
-								<span class="text-xs text-surface-500">
-									(Profondeur: {ascendants.depth})
-								</span>
 							</div>
-							{#if ascendants.price}
-								<span class="text-success-600 font-medium">
-									{parseFloat(ascendants.price).toFixed(2)} €
-								</span>
-							{/if}
 						</div>
 					</div>
 				{/each}

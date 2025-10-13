@@ -13,6 +13,7 @@
 	let { data } = $props();
 	let showSuccessMessage = $state(false);
 	let products = $state(data.products || []);
+	let selectedProductIds:Map<number, string> = new Map();
 	const { form, errors, enhance, submitting, message } = superForm(
 		data.form.data,
 		{
@@ -61,7 +62,8 @@
 	}
 	// Ouvrir le drawer de sélection de produits
 	function openProductSelector() {
-		const existingIds = products?.map((p: any) => p.id) || [];
+		const existingIds = new Map<number, string>();
+		products?.forEach(p => existingIds.set(p.id, p.name));
 		drawerStore.open({
 			id: 'product-selector',
 			position: 'right',
@@ -75,11 +77,11 @@
 		// searchProducts();
 	}
 	// Ajouter des produits sélectionnés
-	async function addProducts(productIds: number[]) {
-		console.log("addProducts(",productIds,")")
+	async function addProducts() {
+		console.log("addProducts(",selectedProductIds,")")
 		try {
 			const formData = new FormData();
-			formData.append('productIds', JSON.stringify(productIds));
+			formData.append('productIds', JSON.stringify(Object.keys(selectedProductIds)));
 			const response = await fetch('/dashboard?/addProducts', {
 				method: 'POST',
 				body: formData
@@ -99,9 +101,9 @@
 	}
 
 	// Gérer la validation du ProductSelector
-	function handleProductValidation(event: CustomEvent) {
-		console.log(event);
-		addProducts(event.productIds);
+	function handleProductValidation() {
+		// console.log("handleProductValidation(",event,");");
+		addProducts();
 	}
 
 	// Gérer l'annulation du ProductSelector
@@ -529,7 +531,7 @@
 					</section>
 				</div>
 
-				<!-- Informations légales -->
+				<!-- Production -->
 				<div class="card">
 					<header class="card-header">
 						<h2 class="h3 flex items-center gap-2">
@@ -596,11 +598,30 @@
 <!-- Drawer pour la sélection de produits -->
 <Drawer>
 	{#if $drawerStore.id === 'product-selector'}
-		<ProductSelector 
-			existingProductIds={$drawerStore.meta?.existingProductIds || []}
-			onvalidate={handleProductValidation}
-			oncancel={handleProductCancel}
-		/>
+		<div class="p-6 bg-white border-b border-surface-300">
+			<h2 class="h2 mb-2">Sélectionner des produits</h2>
+			<p class="text-surface-600-300-token">
+				Recherchez et sélectionnez les produits que vous produisez
+			</p>
+		</div>
+		<ProductSelector bind:selectedProductIds={$drawerStore.meta.existingProductIds}/>
+		<!-- Boutons d'action -->
+		<div class="p-6 bg-white border-t border-surface-300 flex justify-end gap-4">
+			<button
+				type="button"
+				class="btn variant-ghost-surface"
+				onclick={handleProductCancel}
+			>
+				Annuler
+			</button>
+			<button type="button"
+				class="btn variant-filled-primary"
+				onclick={handleProductValidation}
+				disabled={selectedProductIds.size === 0}
+			>
+				Valider la sélection ({selectedProductIds.size})
+			</button>
+		</div>
 	{/if}
 </Drawer>
 
