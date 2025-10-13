@@ -46,8 +46,9 @@
 			myfilter = filterByProduct;
 			let someInCache = false;
 			producersFilterByProduct = new Map();
-				console.log("applyFilters() : areasToCheck ",loadedAreas,";");
-			for (const myArea of loadedAreas) {
+			// console.log("applyFilters() : loadedAreas = ",loadedAreas,";");
+			// for (const myArea of loadedAreas) {
+				const myArea = 0;
 				console.log("applyFilters() : area ",myArea,";");
 				let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
 				for (const product of filters.produces.keys()) {
@@ -77,13 +78,15 @@
 						someInCache = true;
 					}
 				}
-			}
+			// }
 			if (someInCache) {
 				displayProducers(producersLoaded);
 			}
 		} else if (filters.category) {
 			console.log("applyFilters(category:",filters.category,");");
 			filterProducersByCategory(filters.category);
+		} else {
+			filterProducersByCategory("");
 		}
 		if (filters.address) {
 			console.log("applyFilters(address:",filters.address,");");
