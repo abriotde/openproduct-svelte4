@@ -48,8 +48,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.session = session;
 
 	if (event.route.id?.startsWith('/(protected)')) {
-		console.log('request protected area but not authentificate');
 		if (!user) {
+			console.log('request protected area but not authentificate');
 			redirect(302, resolveUrl('/auth/sign-in'));
 		}
 		if (!user.verified) {

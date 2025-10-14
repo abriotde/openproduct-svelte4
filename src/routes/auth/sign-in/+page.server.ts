@@ -53,56 +53,49 @@ export const actions: Actions = {
 		}
 
 		// Authentification
-		try {
-			const emailLower = email.toLowerCase();
-			const existingUser = await getUserByEmail(emailLower);
-			if (!existingUser) {
-				setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
-				return fail(400, {
-					form: {
-						data: { email, password },
-						errors: { general: 'The email or password is incorrect.' },
-						valid: false
-					}
-				});
-			}
-
-			if (existingUser.password) {
-				const validPassword = await new Argon2id().verify(
-					existingUser.password,
-					password
-				);
-				if (!validPassword) {
-					setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
-					return fail(400, {
-						form: {
-							data: { email, password },
-							errors: { general: 'The email or password is incorrect.' },
-							valid: false
-						}
-					});
-				} else {
-					// Mot de passe valide - créer la session
-					const session = await lucia.createSession(existingUser.id, {producerId: null});
-					const sessionCookie = lucia.createSessionCookie(session.id);
-					event.cookies.set(sessionCookie.name, sessionCookie.value, {
-						path: '.',
-						...sessionCookie.attributes
-					});
-					setFlash({ type: 'success', message: 'Sign in successful.' }, event);
-					redirect(302, '/dashboard');
-				}
-			}
-		} catch (e) {
-			console.error(e);
-			setFlash({ type: 'error', message: 'The email or password is incorrect.' }, event);
+		const emailLower = email.toLowerCase();
+		const existingUser = await getUserByEmail(emailLower);
+		if (!existingUser) {
+			const message = 'The email or password is incorrect.';
+			setFlash({ type: 'error', message}, event);
 			return fail(400, {
 				form: {
 					data: { email, password },
-					errors: { general: 'The email or password is incorrect.' },
+					errors: { general: message},
 					valid: false
 				}
 			});
+		}
+
+		if (existingUser.password) {
+			const validPassword = await new Argon2id().verify(
+				existingUser.password,
+				password
+			);
+			if (!validPassword) {
+				console.log("Invalid password.")
+				const message = 'The email or password is incorrect.';
+				setFlash({ type: 'error', message}, event);
+				return fail(400, {
+					form: {
+						data: { email, password },
+						errors: { general: message},
+						valid: false
+					}
+				});
+			} else {
+				// Mot de passe valide - créer la session
+				const session = await lucia.createSession(existingUser.id, {producerId: null});
+				const sessionCookie = lucia.createSessionCookie(session.id);
+				event.cookies.set(sessionCookie.name, sessionCookie.value, {
+					path: '.',
+					...sessionCookie.attributes
+				});
+				console.log("Sign in successful ",existingUser.id,".");
+				setFlash({ type: 'success', message: 'Sign in successful.' }, event);
+				console.log("Sign in successful ",existingUser.id," : ok.");
+				redirect(302, '/dashboard');
+			}
 		}
 
 		return {

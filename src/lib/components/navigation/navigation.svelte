@@ -12,8 +12,8 @@
 	// import MyLogo from '$lib/assets/img/logoOpenProduct.png?enhanced';
 	let user: any = $props();
 	let value = $state('/');
+	let userState = $state(user.user);
 	import { resolve } from '$app/paths';
-
 </script>
 
   <Navigation.Rail>
@@ -25,7 +25,7 @@
 		<Navigation.Tile label="Carte" href={resolve("/map")}><MapPin /></Navigation.Tile>
 	{/snippet}
     {#snippet footer()}
-		{#if user}
+		{#if userState}
 			<Navigation.Tile label="Mon Profil" href={resolve("/dashboard")}><IconUserEdit /></Navigation.Tile>
 			<Navigation.Tile label="Deconnexion" onclick={signOut}><IconPlug /></Navigation.Tile>
 		{:else}
