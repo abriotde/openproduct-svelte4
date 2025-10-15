@@ -190,8 +190,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE TABLE public.producers_products (
 	product_id int4 NULL,
-	producer_id text NULL,
+	producer_id int4 NULL,
 	CONSTRAINT producers_products_unique UNIQUE (product_id, producer_id),
 	CONSTRAINT "porduct_id_FK" FOREIGN KEY (product_id) REFERENCES public.products(id),
 	CONSTRAINT producer_id_fk FOREIGN KEY (producer_id) REFERENCES public.producers(id)
 );
+

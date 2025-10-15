@@ -10,9 +10,9 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 
-async function getProducts(producer_id: string) {
+async function getProducts(producer_id: number | null) {
 	console.log("getProducts(",producer_id,")");
-	if(producer_id==""|| producer_id==null) {
+	if(producer_id == null) {
 		return null;
 	}
 	const productResult = await db?.execute(
@@ -81,7 +81,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		errors: {},
 		valid: true
 	};
-	if (locals.session && producer?.id!=null) {
+	if (locals.session && producer?.id != null) {
 		locals.user.producerId = producer.id;
 	}
 	const products = await getProducts(locals.user.producerId);
@@ -165,11 +165,10 @@ export const actions: Actions = {
 					.set(producerData)
 					.where(eq(producerTable.userId, locals.user.id));
 			} else {
-				// Créer un nouveau profil
+				// Créer un nouveau profil - l'ID sera auto-généré par SERIAL
 				await db
 					.insert(producerTable)
 					.values({
-						id: crypto.randomUUID(),
 						...producerData,
 						createdAt: new Date()
 					});
@@ -232,3 +231,4 @@ export const actions: Actions = {
 		}
 	}
 };
+

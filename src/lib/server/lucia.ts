@@ -55,7 +55,7 @@ interface DatabaseUserAttributes {
 	verified: boolean;
 	receiveEmail: boolean;
 	token: string;
-	producerId: string
+	producerId: number
 }
 
 /*interface DatabaseSessionAttributes {
@@ -65,3 +65,4 @@ interface DatabaseUserAttributes {
 const googleRedirectUrl = resolve(`/auth/oauth/google/callback`);
 
 export const googleOauth = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, googleRedirectUrl);
+

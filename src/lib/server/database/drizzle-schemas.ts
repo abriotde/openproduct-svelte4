@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, real } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, real, serial, integer } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const userTable = pgTable('users', {
@@ -13,7 +13,7 @@ export const userTable = pgTable('users', {
 	receiveEmail: boolean('receive_email').notNull().default(true),
 	password: text('password'),
 	token: text('token').unique(),
-	producerId: text('producer_id').unique().notNull(),
+	producerId: integer('producer_id').unique().notNull(),
 	createdAt: timestamp('created_at', {
 		withTimezone: true,
 		mode: 'date'
@@ -39,7 +39,7 @@ export type Session = typeof sessionTable.$inferInsert;
 
 
 export const producerTable = pgTable('producers', {
-    id: text('id').notNull().primaryKey(),
+    id: serial('id').notNull().primaryKey(),
     userId: text('user_id').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
     companyName: text('company_name').notNull(),
     firstName: text('first_name'),
@@ -70,5 +70,6 @@ export const producerTable = pgTable('producers', {
 
 export type Producer = typeof producerTable.$inferInsert;
 export type UpdateProducer = Partial<typeof producerTable.$inferInsert>;
+
 
 
