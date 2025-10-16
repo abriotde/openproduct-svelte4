@@ -4,6 +4,7 @@
 	import { initializeStores, Drawer, getDrawerStore, filter } from '@skeletonlabs/skeleton';
 	import { Search, MapPin, X, CirclePlus, CircleX } from 'lucide-svelte';
 	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
+	import { resolve } from '$app/paths';
 
 	initializeStores();
 	const drawerStore = getDrawerStore();
@@ -470,13 +471,13 @@
 
 		let text = `<h3>${producer.name}</h3>`;
 		if (producer.web) {
-			text += `<a href="${producer.web}" target="_blank">Site web</a><br>`;
+			text = `<a href="${producer.web}" target="_blank">${text}</a><br>`;
 		}
 		if (producer.suspect == 1) {
 			text += '<span style="color:red">Ce producteur semble ne plus exister. Contactez-nous si vous avez des informations.</span>';
 		}
 		text += `<p>${producer.txt}</p>`;
-		
+		text += "<a href='"+resolve("/")+"producers/producer_"+producer.id+".html' target='producer'>+ d'infos</a><br>";
 		if (producer.email) {
 			text += `Email: <a href="mailto:${producer.email}">${producer.email}</a><br>`;
 		}
