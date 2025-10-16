@@ -1,17 +1,14 @@
 #!/bin/env julia
-# Script to generate JSON list of producer's id by product's id. It allow a quick filter on map.
+#=
+# Script to generate JSON list of producer's id by product's id. It allow a quick filter by product on /map.
 # 
+=#
 
 import JSON, DBInterface, CSV, FunSQL, LibPQ
 using Tables
-using TOML
 
-conffile = "../.env.local"
-conf = TOML.parsefile(conffile)
-
-DATABASE_NAME = conf["DATABASE_NAME"]
-DATABASE_USER = conf["DATABASE_USER"]
-DATABASE_PASSWORD = conf["DATABASE_PASSWORD"]
+include("connect.jl")
+cnx = get_connection()
 
 function write_product(id::Int32, name::String)
 	println("Product ",name,", n°", id)
@@ -41,11 +38,6 @@ function write_product(id::Int32, name::String)
 end
 
 # Get min/max points
-connstr = "host=localhost port=5432 dbname=$DATABASE_NAME user=$DATABASE_USER password=$DATABASE_PASSWORD";
-# conn = LibPQ.Connection(connstr)
-# cnx = LibPQ.Connection(connstr)
-cnx = DBInterface.connect(LibPQ.Connection, connstr)
-println("Connected")
 
 sql = "SELECT id, name FROM products"
 rows = DBInterface.execute(cnx, sql)
