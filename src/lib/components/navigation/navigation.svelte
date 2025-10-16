@@ -12,7 +12,7 @@
 	// import MyLogo from '$lib/assets/img/logoOpenProduct.png?enhanced';
 	let user: any = $props();
 	let value = $state('/');
-	let userState = $state(user.user);
+	let userState = $derived(user.user);
 	import { resolve } from '$app/paths';
 </script>
 
@@ -34,3 +34,4 @@
       <Navigation.Tile labelExpanded="A propos" href={resolve("/about")} title="settings"><IconSettings /></Navigation.Tile>
     {/snippet}
   </Navigation.Rail>
+
