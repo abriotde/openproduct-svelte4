@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import db from '$lib/server/database/drizzle.js';
 import { producerTable } from '$lib/server/database/drizzle-schemas.js';
-import { eq } from 'drizzle-orm';
+import { eq, and, type SQL } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
 import { resolve } from '$app/paths';
 import { producerSchema } from '$lib/config/zod-schemas.js';
@@ -26,7 +26,7 @@ async function getProducts(producer_id: number | null) {
 	return rows;
 }
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	if (!locals.user) {
 		console.log('request Dashboard but not authentificate');
 		redirect(302, resolve('/auth/sign-in'));
@@ -36,11 +36,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	// Récupérer le profil producteur existant
+	let where:SQL|undefined = eq(producerTable.userId, locals.user.id);
+	const producerId = url.searchParams.get('q') || '';
+	if (producerId.length>0) {
+		where = and(where, eq(producerTable.id, producerId));
+	}
 	const existingProducer = await db
-		.select()
-		.from(producerTable)
-		.where(eq(producerTable.userId, locals.user.id))
-		.limit(1);
+			.select()
+			.from(producerTable)
+			.where(where);
+	if (existingProducer.length>1) {
+		redirect(resolve('/dashboard/choose'), existingProducer);
+	}
 	const producer = existingProducer[0] || null;
 
 	// Initialiser le formulaire avec les données existantes
