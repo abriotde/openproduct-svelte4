@@ -19,12 +19,8 @@
   <Navigation.Rail>
     {#snippet header()}
     	<Navigation.Tile href="#" title="Menu"><IconMenu /></Navigation.Tile>
-    {/snippet}
-    {#snippet tiles()}
 		<Navigation.Tile label="Accueil" href={resolve("/")}><IconFolder /></Navigation.Tile>
 		<Navigation.Tile label="Carte" href={resolve("/map")}><MapPin /></Navigation.Tile>
-	{/snippet}
-    {#snippet footer()}
 		{#if userState}
 			<Navigation.Tile label="Mon Profil" href={resolve("/dashboard")}><IconUserEdit /></Navigation.Tile>
 			<Navigation.Tile label="Deconnexion" onclick={signOut}><IconPlug /></Navigation.Tile>
@@ -33,5 +29,9 @@
 		{/if}
       <Navigation.Tile labelExpanded="A propos" href={resolve("/about")} title="settings"><IconSettings /></Navigation.Tile>
     {/snippet}
+    <!-- {#snippet tiles()}
+	{/snippet}
+    {#snippet footer()}
+    {/snippet} -->
   </Navigation.Rail>
 
