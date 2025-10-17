@@ -42,7 +42,7 @@
 		try {
 			const formData = new FormData();
 			formData.append('id', product_id.toString());
-			const response = await fetch('/dashboard?/removeProduct', {
+			const response = await fetch(resolve('/dashboard')+'?/removeProduct', {
 				method: 'POST',
 				body: formData
 			});
@@ -84,7 +84,7 @@
 			const productIds = Array.from(selectedProductIds.keys());
 			console.log("addProducts2(",productIds,")")
 			formData.append('productIds', JSON.stringify(productIds));
-			const response = await fetch('/dashboard?/addProducts', {
+			const response = await fetch(resolve('/dashboard')+'?/addProducts', {
 				method: 'POST',
 				body: formData
 			});

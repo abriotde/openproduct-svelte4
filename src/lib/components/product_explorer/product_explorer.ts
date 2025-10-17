@@ -1,11 +1,12 @@
 import { deserialize } from '$app/forms';
+import { resolve } from '$app/paths';
 
 // Voir l'arbre d'un produit
 export async function getProductTree(productId: number) {
 	try {
 		const formData = new FormData();
 		formData.append('productId', productId.toString());
-		const response = await fetch('/product?/getProductTree', {
+		const response = await fetch(resolve('/product')+'?/getProductTree', {
 			method: 'POST',
 			body: formData
 		});

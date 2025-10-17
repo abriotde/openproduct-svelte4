@@ -2,7 +2,8 @@
 	import { Search, Package, CircleAlert, Check, ArrowRight } from 'lucide-svelte';
 	import ProductExplorer from '$lib/components/product_explorer/product_explorer.svelte'
   	import { onMount } from 'svelte';
-	
+	import { resolve } from '$app/paths';
+
 	let {selectedProductIds = $bindable()} = $props();
 
 	let searchQuery = $state('');
@@ -18,7 +19,7 @@
 		searchResults = [];
 		try {
 			// Utiliser l'endpoint existant de la page product
-			const response = await fetch(`/product/api/search?q=${encodeURIComponent(searchQuery)}`);
+			const response = await fetch(resolve(`/product/api/search`)+`?q=${encodeURIComponent(searchQuery)}`);
 			
 			if (response.ok) {
 				const data = await response.json();

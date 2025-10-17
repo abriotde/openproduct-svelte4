@@ -2,6 +2,7 @@
 	import { deserialize } from '$app/forms';
 	import { Package, Check } from 'lucide-svelte';
   	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	let {loading = $bindable(), selectedProduct = $bindable(), productId, selectedProductIds = $bindable()} = $props();
 
@@ -11,7 +12,7 @@
 		try {
 			const formData = new FormData();
 			formData.append('productId', productId.toString());
-			const response = await fetch('/product?/getProductTree', {
+			const response = await fetch(resolve('/product')+'?/getProductTree', {
 				method: 'POST',
 				body: formData
 			});
