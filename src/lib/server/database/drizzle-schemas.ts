@@ -50,6 +50,7 @@ export const producerTable = pgTable('producers', {
     city: text('city'),
     address: text('address'),
     category: text('category'),
+    email: text('email'),
     phoneNumber1: text('phone_number_1'),
     phoneNumber2: text('phone_number_2'),
     siretNumber: text('siret_number'),

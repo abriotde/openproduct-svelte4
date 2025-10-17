@@ -4,10 +4,11 @@ import { lucia } from '$lib/server/lucia';
 import { Argon2id } from 'oslo/password';
 import { getUserByEmail } from '$lib/server/database/user-model';
 import type { PageServerLoad, Actions } from './$types.js';
+import { resolve } from '$app/paths';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		redirect(302, '/dashboard');
+		redirect(302, resolve('/dashboard'));
 	}
 	return {
 		form: {
@@ -94,7 +95,7 @@ export const actions: Actions = {
 				console.log("Sign in successful ",existingUser.id,".");
 				setFlash({ type: 'success', message: 'Sign in successful.' }, event);
 				console.log("Sign in successful ",existingUser.id," : ok.");
-				redirect(302, '/dashboard');
+				redirect(302, resolve('/dashboard'));
 			}
 		}
 

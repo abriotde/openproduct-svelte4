@@ -2,13 +2,15 @@ import { fail, redirect } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
 import { Argon2id } from 'oslo/password';
 import { lucia } from '$lib/server/lucia';
-import { createUser } from '$lib/server/database/user-model';
+import { createUser, tryLink2Producer } from '$lib/server/database/user-model';
 import { sendVerificationEmail } from '$lib/config/email-messages';
 import type { PageServerLoad, Actions } from './$types.js';
+import { resolve } from '$app/paths';
+import { sql } from 'drizzle-orm';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		redirect(302, '/dashboard');
+		redirect(302, resolve('/dashboard'));
 	}
 	return {
 		form: {
@@ -80,7 +82,7 @@ export const actions: Actions = {
 			const id = crypto.randomUUID();
 			const user = {
 				id: id,
-				email: data.email.toLowerCase(),
+				email:data.email.toLowerCase(),
 				firstName: data.firstName,
 				lastName: data.lastName,
 				password: password,
@@ -93,6 +95,7 @@ export const actions: Actions = {
 			};
 			const newUser = await createUser(user);
 			if (newUser) {
+				await tryLink2Producer(newUser);
 				await sendVerificationEmail(newUser.email, token);
 				const session = await lucia.createSession(newUser.id, {producerId: null});
 				const sessionCookie = lucia.createSessionCookie(session.id);

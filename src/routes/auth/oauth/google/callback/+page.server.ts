@@ -4,6 +4,8 @@ import { googleOauth, lucia } from '$lib/server/lucia';
 import { OAuth2RequestError } from 'arctic';
 import { sendVerificationEmail } from '$lib/config/email-messages';
 import { setFlash } from 'sveltekit-flash-message/server';
+import { resolve } from '$app/paths';
+
 //import type { RequestEvent } from '@sveltejs/kit';
 
 type GoogleUser = {
@@ -19,7 +21,7 @@ type GoogleUser = {
 
 export async function load(event) {
 	if (event.locals.user) {
-		redirect(302, '/dashboard');
+		redirect(302, resolve('/dashboard'));
 	}
     const url = event.url;
 	console.log("URL:", url);
@@ -82,7 +84,7 @@ export async function load(event) {
 					);
 				}
 			}
-			return redirect(302, '/dashboard');
+			return redirect(302, resolve('/dashboard'));
 		} catch (e) {
 			if (e instanceof OAuth2RequestError && e.message === 'bad_verification_code') {
 				// invalid code

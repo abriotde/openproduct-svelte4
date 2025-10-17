@@ -1,11 +1,12 @@
 import { redirect } from '@sveltejs/kit';
 import { generateState, generateCodeVerifier } from 'arctic';
 import { googleOauth } from '$lib/server/lucia';
+import { resolve } from '$app/paths';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const load = async (event) => {
 	if (event.locals.user) {
-		redirect(302, '/dashboard');
+		redirect(302, resolve('/dashboard'));
 	}
 
 	const state = generateState();
@@ -30,5 +31,5 @@ export const load = async (event) => {
 		maxAge: 60 * 10 // 10 min
 	});
 
-	return redirect(302, url);
+	return redirect(302, resolve(url));
 };
