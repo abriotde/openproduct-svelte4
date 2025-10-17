@@ -10,7 +10,7 @@
 	/>
 </svelte:head>
 
-<div class="flex-1">
+<div class="container mx-auto py-8 px-4">
 	<section class="container grid items-center gap-6">
 		<div class="flex max-w-[980px] flex-col items-start gap-2">
 			<h1 class="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
@@ -20,13 +20,65 @@
 			<p>Téléphone: <a href="tel:+33985104873">(+33)9 85 10 48 73</a></p>
 			<p>Courriel: <a href="mailto:contact@openproduct.fr">contact@openproduct.fr</a></p>
 			<br>
-			<p>©️ All rights reserved for the OpenProduct name, logo and overall branding.</p>
+			<p>©️ Tous droits réservés sur le nom OpenProduct, le logo et tout ce qui tourne autour de la marque. Pour le reste, tout est ouvert.</p>
+		</div>
+		<div class="flex max-w-[980px] flex-col items-start gap-2">
+			<h1 class="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
+				Bienfaiteurs
+			</h1>
+			<p>Voici la liste des personnes (entreprise ou personnes physiques) qui ont données (et acceptées d'apparaitre) au cours des 12 derniers mois.</p>
+			<table>
+				<caption>
+					Liste des Donateurs
+				</caption>
+				<thead>
+					<tr><th>Nom</th><th>Montant</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Albéric de la Crochais</td><td>350 euros</td></tr>
+				</tbody>
+				<tfoot>
+					<tr><th>Nom</th><th>Montant</th></tr>
+				</tfoot>
+			</table>
 		</div>
 	</section>
 </div>
 
 <style>
-a {
-	color: cyan;
-}
+	a {
+		color: blue;
+	}
+	table {
+		border-collapse: collapse;
+		border: 2px solid rgb(140 140 140);
+		font-family: sans-serif;
+		font-size: 0.8rem;
+		letter-spacing: 1px;
+	}
+
+	caption {
+		caption-side: bottom;
+		padding: 10px;
+		font-weight: bold;
+	}
+	thead, tfoot {
+		background-color: rgb(228 240 245);
+	}
+	th, td {
+		border: 1px solid rgb(160 160 160);
+		padding: 8px 10px;
+	}
+	td:last-of-type {
+		text-align: center;
+	}
+	tbody > tr:nth-of-type(even) {
+		background-color: rgb(237 238 242);
+	}
+	tfoot th {
+		text-align: right;
+	}
+	tfoot td {
+		font-weight: bold;
+	}
 </style>

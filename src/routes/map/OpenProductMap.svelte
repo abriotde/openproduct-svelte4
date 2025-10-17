@@ -1,11 +1,113 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	// import { Sidepanel } from 'svelte-mui'; // https://svelte-mui.vercel.app/side-panel
-	import { page } from "$app/state";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js"; // https://shadcn-svelte.com/docs/components/sidebar : $ bun x shadcn-svelte@latest add sidebar
- 
-  	let open = $state(false);
+	import { initializeStores, Drawer, getDrawerStore, filter } from '@skeletonlabs/skeleton';
+	import { Search, MapPin, X, CirclePlus, CircleX } from 'lucide-svelte';
+	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
+	import { resolve } from '$app/paths';
+
+	initializeStores();
+	const drawerStore = getDrawerStore();
+	let filters = $state({
+		category: '',
+		address: '',
+		produces: new Map<number, string>()
+	});
+	
+	function openFilters() {
+		drawerStore.open({
+			id: 'filter-drawer',
+			position: 'bottom',
+			height: 'h-auto max-h-[80vh]',
+			bgDrawer: 'bg-surface-50-900-token',
+			bgBackdrop: 'bg-surface-backdrop-token',
+			padding: 'p-0'
+		});
+	}
+
+	function closeFilters() {
+		drawerStore.close();
+	}
+
+	function resetFilters() {
+		filters = {
+			category: '',
+			address: '',
+			produces: new Map<number, string>()
+		};
+		if (filterSelect) filterSelect.value = '';
+		if (addressInput) addressInput.value = '';
+		filterProducersByCategory('');
+	}
+
+	function applyFilters() {
+		console.log("applyFilters();");
+		if (filters.produces.size>0) {
+			console.log("applyFilters(products:",filters.produces,");");
+			myfilter = filterByProduct;
+			let someInCache = false;
+			producersFilterByProduct = new Map();
+			// console.log("applyFilters() : loadedAreas = ",loadedAreas,";");
+			// for (const myArea of loadedAreas) {
+				const myArea = 0;
+				console.log("applyFilters() : area ",myArea,";");
+				let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+				for (const product of filters.produces.keys()) {
+					const producers = datas.get(product);
+					if (!producers) {
+						fetch(resolve('/data/products')+'/p'+product+'.json')
+							.then(response => response.json())
+							.then(producers => {
+								let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+								datas.set(product, producers);
+								productsByAreas.set(myArea, datas);
+								for (const p of producers) {
+									producersFilterByProduct.set(p, true);
+								}
+								displayProducers(producersLoaded);
+							})
+							.catch(error => {
+								console.error(
+									'Erreur lors du chargement du département ',
+									myArea, ' for product ', product, ' : ', error
+								);
+							});
+					} else {
+						for (const p of producers) {
+							producersFilterByProduct.set(p, true);
+						}
+						someInCache = true;
+					}
+				}
+			// }
+			if (someInCache) {
+				displayProducers(producersLoaded);
+			}
+		} else if (filters.category) {
+			console.log("applyFilters(category:",filters.category,");");
+			filterProducersByCategory(filters.category);
+		} else {
+			filterProducersByCategory("");
+		}
+		if (filters.address) {
+			console.log("applyFilters(address:",filters.address,");");
+			searchAddress();
+		}
+		closeFilters();
+	}
+	// Gérer la validation du ProductSelector
+	function handleProductValidation(event: CustomEvent) {
+		console.log("handleProductValidation(",event,");");
+	}
+	async function removeProduct(product_id: number) {
+		// Créer un nouveau Map pour déclencher la réactivité
+		const newMap = new Map(filters.produces);
+		if (newMap.has(product_id)) {
+			newMap.delete(product_id);
+		}
+		filters.produces = newMap;
+	}
+
 
  	let mapContainer = $state<HTMLDivElement>();
 	let filterSelect = $state<HTMLSelectElement>();
@@ -19,14 +121,12 @@
 	let areas: any;
 	let loadedAreas: number[] = [];
 	let loadingAreas: number[] = [];
-	let areasToCheck: number[] | null = null;
-	let categoriesFilters: any = null;
+	let areasToCheck: number[]|null = null;
+	let productsByAreas: Map<number,Map<number, number[]>> = new Map(); // Map<AreaId, Map<ProductId, Producers[]>>
+	let producersFilterByProduct: Map<number, boolean> = new Map();
 	let filterChar = "";
-	let filterProduce: any = {};
-	let filterProducesLoaded: any = {};
 	let markersLoaded: any = {};
 	let producersLoaded: any[] = [];
-	let producesList: any[] = [];
 	let mapInitialized = false;
 	let mapIcons: any = {};
 
@@ -272,7 +372,6 @@
 		for (const areaId of areaIds) {
 			if (!loadingAreas.includes(areaId) && !loadedAreas.includes(areaId)) {
 				loadingAreas.push(areaId);
-				
 				try {
 					const response = await fetch(`/data/producers_${areaId}.json`);
 					if (response.ok) {
@@ -372,13 +471,13 @@
 
 		let text = `<h3>${producer.name}</h3>`;
 		if (producer.web) {
-			text += `<a href="${producer.web}" target="_blank">Site web</a><br>`;
+			text = `<a href="${producer.web}" target="_blank">${text}</a><br>`;
 		}
 		if (producer.suspect == 1) {
 			text += '<span style="color:red">Ce producteur semble ne plus exister. Contactez-nous si vous avez des informations.</span>';
 		}
 		text += `<p>${producer.txt}</p>`;
-		
+		text += "<a href='"+resolve("/")+"producers/producer_"+producer.id+".html' target='producer'>+ d'infos</a><br>";
 		if (producer.email) {
 			text += `Email: <a href="mailto:${producer.email}">${producer.email}</a><br>`;
 		}
@@ -438,6 +537,9 @@
 		return str.includes(middle);
 	}
 
+	const filterByProduct = (producer: any) => {
+		return producersFilterByProduct.get(producer.id) || false;
+	};
 	const charFilter = (producer: any) => {
 		let inverse = false;
 		let filter = filterChar;
@@ -454,16 +556,14 @@
 		return false;
 	};
 
-	async function filterProducers(filter: string) {
-		if (DEBUG) console.log("filterProducers(", filter, ")");
-		
+	async function filterProducersByCategory(filter: string) {
+		if (DEBUG) console.log("filterProducersByCategory(", filter, ")");
 		filterChar = filter;
 		if (produceFilterInput) {
 			produceFilterInput.value = "";
 		}
-
 		if (filter == "") {
-			console.log("filterProducers(", filter, ") : no category filter");
+			console.log("filterProducersByCategory(", filter, ") : no category filter");
 			myfilter = noFilter;
 			if (subfilterDiv) {
 				subfilterDiv.innerHTML = "";
@@ -474,7 +574,6 @@
 				subfilterDiv.innerHTML = "";
 			}
 		}
-
 		// Réappliquer le filtre sur tous les producteurs chargés
 		displayProducers(producersLoaded);
 	}
@@ -500,9 +599,9 @@
 
 	// Recherche d'adresse
 	async function searchAddress() {
-		if (!addressInput || !addressInput.value.trim()) return;
+		const address = filters.address || (addressInput ? addressInput.value.trim() : '');
+		if (!address) return;
 
-		const address = addressInput.value.trim();
 		const encodedAddress = encodeURIComponent(address);
 		const url = `https://api-adresse.data.gouv.fr/search/?q=${encodedAddress}`;
 
@@ -527,7 +626,7 @@
 	function handleFilterChange() {
 		if (!filterSelect) return;
 		const selectedValue = filterSelect.value;
-		filterProducers(selectedValue);
+		filterProducersByCategory(selectedValue);
 	}
 
 	function handleKeyPress(event: KeyboardEvent) {
@@ -537,84 +636,137 @@
 	}
 </script>
 
-<Sidebar.Provider bind:open>
-	<Sidebar.Root>
-		<Sidebar.Content>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Catégories</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<select 
-						bind:this={filterSelect}
-						id="categoryFilter" 
-						class="border border-gray-300 rounded px-3 py-1"
-						onchange={handleFilterChange}
-					>
-						<option value="">Toutes</option>
-						<option value="A">Alimentaire</option>
-						<option value="_A">Tout sauf alimentaire</option>
-						<option value="H">Habillement</option>
-						<option value="3">Produits ménagers / de beauté / médicinal</option>
-						<option value="4">Plantes (Fleurs, arbustes)</option>
-						<option value="O">Artisans / Artistes</option>
-						<option value="I">Petites et moyennes entreprises (PME)</option>
-					</select>
-					<div bind:this={subfilterDiv} id="subfilter"></div>
-				</Sidebar.GroupContent>
-   			</Sidebar.Group>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Adresse</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<input 
-						bind:this={addressInput}
-						id="addressSearch"
-						type="text" 
-						placeholder="Rechercher une adresse..."
-						class="border border-gray-300 rounded px-3 py-1"
-						onkeypress={handleKeyPress}
-					>
-					<button 
-						type="button"
-						class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-						onclick={searchAddress}
-					>
-						Rechercher
-					</button>
-					<button 
-						bind:this={geolocationButton}
-						type="button"
-						class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-						onclick={getCurrentLocation}
-					>Ma position
-					</button>
-				</Sidebar.GroupContent>
-   			</Sidebar.Group>
-   			<Sidebar.Group>
-				<Sidebar.GroupLabel>Produit</Sidebar.GroupLabel>
-      			<Sidebar.GroupContent>
-					<input 
-						bind:this={produceFilterInput}
-						id="produceFilter"
-						type="text" 
-						placeholder="Rechercher un produit..."
-						class="border border-gray-300 rounded px-3 py-1"
-					>
-				</Sidebar.GroupContent>
-			</Sidebar.Group>
-		</Sidebar.Content>
-	</Sidebar.Root>
-	<main class="w-full">
-		<Sidebar.Trigger />
+<svelte:head>
+	<title>Carte des producteurs</title>
+</svelte:head>
 
-		<div bind:this={mapContainer} 
-			class="w-full h-96 md:h-[600px] border border-gray-300 rounded-lg"
-			style="min-height: 400px;">
+<div class="relative w-full h-screen overflow-hidden">
+	<!-- Carte en plein écran -->
+	<div bind:this={mapContainer} class="absolute inset-0 z-0"></div>
+
+	<!-- Boutons flottants -->
+	<div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+		<button type="button"
+				class="btn variant-filled-primary shadow-xl"
+				onclick={openFilters}>
+			<Search size={20} />
+			<span>Filtres</span>
+		</button>
+	</div>
+</div>
+
+<!-- Drawer de filtres -->
+<Drawer>
+	{#if $drawerStore.id === 'filter-drawer'}
+		<div class="flex flex-col h-full bg-surface-50-900-token">
+			<!-- Header -->
+			<header class="bg-primary-500 text-white p-4 flex items-center justify-between">
+				<h2 class="h3 font-bold">Filtrer les producteurs</h2>
+				<button type="button"
+					class="btn-icon variant-filled hover:variant-filled-error"
+					onclick={closeFilters}>
+					<X size={24} />
+				</button>
+			</header>
+
+			<!-- Contenu des filtres -->
+			<div class="flex-1 overflow-y-auto p-6">
+				<div class="max-w-2xl mx-auto space-y-6">
+					
+					<!-- Category -->
+					<label class="label">
+						<span class="font-semibold mb-2">Catégorie de producteur</span>
+						<select id="categoryFilter" 
+							bind:value={filters.category}
+							bind:this={filterSelect}
+							class="border border-gray-300 rounded px-3 py-1"
+							onchange={handleFilterChange}
+						>
+							<option value="">Toutes</option>
+							<option value="A">Alimentaire</option>
+							<option value="_A">Tout sauf alimentaire</option>
+							<option value="H">Habillement</option>
+							<option value="3">Produits ménagers / de beauté / médicinal</option>
+							<option value="4">Plantes (Fleurs, arbustes)</option>
+							<option value="O">Artisans / Artistes</option>
+							<option value="I">Petites et moyennes entreprises (PME)</option>
+						</select>
+						<div bind:this={subfilterDiv} id="subfilter"></div>
+					</label>
+
+					<!-- Recherche d'adresse -->
+					<label class="label">
+						<span class="font-semibold mb-2 flex items-center gap-2">
+							<MapPin size={20} />
+							<span>Rechercher une adresse</span>
+						</span>
+						<div class="input-group input-group-divider grid-cols-[1fr_auto]">
+							<input class="input" 
+								id="addressSearch"
+								type="text" 
+								bind:value={filters.address}
+								bind:this={addressInput}
+								onkeypress={handleKeyPress}
+								placeholder="Ville, code postal, adresse..." 
+							/>
+							<button 
+								type="button" 
+								class="variant-filled-primary"
+								onclick={searchAddress}>
+								<Search size={20} />
+							</button>
+						</div>
+					</label>
+
+					<!-- Sous-filtres (pour les produits spécifiques) -->
+					<label class="label">
+						<span class="font-semibold mb-2">Produit</span>
+							{#if filters.produces && filters.produces.size>0}
+								{#each [...filters.produces] as [id, name]}
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
+											<span class="font-medium">{name}</span>
+											<button onclick={() => removeProduct(id)} class="text-xs text-surface-500">
+												<CircleX />
+											</button>
+										</div>
+									</div>
+								{/each}
+							{:else}
+								<div>Aucun produits de définis</div>
+							{/if}
+							<ProductSelector bind:selectedProductIds={filters.produces}/>
+					</label>
+				</div>
+			</div>
+
+			<!-- Footer avec boutons -->
+			<footer class="border-t border-surface-300-600-token p-4 flex gap-3">
+				<button type="button"
+						class="btn variant-ghost-surface flex-1"
+						onclick={resetFilters}>
+					Réinitialiser
+				</button>
+				<button type="button"
+						class="btn variant-filled-primary flex-1"
+						onclick={applyFilters}>
+					Appliquer
+				</button>
+			</footer>
 		</div>
-	</main>
-</Sidebar.Provider>
+	{/if}
+</Drawer>
+
 <style>
 	:global(.openproduct-pin) {
 		background: transparent !important;
 		border: none !important;
 	}
+	
+	/* S'assurer que Leaflet prend toute la hauteur */
+	:global(.leaflet-container) {
+		height: 100%;
+		width: 100%;
+	}
 </style>
-

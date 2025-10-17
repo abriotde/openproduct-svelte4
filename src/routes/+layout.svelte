@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import '../app.pcss';
-	import { page } from '$app/stores';
-	import { ModeWatcher } from 'mode-watcher';
+	import { page } from '$app/state';
 	import { getFlash } from 'sveltekit-flash-message';
-	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import Navigation from '$lib/components/navigation/navigation.svelte';
 
@@ -27,11 +25,11 @@
 	}
 </script>
 
-<ModeWatcher />
-<Toaster richColors />
-<div class="relative flex min-h-screen flex-col">
-	<Navigation {user} />
-	<div class="mt-8 md:mt-12">
-		<slot />
+<main style="min-height: 100vh; overflow-y: auto;">
+	<div class="card border-surface-100-900 grid h-[640px] w-full grid-cols-[auto_1fr] border-[1px]">
+		<Navigation {user} />
+		<div class="flex items-center justify-center">
+			<slot />
+		</div>
 	</div>
-</div>
+</main>

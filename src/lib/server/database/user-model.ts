@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import db from '$lib/server/database/drizzle';
-import { userTable } from '$lib/server/database/drizzle-schemas';
+import { producerTable, userTable } from '$lib/server/database/drizzle-schemas';
 import type { User, UpdateUser } from '$lib/server/database/drizzle-schemas';
+import { getProducerByEmail } from '$lib/server/database/producer-model'
 
 export const getUserByEmail = async (email: string) => {
 	const user = await db.select().from(userTable).where(eq(userTable.email, email));
@@ -36,5 +37,13 @@ export const createUser = async (user: User) => {
 		return null;
 	} else {
 		return result[0];
+	}
+};
+
+export const tryLink2Producer = async (user: User) => {
+	const producer = await getProducerByEmail(user.email);
+	if (producer) {
+		db?.update(userTable).set({producerId:producer.id});
+		db?.update(producerTable).set({userId:user.id});
 	}
 };

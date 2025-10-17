@@ -1,5 +1,5 @@
 import { dev } from '$app/environment';
-export const BASE_URL = dev ? 'http://localhost:5173' : 'https://openproduct.fr/app';
+export const BASE_URL = dev ? 'http://localhost:5173/' : 'https://openproduct.fr/';
 export const APP_NAME = 'OpenProduct';
 export const CONTACT_EMAIL = 'contact@openproduct.fr';
 export const DOMAIN = 'openproduct.fr';

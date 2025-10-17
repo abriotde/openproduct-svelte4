@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Loader2 } from 'lucide-svelte';
+	import { Loader } from 'lucide-svelte';
 
 	interface Props {
 		data: { result: { heading?: string; message?: string } };
@@ -18,7 +18,7 @@
 		{#if data.result?.message}
 			<p class="max-w-[700px] text-lg text-muted-foreground">{@html data.result.message}</p>
 		{:else}
-			<Loader2 class="mr-2 h-12 w-12 animate-spin" />
+			<Loader class="mr-2 h-12 w-12 animate-spin" />
 		{/if}
 	</div>
 </section>

@@ -1,22 +1,23 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { producerSchema } from '$lib/config/zod-schemas.js';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
-	import { AlertCircle, CheckCircle2, User, Building2, MapPin, Phone, Globe, Hash } from 'lucide-svelte';
-	import type { PageData } from './$types.js';
+	import { CircleAlert, CircleCheck, User, Building2, MapPin, Phone, Globe, Hash, CirclePlus, CircleX } from 'lucide-svelte';
+	import { deserialize } from '$app/forms';
+ 	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
+	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
+	
+	initializeStores();
+	const drawerStore = getDrawerStore();
 
-	export let data: PageData;
-
+	let { data } = $props();
+	let showSuccessMessage = $state(false);
+	let products = $state(data.products || []);
+	let selectedProductIds:Map<number, string> = $state(new Map());
 	const { form, errors, enhance, submitting, message } = superForm(
-		data.form,
+		data.form.data,
 		{
-			validators: zodClient(producerSchema),
+			// validators: zodClient(producerSchema),
 			resetForm: false,
 			onUpdated: ({ form }) => {
 				if (form.valid) {
@@ -25,11 +26,10 @@
 						showSuccessMessage = false;
 					}, 5000);
 				}
-			}
+			},
+			dataType: 'json'
 		}
 	);
-
-	let showSuccessMessage = false;
 
 	const categories = [
 		{ value: 'A', label: 'Alimentaire', color: 'bg-green-100 text-green-800' },
@@ -38,6 +38,80 @@
 		{ value: 'P', label: 'Produits ménagers / beauté', color: 'bg-red-100 text-red-800' },
 		{ value: 'I', label: 'PME', color: 'bg-cyan-100 text-cyan-800' }
 	];
+	async function removeProduct(product_id: number) {
+		try {
+			const formData = new FormData();
+			formData.append('id', product_id.toString());
+			const response = await fetch(resolve('/dashboard')+'?/removeProduct', {
+				method: 'POST',
+				body: formData
+			});
+			/** @type {import('@sveltejs/kit').ActionResult} */
+			const result = deserialize(await response.text());
+			if (result.type === 'success' && result.data) {
+				console.log("removeProduct() => ", result.data);
+				products = result.data; // Mise à jour de la variable $state
+			} else {
+				console.error('removeProduct() : Error with status : ', result.status);
+				return null;
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+		} finally {
+		}
+	}
+	// Ouvrir le drawer de sélection de produits
+	function openProductSelector() {
+		const selectedProductIds = new Map<number, string>();
+		products?.forEach(p => selectedProductIds.set(p.id, p.name));
+		drawerStore.open({
+			id: 'product-selector',
+			position: 'right',
+			width: 'w-full md:w-3/4 lg:w-2/3',
+			padding: 'p-0',
+			bgDrawer: 'bg-surface-50',
+			meta: {
+				existingProductIds: selectedProductIds
+			}
+		});
+		// searchProducts();
+	}
+	// Ajouter des produits sélectionnés
+	async function addProducts() {
+		console.log("addProducts(",selectedProductIds,")")
+		try {
+			const formData = new FormData();
+			const productIds = Array.from(selectedProductIds.keys());
+			console.log("addProducts2(",productIds,")")
+			formData.append('productIds', JSON.stringify(productIds));
+			const response = await fetch(resolve('/dashboard')+'?/addProducts', {
+				method: 'POST',
+				body: formData
+			});
+			
+			const result = deserialize(await response.text());
+			if (result.type === 'success' && result.data) {
+				console.log("addProducts() => ", result.data);
+				products = result.data; // Mise à jour de la variable $state
+				drawerStore.close();
+			} else {
+				console.error('addProducts() : Error with status : ', result.status);
+			}
+		} catch (err) {
+			console.error('Erreur:', err);
+		}
+	}
+
+	// Gérer la validation du ProductSelector
+	function handleProductValidation() {
+		// console.log("handleProductValidation(",event,");");
+		addProducts();
+	}
+
+	// Gérer l'annulation du ProductSelector
+	function handleProductCancel() {
+		drawerStore.close();
+	}
 </script>
 
 <svelte:head>
@@ -48,395 +122,508 @@
 	<div class="max-w-4xl mx-auto">
 		<!-- En-tête -->
 		<div class="mb-8">
-			<h1 class="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-			<p class="text-muted-foreground mt-2">
+			<h1 class="h1">Tableau de bord</h1>
+			<p class="text-surface-600-300-token mt-2">
 				Gérez votre profil de producteur et vos informations publiques
 			</p>
 		</div>
 
 		<!-- Message de succès -->
 		{#if showSuccessMessage}
-			<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-				<CheckCircle2 class="h-5 w-5 text-green-600" />
-				<span class="text-green-800">Profil sauvegardé avec succès !</span>
-			</div>
+			<aside class="alert variant-filled-success mb-6">
+				<div class="alert-message flex items-center gap-2">
+					<CircleCheck class="h-5 w-5" />
+					<span>Profil sauvegardé avec succès !</span>
+				</div>
+			</aside>
 		{/if}
 
 		<!-- Message d'erreur global -->
 		{#if $message}
-			<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-				<AlertCircle class="h-5 w-5 text-red-600" />
-				<span class="text-red-800">{$message}</span>
-			</div>
+			<aside class="alert variant-filled-error mb-6">
+				<div class="alert-message flex items-center gap-2">
+					<CircleAlert class="h-5 w-5" />
+					<span>{$message}</span>
+				</div>
+			</aside>
 		{/if}
 
 		<!-- Informations utilisateur -->
-		<Card class="mb-8">
-			<CardHeader>
-				<CardTitle class="flex items-center gap-2">
+		<div class="card mb-8">
+			<header class="card-header">
+				<h2 class="h3 flex items-center gap-2">
 					<User class="h-5 w-5" />
 					Informations du compte
-				</CardTitle>
-				<CardDescription>
+				</h2>
+				<p class="text-surface-600-300-token mt-1">
 					Connecté en tant que {data.user.firstName} {data.user.lastName}
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+				</p>
+			</header>
+			<section class="card-body p-4">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 					<div>
 						<span class="font-medium">Email :</span> {data.user.email}
 					</div>
 					<div>
 						<span class="font-medium">Statut :</span>
-						<Badge variant={data.producer ? 'default' : 'secondary'} class="ml-2">
+						<span class="badge {data.producer ? 'variant-filled-primary' : 'variant-soft-surface'} ml-2">
 							{data.producer ? 'Profil producteur créé' : 'Nouveau producteur'}
-						</Badge>
+						</span>
 					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</section>
+		</div>
 
 		<!-- Formulaire de profil producteur -->
-		<form method="POST" use:enhance>
+		<form method="POST" use:enhance action="?/update">
 			<div class="space-y-8">
 				<!-- Informations de base -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
 							<Building2 class="h-5 w-5" />
 							Informations de base
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Informations principales de votre entreprise
-						</CardDescription>
-					</CardHeader>
-					<CardContent class="space-y-4">
+						</p>
+					</header>
+					<section class="card-body p-4 space-y-4">
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div class="md:col-span-2">
-								<Label for="companyName">Nom de l'entreprise *</Label>
-								<Input
-									id="companyName"
-									name="companyName"
-									bind:value={$form.companyName}
-									class={$errors.companyName ? 'border-red-500' : ''}
-									placeholder="Ex: Boulangerie Martin"
-								/>
-								{#if $errors.companyName}
-									<p class="text-sm text-red-600 mt-1">{$errors.companyName}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Nom de l'entreprise *</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.companyName ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="companyName"
+										bind:value={$form.companyName}
+										placeholder="Ex: Boulangerie Martin"
+										disabled={$submitting}
+									/>
+									{#if $errors.companyName}
+										<small class="text-error-500 text-sm mt-1">{$errors.companyName}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div>
-								<Label for="firstName">Prénom</Label>
-								<Input
-									id="firstName"
-									name="firstName"
-									bind:value={$form.firstName}
-									class={$errors.firstName ? 'border-red-500' : ''}
-									placeholder="Jean"
-								/>
-								{#if $errors.firstName}
-									<p class="text-sm text-red-600 mt-1">{$errors.firstName}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Prénom</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.firstName ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="firstName"
+										bind:value={$form.firstName}
+										placeholder="Jean"
+										disabled={$submitting}
+									/>
+									{#if $errors.firstName}
+										<small class="text-error-500 text-sm mt-1">{$errors.firstName}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div>
-								<Label for="lastName">Nom</Label>
-								<Input
-									id="lastName"
-									name="lastName"
-									bind:value={$form.lastName}
-									class={$errors.lastName ? 'border-red-500' : ''}
-									placeholder="Martin"
-								/>
-								{#if $errors.lastName}
-									<p class="text-sm text-red-600 mt-1">{$errors.lastName}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Nom</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.lastName ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="lastName"
+										bind:value={$form.lastName}
+										placeholder="Martin"
+										disabled={$submitting}
+									/>
+									{#if $errors.lastName}
+										<small class="text-error-500 text-sm mt-1">{$errors.lastName}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div class="md:col-span-2">
-								<Label for="category">Catégorie</Label>
-								<select
-									id="category"
-									name="category"
-									bind:value={$form.category}
-									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {$errors.category ? 'border-red-500' : ''}"
-								>
-									<option value="">Sélectionnez une catégorie</option>
-									{#each categories as category}
-										<option value={category.value}>{category.label}</option>
-									{/each}
-								</select>
-								{#if $errors.category}
-									<p class="text-sm text-red-600 mt-1">{$errors.category}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Catégorie</span>
+									<select
+										class="select px-4 py-2 rounded-lg {$errors.category ? 'input-error border-error-500' : ''}"
+										name="category"
+										bind:value={$form.category}
+										disabled={$submitting}
+									>
+										<option value="">Sélectionnez une catégorie</option>
+										{#each categories as category}
+											<option value={category.value}>{category.label}</option>
+										{/each}
+									</select>
+									{#if $errors.category}
+										<small class="text-error-500 text-sm mt-1">{$errors.category}</small>
+									{/if}
+								</label>
 							</div>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
 
 				<!-- Descriptions -->
-				<Card>
-					<CardHeader>
-						<CardTitle>Descriptions</CardTitle>
-						<CardDescription>
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3">Descriptions</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Décrivez votre activité et vos produits
-						</CardDescription>
-					</CardHeader>
-					<CardContent class="space-y-4">
+						</p>
+					</header>
+					<section class="card-body p-4 space-y-4">
 						<div>
-							<Label for="shortDescription">Description courte</Label>
-							<Input
-								id="shortDescription"
-								name="shortDescription"
-								bind:value={$form.shortDescription}
-								class={$errors.shortDescription ? 'border-red-500' : ''}
-								placeholder="Boulangerie artisanale, pains et viennoiseries bio"
-								maxlength="200"
-							/>
-							<p class="text-xs text-muted-foreground mt-1">
-								{$form.shortDescription?.length || 0}/200 caractères
-							</p>
-							{#if $errors.shortDescription}
-								<p class="text-sm text-red-600 mt-1">{$errors.shortDescription}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Description courte</span>
+								<input
+									class="input px-4 py-2 rounded-lg {$errors.shortDescription ? 'input-error border-error-500' : ''}"
+									type="text"
+									name="shortDescription"
+									bind:value={$form.shortDescription}
+									placeholder="Boulangerie artisanale, pains et viennoiseries bio"
+									maxlength="200"
+									disabled={$submitting}
+								/>
+								<small class="text-surface-500 text-xs mt-1">
+									{$form.shortDescription?.length || 0}/200 caractères
+								</small>
+								{#if $errors.shortDescription}
+									<small class="text-error-500 text-sm mt-1">{$errors.shortDescription}</small>
+								{/if}
+							</label>
 						</div>
 
 						<div>
-							<Label for="description">Description détaillée</Label>
-							<Textarea
-								id="description"
-								name="description"
-								bind:value={$form.description}
-								class={$errors.description ? 'border-red-500' : ''}
-								placeholder="Décrivez en détail votre activité, vos produits, votre savoir-faire..."
-								rows="4"
-								maxlength="1000"
-							/>
-							<p class="text-xs text-muted-foreground mt-1">
-								{$form.description?.length || 0}/1000 caractères
-							</p>
-							{#if $errors.description}
-								<p class="text-sm text-red-600 mt-1">{$errors.description}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Description détaillée</span>
+								<textarea
+									class="textarea px-4 py-2 rounded-lg {$errors.description ? 'input-error border-error-500' : ''}"
+									name="description"
+									bind:value={$form.description}
+									placeholder="Décrivez en détail votre activité, vos produits, votre savoir-faire..."
+									rows="4"
+									maxlength="1000"
+									disabled={$submitting}
+								></textarea>
+								<small class="text-surface-500 text-xs mt-1">
+									{$form.description?.length || 0}/1000 caractères
+								</small>
+								{#if $errors.description}
+									<small class="text-error-500 text-sm mt-1">{$errors.description}</small>
+								{/if}
+							</label>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
 
 				<!-- Adresse -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
 							<MapPin class="h-5 w-5" />
 							Adresse
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Localisation de votre entreprise
-						</CardDescription>
-					</CardHeader>
-					<CardContent class="space-y-4">
+						</p>
+					</header>
+					<section class="card-body p-4 space-y-4">
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 							<div class="md:col-span-3">
-								<Label for="address">Adresse</Label>
-								<Input
-									id="address"
-									name="address"
-									bind:value={$form.address}
-									class={$errors.address ? 'border-red-500' : ''}
-									placeholder="123 Rue de la Boulangerie"
-								/>
-								{#if $errors.address}
-									<p class="text-sm text-red-600 mt-1">{$errors.address}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Adresse</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.address ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="address"
+										bind:value={$form.address}
+										placeholder="123 Rue de la Boulangerie"
+										disabled={$submitting}
+									/>
+									{#if $errors.address}
+										<small class="text-error-500 text-sm mt-1">{$errors.address}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div>
-								<Label for="postCode">Code postal</Label>
-								<Input
-									id="postCode"
-									name="postCode"
-									bind:value={$form.postCode}
-									class={$errors.postCode ? 'border-red-500' : ''}
-									placeholder="69000"
-									maxlength="5"
-								/>
-								{#if $errors.postCode}
-									<p class="text-sm text-red-600 mt-1">{$errors.postCode}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Code postal</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="postCode"
+										bind:value={$form.postCode}
+										placeholder="69000"
+										maxlength="5"
+										disabled={$submitting}
+									/>
+									{#if $errors.postCode}
+										<small class="text-error-500 text-sm mt-1">{$errors.postCode}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div class="md:col-span-2">
-								<Label for="city">Ville</Label>
-								<Input
-									id="city"
-									name="city"
-									bind:value={$form.city}
-									class={$errors.city ? 'border-red-500' : ''}
-									placeholder="Lyon"
-								/>
-								{#if $errors.city}
-									<p class="text-sm text-red-600 mt-1">{$errors.city}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Ville</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.city ? 'input-error border-error-500' : ''}"
+										type="text"
+										name="city"
+										bind:value={$form.city}
+										placeholder="Lyon"
+										disabled={$submitting}
+									/>
+									{#if $errors.city}
+										<small class="text-error-500 text-sm mt-1">{$errors.city}</small>
+									{/if}
+								</label>
 							</div>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
 
 				<!-- Contact -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
 							<Phone class="h-5 w-5" />
 							Contact
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Moyens de contact pour vos clients
-						</CardDescription>
-					</CardHeader>
-					<CardContent class="space-y-4">
+						</p>
+					</header>
+					<section class="card-body p-4 space-y-4">
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div>
-								<Label for="phoneNumber1">Téléphone principal</Label>
-								<Input
-									id="phoneNumber1"
-									name="phoneNumber1"
-									bind:value={$form.phoneNumber1}
-									class={$errors.phoneNumber1 ? 'border-red-500' : ''}
-									placeholder="0123456789"
-									type="tel"
-								/>
-								{#if $errors.phoneNumber1}
-									<p class="text-sm text-red-600 mt-1">{$errors.phoneNumber1}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Téléphone principal</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.phoneNumber1 ? 'input-error border-error-500' : ''}"
+										type="tel"
+										name="phoneNumber1"
+										bind:value={$form.phoneNumber1}
+										placeholder="0123456789"
+										disabled={$submitting}
+									/>
+									{#if $errors.phoneNumber1}
+										<small class="text-error-500 text-sm mt-1">{$errors.phoneNumber1}</small>
+									{/if}
+								</label>
 							</div>
 
 							<div>
-								<Label for="phoneNumber2">Téléphone secondaire</Label>
-								<Input
-									id="phoneNumber2"
-									name="phoneNumber2"
-									bind:value={$form.phoneNumber2}
-									class={$errors.phoneNumber2 ? 'border-red-500' : ''}
-									placeholder="0123456789"
-									type="tel"
-								/>
-								{#if $errors.phoneNumber2}
-									<p class="text-sm text-red-600 mt-1">{$errors.phoneNumber2}</p>
-								{/if}
+								<label class="label">
+									<span class="font-semibold">Téléphone secondaire</span>
+									<input
+										class="input px-4 py-2 rounded-lg {$errors.phoneNumber2 ? 'input-error border-error-500' : ''}"
+										type="tel"
+										name="phoneNumber2"
+										bind:value={$form.phoneNumber2}
+										placeholder="0123456789"
+										disabled={$submitting}
+									/>
+									{#if $errors.phoneNumber2}
+										<small class="text-error-500 text-sm mt-1">{$errors.phoneNumber2}</small>
+									{/if}
+								</label>
 							</div>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
 
 				<!-- Sites web -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
 							<Globe class="h-5 w-5" />
 							Sites web
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Jusqu'à 3 sites web (optionnel)
-						</CardDescription>
-					</CardHeader>
-					<CardContent class="space-y-4">
+						</p>
+					</header>
+					<section class="card-body p-4 space-y-4">
 						<div>
-							<Label for="website1">Site web principal</Label>
-							<Input
-								id="website1"
-								name="website1"
-								bind:value={$form.website1}
-								class={$errors.website1 ? 'border-red-500' : ''}
-								placeholder="https://www.monsite.fr"
-								type="url"
-							/>
-							{#if $errors.website1}
-								<p class="text-sm text-red-600 mt-1">{$errors.website1}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Site web principal</span>
+								<input
+									class="input px-4 py-2 rounded-lg {$errors.website1 ? 'input-error border-error-500' : ''}"
+									type="url"
+									name="website1"
+									bind:value={$form.website1}
+									placeholder="https://www.monsite.fr"
+									disabled={$submitting}
+								/>
+								{#if $errors.website1}
+									<small class="text-error-500 text-sm mt-1">{$errors.website1}</small>
+								{/if}
+							</label>
 						</div>
 
 						<div>
-							<Label for="website2">Site web secondaire</Label>
-							<Input
-								id="website2"
-								name="website2"
-								bind:value={$form.website2}
-								class={$errors.website2 ? 'border-red-500' : ''}
-								placeholder="https://www.boutique.fr"
-								type="url"
-							/>
-							{#if $errors.website2}
-								<p class="text-sm text-red-600 mt-1">{$errors.website2}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Site web secondaire (réseau social) </span>
+								<input class="input px-4 py-2 rounded-lg {$errors.website2 ? 'input-error border-error-500' : ''}"
+									type="url"
+									name="website2"
+									bind:value={$form.website2}
+									placeholder="https://www.facebook.fr/toto"
+									disabled={$submitting}
+								/>
+								{#if $errors.website2}
+									<small class="text-error-500 text-sm mt-1">{$errors.website2}</small>
+								{/if}
+							</label>
 						</div>
 
 						<div>
-							<Label for="website3">Site web tertiaire</Label>
-							<Input
-								id="website3"
-								name="website3"
-								bind:value={$form.website3}
-								class={$errors.website3 ? 'border-red-500' : ''}
-								placeholder="https://www.reseausocial.fr"
-								type="url"
-							/>
-							{#if $errors.website3}
-								<p class="text-sm text-red-600 mt-1">{$errors.website3}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Site web tertiaire (réseau social)</span>
+								<input class="input px-4 py-2 rounded-lg {$errors.website3 ? 'input-error border-error-500' : ''}"
+									type="url"
+									name="website3"
+									bind:value={$form.website3}
+									placeholder="https://www.reseausocial.fr"
+									disabled={$submitting}
+								/>
+								{#if $errors.website3}
+									<small class="text-error-500 text-sm mt-1">{$errors.website3}</small>
+								{/if}
+							</label>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
 
 				<!-- Informations légales -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
 							<Hash class="h-5 w-5" />
 							Informations légales
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
 							Informations administratives (optionnel)
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
+						</p>
+					</header>
+					<section class="card-body p-4">
 						<div>
-							<Label for="siretNumber">Numéro SIRET</Label>
-							<Input
-								id="siretNumber"
-								name="siretNumber"
-								bind:value={$form.siretNumber}
-								class={$errors.siretNumber ? 'border-red-500' : ''}
-								placeholder="12345678901234"
-								maxlength="14"
-							/>
-							<p class="text-xs text-muted-foreground mt-1">
-								14 chiffres sans espaces
-							</p>
-							{#if $errors.siretNumber}
-								<p class="text-sm text-red-600 mt-1">{$errors.siretNumber}</p>
-							{/if}
+							<label class="label">
+								<span class="font-semibold">Numéro SIRET</span>
+								<input
+									class="input px-4 py-2 rounded-lg {$errors.siretNumber ? 'input-error border-error-500' : ''}"
+									type="text"
+									name="siretNumber"
+									bind:value={$form.siretNumber}
+									placeholder="12345678901234"
+									maxlength="14"
+									disabled={$submitting}
+								/>
+								<small class="text-surface-500 text-xs mt-1">
+									14 chiffres sans espaces
+								</small>
+								{#if $errors.siretNumber}
+									<small class="text-error-500 text-sm mt-1">{$errors.siretNumber}</small>
+								{/if}
+							</label>
 						</div>
-					</CardContent>
-				</Card>
+					</section>
+				</div>
+
+				<!-- Production -->
+				<div class="card">
+					<header class="card-header">
+						<h2 class="h3 flex items-center gap-2">
+							<Hash class="h-5 w-5" />
+							Production
+						</h2>
+						<p class="text-surface-600-300-token mt-1">
+							Listes des produits ou catégories que vous produisez.
+						</p>
+					</header>
+					<section class="card-body p-4">
+						<div>
+							<label class="label">
+								<div class="font-semibold">Production</div>
+								<button type="button" onclick={openProductSelector} class="btn variant-filled-primary shadow-xl">
+									<CirclePlus size={20} />
+									<span>Ajouter</span>
+								</button>
+								{#if products && products.length>0}
+									{#each products as product (product.id, product.name)}
+										<div class="flex items-center justify-between">
+											<div class="flex items-center gap-2">
+												<div class="w-2 h-2 bg-primary-400 rounded-full"></div>
+												<span class="font-medium">{product.name}</span>
+												<button onclick={() => removeProduct(product.id)} class="text-xs text-surface-500">
+													<CircleX />
+												</button>
+											</div>
+										</div>
+									{/each}
+								{:else}
+									<div>Aucun produits de définis</div>
+								{/if}
+								{#if $errors.siretNumber}
+									<small class="text-error-500 text-sm mt-1">{$errors.siretNumber}</small>
+								{/if}
+							</label>
+						</div>
+					</section>
+				</div>
 
 				<!-- Boutons d'action -->
 				<div class="flex justify-end space-x-4">
-					<Button type="submit" disabled={$submitting} class="min-w-32">
+					<button
+						type="submit"
+						class="btn variant-filled-primary min-w-32"
+						disabled={$submitting}
+					>
 						{#if $submitting}
+							<span class="animate-spin mr-2">⏳</span>
 							Sauvegarde...
 						{:else}
 							Sauvegarder
 						{/if}
-					</Button>
+					</button>
 				</div>
 			</div>
 		</form>
 	</div>
 </div>
 
-<style>
-	:global(.container) {
-		max-width: 100%;
-	}
-</style>
+
+
+<!-- Drawer pour la sélection de produits -->
+<Drawer>
+	{#if $drawerStore.id === 'product-selector'}
+		<div class="p-6 bg-white border-b border-surface-300">
+			<h2 class="h2 mb-2">Sélectionner des produits</h2>
+			<p class="text-surface-600-300-token">
+				Recherchez et sélectionnez les produits que vous produisez
+			</p>
+		</div>
+		<ProductSelector bind:selectedProductIds/>
+		<!-- Boutons d'action -->
+		<div class="p-6 bg-white border-t border-surface-300 flex justify-end gap-4">
+			<button
+				type="button"
+				class="btn variant-ghost-surface"
+				onclick={handleProductCancel}
+			>
+				Annuler
+			</button>
+			<button type="button"
+				class="btn variant-filled-primary"
+				onclick={handleProductValidation}
+				disabled={selectedProductIds.size === 0}
+			>
+				Valider la sélection ({selectedProductIds.size})
+			</button>
+		</div>
+	{/if}
+</Drawer>
 

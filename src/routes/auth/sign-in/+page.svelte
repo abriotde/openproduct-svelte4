@@ -1,90 +1,109 @@
 <script lang="ts">
-	import * as Form from '$lib/components/ui/form';
-	import * as Card from '$lib/components/ui/card';
-	import * as Alert from '$lib/components/ui/alert';
-	import { userSchema } from '$lib/config/zod-schemas';
-	import { superForm } from 'sveltekit-superforms';
-	import { zod } from 'sveltekit-superforms/adapters';
-	import type { SuperValidated } from 'sveltekit-superforms';
-	import { Loader2, AlertCircle } from 'lucide-svelte';
-	import { z } from 'zod';
-
-	const signInSchema = userSchema.pick({
-		email: true,
-		password: true
-	});
-
-	type SignInSchema = typeof signInSchema;
+	import { enhance } from '$app/forms';
+	import { Loader, CircleAlert } from 'lucide-svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
-		form: SuperValidated<SignInSchema>;
+		form?: {
+			data: {
+				email: string;
+				password: string;
+			};
+			errors: Record<string, string>;
+			valid: boolean;
+		};
 	}
 
 	let { form }: Props = $props();
-
-	const { form: formData, enhance, errors, submitting } = superForm(form, {
-		validators: zod(signInSchema)
-	});
+	
+	// Valeurs par défaut si form est null
+	const formData = form || {
+		data: { email: '', password: '' },
+		errors: {},
+		valid: true
+	};
+	let submitting = $state(false);
 </script>
 
-<div class="flex items-center justify-center mx-auto max-w-2xl">
-	<form method="POST" use:enhance>
-		<Card.Root>
-			<Card.Header class="space-y-1">
-				<Card.Title class="text-2xl">Sign in</Card.Title>
-				<Card.Description>
-					Don't have an account yet? <a href="/auth/sign-up" class="underline">Sign up here.</a>
-				</Card.Description>
-			</Card.Header>
-			<Card.Content class="grid gap-4">
-				{#if $errors?._errors?.length}
-					<Alert.Root variant="destructive">
-						<AlertCircle class="h-4 w-4" />
-						<Alert.Title>Error</Alert.Title>
-						<Alert.Description>
-							{#each $errors._errors as error}
-								{error}
-							{/each}
-						</Alert.Description>
-					</Alert.Root>
-				{/if}
-				
-				<Form.Field form={formData} name="email">
-					{#snippet children()}
-						<Form.Item>
-							<Form.Label>Email</Form.Label>
-							<Form.Input type="email" />
-							<Form.Validation />
-						</Form.Item>
-					{/snippet}
-				</Form.Field>
+<div class="container h-full mx-auto flex justify-center items-center">
+	<div class="card p-8 w-full max-w-md">
+		<header class="card-header text-center mb-6">
+			<h1 class="h2 font-bold">Connexion</h1>
+			<p class="text-surface-600-300-token">Entrez vos identifiants pour vous connecter</p>
+		</header>
 
-				<Form.Field form={formData} name="password">
-					{#snippet children()}
-						<Form.Item>
-							<Form.Label>Password</Form.Label>
-							<Form.Input type="password" />
-							<Form.Validation />
-						</Form.Item>
-					{/snippet}
-				</Form.Field>
-			</Card.Content>
-			<Card.Footer>
-				<div class="block w-full">
-					<Form.Button class="w-full" disabled={$submitting}>
-						{#if $submitting}
-							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-							Please wait
-						{:else}
-							Sign In
-						{/if}
-					</Form.Button>
-
-					<div class="mt-6 text-center text-sm">
-						<a href="/auth/password/reset" class="underline">Forgot your password?</a>
-					</div>
+		{#if formData.errors.general}
+			<aside class="alert variant-filled-error mb-4">
+				<div class="alert-message">
+					<CircleAlert class="w-4 h-4" />
+					<p>{formData.errors.general}</p>
 				</div>
-			</Card.Footer>
-		</Card.Root>
-	</form>
+			</aside>
+		{/if}
+
+		<form 
+			method="POST" 
+			class="space-y-4"
+			use:enhance={() => {
+				submitting = true;
+				return async ({ update }) => {
+					await update();
+					submitting = false;
+				};
+			}}
+		>
+			<label class="label">
+				<span>Email</span>
+				<input 
+					class="input {formData.errors.email ? 'input-error' : ''}" 
+					type="email" 
+					name="email" 
+					placeholder="m@example.com"
+					value={formData.data.email}
+					required
+				/>
+				{#if formData.errors.email}
+					<p class="text-error-500 text-sm mt-1">{formData.errors.email}</p>
+				{/if}
+			</label>
+
+			<label class="label">
+				<span>Mot de passe</span>
+				<input 
+					class="input {formData.errors.password ? 'input-error' : ''}" 
+					type="password" 
+					name="password"
+					value={formData.data.password}
+					required
+				/>
+				{#if formData.errors.password}
+					<p class="text-error-500 text-sm mt-1">{formData.errors.password}</p>
+				{/if}
+			</label>
+
+			<button 
+				type="submit" 
+				class="btn variant-filled-primary w-full"
+				disabled={submitting}
+			>
+				{#if submitting}
+					<Loader class="w-4 h-4 animate-spin mr-2" />
+					Connexion en cours...
+				{:else}
+					Se connecter
+				{/if}
+			</button>
+		</form>
+
+		<footer class="card-footer text-center mt-6">
+			<p class="text-surface-600-300-token">
+				Mot de passe oublié ?
+				<a href="{resolve("/auth/password/reset")}" class="anchor">Renvoyer</a>
+			</p>
+			<p class="text-surface-600-300-token">
+				Pas encore de compte ?
+				<a href="{resolve("/auth/sign-up")}" class="anchor">S'inscrire</a>
+			</p>
+		</footer>
+	</div>
 </div>

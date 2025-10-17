@@ -13,3 +13,6 @@ vite.config.ts.timestamp-*
 static/data/producers_*.json
 bun.lock
 pnpm-lock.yaml
+.vscode/**
+static/data/**
+static/producers/**
