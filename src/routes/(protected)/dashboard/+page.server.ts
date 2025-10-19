@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import db from '$lib/server/database/drizzle.js';
 import { producerTable } from '$lib/server/database/drizzle-schemas.js';
-import { eq, and, type SQL } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
 import { resolve } from '$app/paths';
 import { producerSchema } from '$lib/config/zod-schemas.js';
@@ -28,27 +28,42 @@ async function getProducts(producer_id: number | null) {
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	if (!locals.user) {
-		console.log('request Dashboard but not authentificate');
+		console.log('request Dashboard but not authenticated');
 		redirect(302, resolve('/auth/sign-in'));
 	}
 	if (!db) {
 		return fail(400, {error: 'No database connection.'});
 	}
 
-	// Récupérer le profil producteur existant
-	let where:SQL|undefined = eq(producerTable.userId, locals.user.id);
-	const producerId = url.searchParams.get('q') || '';
-	if (producerId.length>0) {
-		where = and(where, eq(producerTable.id, producerId));
+	// Récupérer le producerId depuis l'URL si présent
+	const producerIdParam = url.searchParams.get('producerId');
+	
+	// Récupérer tous les producteurs de cet utilisateur
+	const allProducers = await db
+		.select()
+		.from(producerTable)
+		.where(eq(producerTable.userId, locals.user.id));
+	
+	// Si plusieurs producteurs et aucun n'est sélectionné, rediriger vers /dashboard/choose
+	if (allProducers.length > 1 && !producerIdParam) {
+		redirect(302, resolve('/dashboard/choose'));
 	}
-	const existingProducer = await db
-			.select()
-			.from(producerTable)
-			.where(where);
-	if (existingProducer.length>1) {
-		redirect(resolve('/dashboard/choose'), existingProducer);
+	
+	// Déterminer quel producteur utiliser
+	let producer = null;
+	if (producerIdParam) {
+		// Utiliser le producteur spécifié dans l'URL
+		const producerIdNum = parseInt(producerIdParam);
+		producer = allProducers.find(p => p.id === producerIdNum) || null;
+		
+		// Si le producteur spécifié n'appartient pas à l'utilisateur, erreur
+		if (!producer) {
+			throw error(403, 'Producer not found or access denied');
+		}
+	} else if (allProducers.length === 1) {
+		// Un seul producteur, l'utiliser automatiquement
+		producer = allProducers[0];
 	}
-	const producer = existingProducer[0] || null;
 
 	// Initialiser le formulaire avec les données existantes
 	const form = {
@@ -88,15 +103,19 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		errors: {},
 		valid: true
 	};
+	
+	// Mettre à jour le producerId dans locals.user si un producteur est sélectionné
 	if (locals.session && producer?.id != null) {
 		locals.user.producerId = producer.id;
 	}
+	
 	const products = await getProducts(locals.user.producerId);
 	return {
 		form,
 		producer,
 		products: products,
-		user: locals.user
+		user: locals.user,
+		allProducers: allProducers
 	};
 };
 
