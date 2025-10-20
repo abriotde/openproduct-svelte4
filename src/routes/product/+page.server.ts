@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url, request }) => {
 			WHERE hierarchy_level<=3
 			LIMIT 20`;
 	} else {
-		searchSQLpattern = '%'+searchQuery+'%';
+		searchSQLpattern = '%'+searchQuery.toLowerCase()+'%';
 		query = sql`SELECT * FROM products
 			WHERE name like ${searchSQLpattern}
 			LIMIT 20`;

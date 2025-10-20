@@ -11,10 +11,9 @@ export const GET: RequestHandler = async ({ url }) => {
 	let query;
 	if (searchPattern=='') {
 		query = sql`SELECT * FROM products
-			WHERE hierarchy_level<=3
-			LIMIT 20`;
+			WHERE hierarchy_level<=3`;
 	} else {
-		const searchSQLpattern = '%'+searchPattern+'%';
+		const searchSQLpattern = '%'+searchPattern.toLowerCase()+'%';
 		query = sql`SELECT * FROM products
 			WHERE name like ${searchSQLpattern}
 			LIMIT 20`;
