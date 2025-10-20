@@ -15,7 +15,7 @@ export async function getProductTree(productId: number) {
 		const result = deserialize(await response.text());
 		if (result.type === 'success' && result.data) {
 			const prod = result.data;
-			console.log("getProductTree1() => ", prod);
+			// console.log("getProductTree1() => ", prod);
 			return prod;
 		} else {
 			console.error('getProductTree() : Error with status : ', result.status);

@@ -11,7 +11,7 @@ import { sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 
 async function getProducts(producer_id: number | null) {
-	console.log("getProducts(",producer_id,")");
+	// console.log("getProducts(",producer_id,")");
 	if(producer_id == null) {
 		return null;
 	}
@@ -22,7 +22,7 @@ async function getProducts(producer_id: number | null) {
 			WHERE pp.producer_id = ${producer_id}`
 	);
 	const rows = productResult?.rows;
-	console.log("getProducts(",producer_id,") => ",rows);
+	// console.log("getProducts(",producer_id,") => ",rows);
 	return rows;
 }
 
