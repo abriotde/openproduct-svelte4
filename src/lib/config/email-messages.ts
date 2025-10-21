@@ -1,11 +1,10 @@
 import sendEmail from '$lib/server/email-send';
 import { APP_NAME, BASE_URL } from '$lib/config/constants';
 import { PUBLIC_BASE_PATH } from '$env/static/public';
-import { base } from '$service-worker';
 
-function getBaseUrl() {
+function getBaseUrl() : string {
 	let base_path = BASE_URL + PUBLIC_BASE_PATH;
-	while (base_path.at(-1)=='/') {
+	while (base_path.charAt(base_path.length-1)=='/') {
 		base_path.substring(0,base_path.length-1);
 	}
 	return base_path;
