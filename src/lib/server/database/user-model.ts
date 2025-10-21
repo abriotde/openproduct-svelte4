@@ -46,7 +46,8 @@ export const tryLink2Producer = async (user: User) => {
 	if (producer) {
 		console.log("tryLink2Producer(",user,") => ",producer)
 		await updateUser(user.id, { producerId: producer.id });
-		await db?.update(producerTable).set({userId:user.id});
+		await db?.update(producerTable).set({userId:user.id})
+			.where(eq(producerTable.email, user.email));
 	} else {
 		console.log("tryLink2Producer(",user,") => No");
 	}
