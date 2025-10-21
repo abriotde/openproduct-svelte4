@@ -7,7 +7,7 @@ import { BASE_URL } from '$lib/config/constants'
 export const sendVerificationEmail = async (email: string, token: string) => {
 	const verifyEmailURL = BASE_URL + resolve(`/auth/verify/email-[token]`, {token});
 	const textEmail = `S'il vous plait allez sur le lien ci-dessous pour valider votre compte sur ${APP_NAME}.\n\n  
-    ${verifyEmailURL} \n\nSi vous n'avez pas créé de compte vous pouyvez ignorer ce mail.`;
+    	${verifyEmailURL} \n\nSi vous n'avez pas créé de compte vous pouyvez ignorer ce mail.`;
 	const htmlEmail = `<p>Clickez sur ce lien <a href="${verifyEmailURL}">${verifyEmailURL}</a> pour vérifier votre email pour votre compte ${APP_NAME}.</p>`;
 	const subject = `${APP_NAME} : Confirmez votre email`;
 	const resultSend = sendEmail(email, subject, htmlEmail, textEmail);

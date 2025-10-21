@@ -1,6 +1,7 @@
 import { getUserByToken, updateUser } from '$lib/server/database/user-model.js';
 import { fail } from '@sveltejs/kit';
 import { sendWelcomeEmail } from '$lib/config/email-messages';
+import { tryLink2Producer } from '$lib/server/database/user-model'
 import type { User } from '$lib/server/database/drizzle-schemas';
 import { resolve } from '$app/paths';
 
@@ -18,6 +19,7 @@ export async function load({ params }) {
 			'Your email could not be verified. Please contact support if you feel this is an error.';
 
 		if (user) {
+			await tryLink2Producer(user);
 			sendWelcomeEmail(user.email);
 			heading = 'Email Verified';
 			message =
