@@ -1,32 +1,43 @@
-import { fail } from '@sveltejs/kit';
+import { redirect } from 'sveltekit-flash-message/server';
+import { resolve } from '$app/paths';
 import { sendVerificationEmail } from '$lib/config/email-messages';
 import { getUserByEmail, updateUser } from '$lib/server/database/user-model';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
-	try {
-		const email = decodeURIComponent(params.email) as string;
+export const load: PageServerLoad = async (event) => {
+	const email = decodeURIComponent(event.params.email) as string;
 
-		const user = await getUserByEmail(email);
-		let heading = 'Email Verification Problem';
-		let message =
-			'A new email could not be sent. Please contact support if you feel this was an error.';
+	const user = await getUserByEmail(email);
 
-		if (user) {
-			heading = 'Email Verification Sent';
-			message = 'A new verification email was sent.  Please check your email for the message. (Check the spam folder if it is not in your inbox)';
-			await updateUser(user.id, { verified: false });
-			if (user.token) {
-				sendVerificationEmail(user.email, user.token);
-			}else{
-				console.error("Ask resent email bu no token for user with email '",email,"' (",user.id,")");
-			}
-		} else {
-			console.error("Ask resent email but no user with email '",email,"'");
-		}
-		return { heading: heading, message: message };
-	} catch (e) {
-		return fail(500, {
-			error: e
-		});
+	if (!user) {
+		console.error("Ask resend email but no user with email '", email, "'");
+		const message = {
+			type: 'error',
+			message: 'Impossible de renvoyer l\'email. Utilisateur introuvable. Veuillez contacter le support.'
+		} as const;
+		redirect(302, resolve('/auth/verify/email'), message, event.cookies);
 	}
-}
+
+	if (!user.token) {
+		console.error("Ask resend email but no token for user with email '", email, "' (", user.id, ")");
+		const message = {
+			type: 'error',
+			message: 'Impossible de renvoyer l\'email. Token manquant. Veuillez contacter le support.'
+		} as const;
+		redirect(302, resolve('/auth/verify/email'), message, event.cookies);
+	}
+
+	// Update user to mark as not verified (in case they were)
+	await updateUser(user.id, { verified: false });
+
+	// Send verification email
+	await sendVerificationEmail(user.email, user.token);
+
+	// Redirect back to verify email page with success message
+	const message = {
+		type: 'success',
+		message: 'Un nouvel email de vérification a été envoyé. Veuillez consulter votre boîte mail (et le dossier spam).'
+	} as const;
+	redirect(302, resolve('/auth/verify/email'), message, event.cookies);
+};
+
