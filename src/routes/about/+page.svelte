@@ -38,7 +38,7 @@
 					<tr><td>Albéric de la Crochais</td><td>350 euros</td></tr>
 				</tbody>
 				<tfoot>
-					<tr><th>Nom</th><th>Montant</th></tr>
+					<tr><td>Nom</td><td>Montant</td></tr>
 				</tfoot>
 			</table>
 		</div>

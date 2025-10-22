@@ -5,7 +5,7 @@ import { PUBLIC_BASE_PATH } from '$env/static/public';
 function getBaseUrl() : string {
 	let base_path = BASE_URL + PUBLIC_BASE_PATH;
 	while (base_path.charAt(base_path.length-1)=='/') {
-		base_path.substring(0,base_path.length-1);
+		base_path = base_path.substring(0,base_path.length-1);
 	}
 	return base_path;
 }
