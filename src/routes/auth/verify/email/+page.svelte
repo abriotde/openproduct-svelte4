@@ -13,7 +13,7 @@
 		<p class="max-w-[700px] text-lg text-muted-foreground">
 			{#if data.user}
 				Veuillez consulter la boîte mail {data.user.email} pour confirmer votre adresse e-mail pour {APP_NAME}.
-				Si vous ne l'avez pas reçu, <a href={resolve("/auth/verify/resend-email-[email]", {email: encodeURIComponent(data.user.email)})} class="underline">clickez ici</a> pour le renvoyer.
+				Si vous ne l'avez pas reçu, <a href={resolve("/auth/verify/email-[token]", {token: encodeURIComponent(data.user.email)}) + '?resend=true'} class="underline">clickez ici</a> pour le renvoyer.
 			{/if}
 		</p>
 		<p class="max-w-[700px] text-lg text-muted-foreground">
