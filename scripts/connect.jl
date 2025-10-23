@@ -1,9 +1,12 @@
-
 import DBInterface, LibPQ
 using TOML
 
 function get_connection()
 	conffile = "../.env.local"
+	if ! isfile(conffile)
+		conffile = "../.env.production"
+	end
+	println("Use configuration file : ", conffile)
 	conf = TOML.parsefile(conffile)
 	DATABASE_NAME = conf["DATABASE_NAME"]
 	DATABASE_USER = conf["DATABASE_USER"]
