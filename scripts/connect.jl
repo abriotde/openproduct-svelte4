@@ -1,10 +1,11 @@
 import DBInterface, LibPQ
 using TOML
 
-function get_connection()
-	conffile = "../.env.local"
+function get_connection(root_path::String="..")
+	# println("get_connection()", pwd())
+	conffile = root_path*"/.env.local"
 	if ! isfile(conffile)
-		conffile = "../.env.production"
+		conffile = root_path*"/.env.production"
 	end
 	println("Use configuration file : ", conffile)
 	conf = TOML.parsefile(conffile)

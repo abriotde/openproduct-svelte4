@@ -32,6 +32,7 @@ Pkg.add("OteraEngine")
 Pkg.add("CSV")
 Pkg.add("FunSQL")
 Pkg.add("Tables")
+Pkg.add("SMTPClient")
 EOF
 
 

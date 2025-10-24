@@ -1,7 +1,4 @@
-
 PATH=/home/kaja9241/.bun/bin:/home/kaja9241/.juliaup/bin:/home/kaja9241/.local/bin:/home/kaja9241/bin:/usr/local/cpanel/3rdparty/lib/path-bin:/usr/share/Modules/bin:/usr/local/cpanel/3rdparty/lib/path-bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/cpanel/composer/bin
 
-
-01 03 * * * /home/kaja9241/openproduct-svelte4/scripts/deploy.sh > 2>&1 /home/kaja9241/openproduct-svelte4/scripts/deploy.log
-
+01 03 * * * /home/kaja9241/openproduct-svelte4/scripts/deploy.sh >/home/kaja9241/openproduct-svelte4/scripts/deploy.log 2>&1
 
