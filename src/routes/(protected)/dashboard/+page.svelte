@@ -350,14 +350,17 @@
 							<div>
 								<label class="label">
 									<span class="font-semibold">Code postal</span>
-									<input
-										class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
-										name="postCode"
-										bind:value={$form.postCode}
-										placeholder="22980"
-										maxlength="5"
-										disabled={$submitting}
-									/>
+							<input
+								type="number"
+								inputmode="numeric"
+								class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
+								name="postCode"
+								bind:value={$form.postCode}
+								placeholder="22980"
+								min="1000"
+								max="99999"
+								disabled={$submitting}
+							/>
 									{#if $errors.postCode}
 										<small class="text-error-500 text-sm mt-1">{$errors.postCode}</small>
 									{/if}

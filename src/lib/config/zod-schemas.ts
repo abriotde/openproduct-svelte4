@@ -80,9 +80,10 @@ export const producerSchema = z.object({
 		.max(1000, { message: 'Description must be less than 1000 characters' })
 		.trim(),
 	postCode: z
-		.number()
-		.min(1000, { message: 'Post code must have 4 digits' })
-		.max(100000, { message: 'Post code must be 5 digits max' }),
+		.coerce.number()
+		.int({ message: 'Post code must be a valid number' })
+		.min(1000, { message: 'Post code must have at least 4 digits' })
+		.max(99999, { message: 'Post code must be 5 digits max' }),
 	city: z
 		.string()
 		.max(100, { message: 'City must be less than 100 characters' })
