@@ -11,11 +11,11 @@ export const GET: RequestHandler = async ({ url }) => {
 	let query;
 	if (searchPattern=='') {
 		query = sql`SELECT * FROM products
-			WHERE hierarchy_level<=3`;
+			WHERE hierarchy_level<=3 AND used = true`;
 	} else {
 		const searchSQLpattern = '%'+searchPattern.toLowerCase()+'%';
 		query = sql`SELECT * FROM products
-			WHERE name like ${searchSQLpattern}
+			WHERE name like ${searchSQLpattern} AND used = true
 			LIMIT 20`;
 	}
 	try {
