@@ -10,7 +10,6 @@ export const userSchema = z.object({
 		.min(1, { message: 'Last Name is required' })
 		.trim(),
 	email: z
-		.string({ error: 'Email is required' })
 		.email({ message: 'Please enter a valid email address' }),
 	password: z
 		.string({ error: 'Password is required' })
@@ -81,16 +80,13 @@ export const producerSchema = z.object({
 		.max(1000, { message: 'Description must be less than 1000 characters' })
 		.trim(),
 	postCode: z
-		.string()
-		.min(5, { message: 'Post code must be 5 digits' })
-		.max(5, { message: 'Post code must be 5 digits' })
-		.regex(/^\d{5}$/, { message: 'Post code must be 5 digits' })
-		.optional(),
+		.number()
+		.min(1000, { message: 'Post code must have 4 digits' })
+		.max(100000, { message: 'Post code must be 5 digits max' }),
 	city: z
 		.string()
 		.max(100, { message: 'City must be less than 100 characters' })
-		.trim()
-		.optional(),
+		.trim(),
 	address: z
 		.string()
 		.max(200, { message: 'Address must be less than 200 characters' })

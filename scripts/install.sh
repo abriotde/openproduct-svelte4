@@ -33,6 +33,7 @@ Pkg.add("CSV")
 Pkg.add("FunSQL")
 Pkg.add("Tables")
 Pkg.add("SMTPClient")
+Pkg.add("DataFrames")
 EOF
 
 

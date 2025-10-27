@@ -352,10 +352,9 @@
 									<span class="font-semibold">Code postal</span>
 									<input
 										class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
-										type="text"
 										name="postCode"
 										bind:value={$form.postCode}
-										placeholder="69000"
+										placeholder="22980"
 										maxlength="5"
 										disabled={$submitting}
 									/>
@@ -373,7 +372,7 @@
 										type="text"
 										name="city"
 										bind:value={$form.city}
-										placeholder="Lyon"
+										placeholder="Plélan-le-Petit"
 										disabled={$submitting}
 									/>
 									{#if $errors.city}

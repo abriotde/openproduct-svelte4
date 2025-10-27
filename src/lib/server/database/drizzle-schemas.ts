@@ -46,7 +46,7 @@ export const producerTable = pgTable('producers', {
     lastName: text('lastname'),
     shortDescription: text('short_description'),
     description: text('description'),
-    postCode: text('post_code'),
+    postCode: integer('post_code').notNull(),
     city: text('city'),
     address: text('address'),
     category: text('category'),
