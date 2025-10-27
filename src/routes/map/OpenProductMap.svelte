@@ -736,7 +736,7 @@
 							{:else}
 								<div>Aucun produits de définis</div>
 							{/if}
-							<ProductSelector bind:selectedProductIds={filters.produces}/>
+							<ProductSelector bind:selectedProductIds={filters.produces} usedOnly={true}/>
 					</label>
 				</div>
 			</div>

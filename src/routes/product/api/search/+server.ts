@@ -5,19 +5,34 @@ import { sql } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const searchPattern = url.searchParams.get('q') || '';
+	const usedOnly = url.searchParams.get('usedOnly') === 'true';
+	
 	if (!db) {
 		return json({ results: [], error: 'Database connection failed' }, { status: 500 });
 	}
+	
 	let query;
 	if (searchPattern=='') {
-		query = sql`SELECT * FROM products
-			WHERE hierarchy_level<=3 AND used = true`;
+		if (usedOnly) {
+			query = sql`SELECT * FROM products
+				WHERE hierarchy_level<=3 AND used = true`;
+		} else {
+			query = sql`SELECT * FROM products
+				WHERE hierarchy_level<=3`;
+		}
 	} else {
 		const searchSQLpattern = '%'+searchPattern.toLowerCase()+'%';
-		query = sql`SELECT * FROM products
-			WHERE name like ${searchSQLpattern} AND used = true
-			LIMIT 20`;
+		if (usedOnly) {
+			query = sql`SELECT * FROM products
+				WHERE name like ${searchSQLpattern} AND used = true
+				LIMIT 20`;
+		} else {
+			query = sql`SELECT * FROM products
+				WHERE name like ${searchSQLpattern}
+				LIMIT 20`;
+		}
 	}
+	
 	try {
 		// Utiliser la fonction PostgreSQL search_products_with_children
 		const results = await db?.execute(query);
@@ -30,4 +45,5 @@ export const GET: RequestHandler = async ({ url }) => {
 		return json({ results: [], error: 'Search failed' }, { status: 500 });
 	}
 };
+
 
