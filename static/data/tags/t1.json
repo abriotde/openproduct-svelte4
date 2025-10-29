@@ -1,0 +1,17 @@
+[
+	{
+		"id": 1,
+		"name": "PME",
+		"label": "Petites et Moyennes Entreprises",
+		"description": "Entreprises de petite et moyenne taille",
+		"producers": []
+	},
+	{
+		"id": 2,
+		"name": "AB",
+		"label": "Agriculture Biologique",
+		"description": "Producteurs certifiés agriculture biologique",
+		"producers": []
+	}
+]
+

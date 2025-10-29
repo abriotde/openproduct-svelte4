@@ -11,8 +11,11 @@
 	let filters = $state({
 		category: '',
 		address: '',
-		produces: new Map<number, string>()
+		produces: new Map<number, string>(),
+		tags: new Set<number>()
 	});
+	
+	let availableTags = $state<any[]>([]);
 	
 	function openFilters() {
 		drawerStore.open({
@@ -33,7 +36,8 @@
 		filters = {
 			category: '',
 			address: '',
-			produces: new Map<number, string>()
+			produces: new Map<number, string>(),
+			tags: new Set<number>()
 		};
 		if (filterSelect) filterSelect.value = '';
 		if (addressInput) addressInput.value = '';
@@ -42,6 +46,27 @@
 
 	function applyFilters() {
 		console.log("applyFilters();");
+		
+		// Combiner les filtres
+		const combinedFilter = (producer: any) => {
+			let result = true;
+			
+			// Filtre par produit
+			if (filters.produces.size > 0) {
+				result = result && filterByProduct(producer);
+			}
+			
+			// Filtre par tag
+			result = result && filterByTags(producer);
+			
+			// Filtre par catégorie
+			if (filters.category) {
+				result = result && charFilter(producer);
+			}
+			
+			return result;
+		};
+		
 		if (filters.produces.size>0) {
 			console.log("applyFilters(products:",filters.produces,");");
 			myfilter = filterByProduct;
@@ -80,15 +105,22 @@
 					}
 				}
 			// }
-			if (someInCache) {
+				if (someInCache) {
+					myfilter = combinedFilter;
+					displayProducers(producersLoaded);
+				}
+			} else if (filters.category) {
+				console.log("applyFilters(category:",filters.category,");");
+				myfilter = combinedFilter;
+				filterProducersByCategory(filters.category);
+			} else if (filters.tags.size > 0) {
+				console.log("applyFilters(tags:",filters.tags,");");
+				myfilter = combinedFilter;
 				displayProducers(producersLoaded);
+			} else {
+				myfilter = noFilter;
+				filterProducersByCategory("");
 			}
-		} else if (filters.category) {
-			console.log("applyFilters(category:",filters.category,");");
-			filterProducersByCategory(filters.category);
-		} else {
-			filterProducersByCategory("");
-		}
 		if (filters.address) {
 			console.log("applyFilters(address:",filters.address,");");
 			searchAddress();
@@ -147,6 +179,7 @@
 			await loadLeaflet();
 			initializeIcons();
 			await initializeMap();
+			await loadTags();
 		}
 	});
 
@@ -540,6 +573,11 @@
 	const filterByProduct = (producer: any) => {
 		return producersFilterByProduct.get(producer.id) || false;
 	};
+	
+	const filterByTags = (producer: any) => {
+		if (filters.tags.size === 0) return true;
+		return filters.tags.has(producer.tag || 0);
+	};
 	const charFilter = (producer: any) => {
 		let inverse = false;
 		let filter = filterChar;
@@ -633,6 +671,27 @@
 		if (event.key === 'Enter') {
 			searchAddress();
 		}
+	}
+	
+	async function loadTags() {
+		try {
+			const response = await fetch('/data/tags/t1.json');
+			const data = await response.json();
+			availableTags = data;
+			console.log('Tags chargés:', availableTags);
+		} catch (error) {
+			console.error('Erreur lors du chargement des tags:', error);
+		}
+	}
+	
+	function toggleTag(tagId: number) {
+		const newSet = new Set(filters.tags);
+		if (newSet.has(tagId)) {
+			newSet.delete(tagId);
+		} else {
+			newSet.add(tagId);
+		}
+		filters.tags = newSet;
 	}
 </script>
 
@@ -737,6 +796,27 @@
 								<div>Aucun produits de définis</div>
 							{/if}
 							<ProductSelector bind:selectedProductIds={filters.produces} usedOnly={true}/>
+					</label>
+					
+					<!-- Filtre par tags -->
+					<label class="label">
+						<span class="font-semibold mb-2">Tags</span>
+						<div class="space-y-2">
+							{#each availableTags as tag}
+								<button
+									type="button"
+									class="btn w-full {filters.tags.has(tag.id) ? 'variant-filled-primary' : 'variant-ghost-surface'}"
+									onclick={() => toggleTag(tag.id)}
+								>
+									<span class="flex items-center gap-2">
+										{#if filters.tags.has(tag.id)}
+											<div class="w-2 h-2 bg-white rounded-full"></div>
+										{/if}
+										<span>{tag.label}</span>
+									</span>
+								</button>
+							{/each}
+						</div>
 					</label>
 				</div>
 			</div>
