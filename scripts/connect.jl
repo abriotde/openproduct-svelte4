@@ -1,7 +1,6 @@
 import DBInterface, LibPQ
 using TOML
 using Memoization
-using .OpenProduct
 
 ROOT_PATH = ".."
 DB_CONNECTION = missing
@@ -27,4 +26,3 @@ function get_connection(root_path::String="..")
 	println("GetConnection => DB_CONNECTION")
 	return DB_CONNECTION
 end
-OpenProduct.GetConnection() = get_connection(ROOT_PATH)

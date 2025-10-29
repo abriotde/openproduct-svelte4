@@ -19,3 +19,9 @@ if [ $? -ne 0 ]; then
 	echo "Fail run ./generateStaticProducersListByProducts.jl"
 	exit 1
 fi
+./generateStaticProducersListByTags.jl
+if [ $? -ne 0 ]; then
+	echo "Fail run ./generateStaticProducersListByTags.jl"
+	exit 1
+fi
+

@@ -1,9 +1,9 @@
 #!/bin/env bash
 
 cd ${0/install.sh/}
+source ./scripts/config.sh
 
 echo "Install commands."
-
 
 # Bun
 /bin/env bun --version
@@ -42,8 +42,10 @@ echo "Create folders."
 mkdir -p ../static/data
 mkdir -p ../static/producers
 mkdir -p ../static/data/products
-
+mkdir -p ../static/data/tags
+mkdir -p $DUMP_PATH
 
 echo "Set crontab"
 
 crontab ../crontab.txt
+
