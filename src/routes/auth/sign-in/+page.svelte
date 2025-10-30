@@ -16,12 +16,12 @@
 
 	let { form }: Props = $props();
 	
-	// Valeurs par défaut si form est null
-	const formData = form || {
+	// Valeurs par défaut si form est null, avec réactivité
+	const formData = $derived(form || {
 		data: { email: '', password: '' },
 		errors: {},
 		valid: true
-	};
+	});
 	let submitting = $state(false);
 </script>
 
