@@ -33,7 +33,7 @@ export const sendWelcomeEmail = async (email: string) => {
 
 // Send an email to reset the user's password
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-	const updatePasswordURL = getBaseUrl() + `/auth/password/update` + token;
+	const updatePasswordURL = getBaseUrl() + `/auth/password/update-` + token;
 	const textEmail = `S'il vous plait clickez sur le lien ci-dessous pour changer votre mot de passe pour l'application ${APP_NAME}.\n\n  
     ${updatePasswordURL} \n\nSi vous n'avez pas créé de compte vous pouyvez ignorer ce mail.`;
 	const htmlEmail = `<p>S'il vous plait clickez sur le lien ci-dessous pour changer votre mot de passe pour l'application <a href="${updatePasswordURL}">${updatePasswordURL}</a> ${APP_NAME}.</p>  

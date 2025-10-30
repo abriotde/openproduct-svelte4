@@ -9,6 +9,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
+import type { number } from 'zod/v4';
 
 const ADMIN_EMAIL = 'contact@openproduct.fr';
 
@@ -51,9 +52,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			.select()
 			.from(producerTable)
 			.where(eq(producerTable.id, parseInt(producerIdParam)));
-	} else if (isAdmin) {
-		// Admin sans producerId: ne rien charger (attendre la saisie)
-		allProducers = [];
 	} else {
 		// Utilisateur normal: charger ses producteurs
 		allProducers = await db
@@ -63,10 +61,10 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	}
 	
 	// Si plusieurs producteurs et aucun n'est sélectionné, rediriger vers /dashboard/choose (sauf admin)
-	if (!isAdmin && allProducers.length > 1 && !producerIdParam) {
+	if (allProducers.length > 1) {
 		redirect(302, resolve('/dashboard/choose'));
 	}
-	
+
 	// Déterminer quel producteur utiliser
 	let producer = null;
 	if (producerIdParam) {
@@ -184,6 +182,7 @@ export const actions: Actions = {
 					.where(eq(producerTable.userId, locals.user.id))
 					.limit(1);
 			}
+			console.log("existingProducer", existingProducer, producerIdParam)
 
 			const address = data.address || null;
 			const postCode = data.postCode || null;
@@ -256,8 +255,12 @@ export const actions: Actions = {
 	removeProduct: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const product_id = formData.get('id')?.toString();
+		let producerId = +(formData.get('producerId') || 0);
 		if (!locals.user) return [];
-		const producerId = locals.user.producerId;
+		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		if (!isAdmin || !producerId) {
+			producerId = locals.user.producerId;
+		}
 		const query = sql`DELETE FROM producers_products
 				WHERE producer_id = ${producerId} AND product_id=${product_id}`;
 		const pgDialect = new PgDialect();
@@ -273,6 +276,11 @@ export const actions: Actions = {
 		const productIdsJson = formData.get('productIds')?.toString();
 		if (!locals.user || !locals.user.producerId) {
 			return fail(401, { message: 'Unauthorized' });
+		}
+		let producerId = +(formData.get('producerId') || 0);
+		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		if (!isAdmin || producerId==0) {
+			producerId = locals.user.producerId;
 		}
 		if (!productIdsJson) {
 			return fail(400, { message: 'No products selected' });
