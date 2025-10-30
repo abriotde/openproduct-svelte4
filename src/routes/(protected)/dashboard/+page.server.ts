@@ -271,18 +271,25 @@ export const actions: Actions = {
 		return getProducts(producerId);
 	},
 	addProducts: async ({ request, locals }) => {
+		console.log("addProducts");
 		const formData = await request.formData();
 		const productIdsJson = formData.get('productIds')?.toString();
-		if (!locals.user || !locals.user.producerId) {
+		if (!productIdsJson) {
+			return fail(400, { message: 'No products selected' });
+		}
+		console.log("addProducts", productIdsJson);
+		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
 		}
 		let producerId = +(formData.get('producerId') || 0);
+		console.log("addProducts for producer0=", producerId, formData);
 		const isAdmin = locals.user.email === ADMIN_EMAIL;
 		if (!isAdmin || producerId==0) {
 			producerId = locals.user.producerId;
 		}
-		if (!productIdsJson) {
-			return fail(400, { message: 'No products selected' });
+		console.log("addProducts for producer=", producerId);
+		if (!producerId) {
+			return fail(401, { message: 'Unauthorized' });
 		}
 		try {
 			const productIds = JSON.parse(productIdsJson);

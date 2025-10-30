@@ -42,10 +42,12 @@
 		try {
 			const formData = new FormData();
 			formData.append('id', product_id.toString());
-			const response = await fetch(resolve('/dashboard')+'?/removeProduct', {
-				method: 'POST',
-				body: formData
-			});
+			const response = await fetch(
+				resolve('/dashboard')+"?/removeProduct"+(data.producer?.id ? `&producerId=${data.producer.id}` : ''), {
+					method: 'POST',
+					body: formData
+				}
+			);
 			/** @type {import('@sveltejs/kit').ActionResult} */
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
@@ -84,10 +86,12 @@
 			const productIds = Array.from(selectedProductIds.keys());
 			console.log("addProducts2(",productIds,")")
 			formData.append('productIds', JSON.stringify(productIds));
-			const response = await fetch(resolve('/dashboard')+'?/addProducts', {
-				method: 'POST',
-				body: formData
-			});
+			const response = await fetch(
+				resolve('/dashboard')+'?/addProducts'+(data.producer?.id ? `&producerId=${data.producer.id}` : ''), {
+					method: 'POST',
+					body: formData
+				}
+			);
 			
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
