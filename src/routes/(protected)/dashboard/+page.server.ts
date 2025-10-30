@@ -10,6 +10,8 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 
+const ADMIN_EMAIL = 'contact@openproduct.fr';
+
 async function getProducts(producer_id: number | null) {
 	// console.log("getProducts(",producer_id,")");
 	if(producer_id == null) {
@@ -35,17 +37,33 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		return fail(400, {error: 'No database connection.'});
 	}
 
+	// Vérifier si l'utilisateur est admin
+	const isAdmin = locals.user.email === ADMIN_EMAIL;
+	
 	// Récupérer le producerId depuis l'URL si présent
 	const producerIdParam = url.searchParams.get('producerId');
 	
-	// Récupérer tous les producteurs de cet utilisateur
-	const allProducers = await db
-		.select()
-		.from(producerTable)
-		.where(eq(producerTable.userId, locals.user.id));
+	// Récupérer tous les producteurs de cet utilisateur (ou tous si admin)
+	let allProducers;
+	if (isAdmin && producerIdParam) {
+		// Admin avec producerId: charger seulement ce producteur
+		allProducers = await db
+			.select()
+			.from(producerTable)
+			.where(eq(producerTable.id, parseInt(producerIdParam)));
+	} else if (isAdmin) {
+		// Admin sans producerId: ne rien charger (attendre la saisie)
+		allProducers = [];
+	} else {
+		// Utilisateur normal: charger ses producteurs
+		allProducers = await db
+			.select()
+			.from(producerTable)
+			.where(eq(producerTable.userId, locals.user.id));
+	}
 	
-	// Si plusieurs producteurs et aucun n'est sélectionné, rediriger vers /dashboard/choose
-	if (allProducers.length > 1 && !producerIdParam) {
+	// Si plusieurs producteurs et aucun n'est sélectionné, rediriger vers /dashboard/choose (sauf admin)
+	if (!isAdmin && allProducers.length > 1 && !producerIdParam) {
 		redirect(302, resolve('/dashboard/choose'));
 	}
 	
@@ -56,8 +74,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		const producerIdNum = parseInt(producerIdParam);
 		producer = allProducers.find(p => p.id === producerIdNum) || null;
 		
-		// Si le producteur spécifié n'appartient pas à l'utilisateur, erreur
-		if (!producer) {
+		// Si le producteur spécifié n'appartient pas à l'utilisateur, erreur (sauf admin)
+		if (!producer && !isAdmin) {
 			throw error(403, 'Producer not found or access denied');
 		}
 	} else if (allProducers.length === 1) {
@@ -115,7 +133,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		producer,
 		products: products,
 		user: locals.user,
-		allProducers: allProducers
+		allProducers: allProducers,
+		isAdmin: isAdmin
 	};
 };
 
@@ -134,7 +153,7 @@ async function getXYFromAddress(address: string) {
 }
 
 export const actions: Actions = {
-	update: async ({ request, locals }) => {
+	update: async ({ request, locals, url }) => {
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
 		}
@@ -144,13 +163,27 @@ export const actions: Actions = {
     	const form = await superValidate(request, zod4(producerSchema));
 
 		const data = form.data;
+		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		const producerIdParam = url.searchParams.get('producerId');
+		
 		try {
 			// Vérifier si un profil producteur existe déjà
-			const existingProducer = await db
-				.select()
-				.from(producerTable)
-				.where(eq(producerTable.userId, locals.user.id))
-				.limit(1);
+			let existingProducer;
+			if (isAdmin && producerIdParam) {
+				// Admin: charger le producteur spécifié
+				existingProducer = await db
+					.select()
+					.from(producerTable)
+					.where(eq(producerTable.id, parseInt(producerIdParam)))
+					.limit(1);
+			} else {
+				// Utilisateur normal: charger son producteur
+				existingProducer = await db
+					.select()
+					.from(producerTable)
+					.where(eq(producerTable.userId, locals.user.id))
+					.limit(1);
+			}
 
 			const address = data.address || null;
 			const postCode = data.postCode || null;
@@ -186,10 +219,19 @@ export const actions: Actions = {
 			};
 			if (existingProducer.length > 0) {
 				// Mettre à jour le profil existant
-				await db
-					.update(producerTable)
-					.set(producerData)
-					.where(eq(producerTable.userId, locals.user.id));
+				if (isAdmin && producerIdParam) {
+					// Admin: mettre à jour par ID de producteur
+					await db
+						.update(producerTable)
+						.set(producerData)
+						.where(eq(producerTable.id, parseInt(producerIdParam)));
+				} else {
+					// Utilisateur normal: mettre à jour par userId
+					await db
+						.update(producerTable)
+						.set(producerData)
+						.where(eq(producerTable.userId, locals.user.id));
+				}
 			} else {
 				// Créer un nouveau profil - l'ID sera auto-généré par SERIAL
 				await db

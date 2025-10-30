@@ -127,6 +127,33 @@
 				Gérez votre profil de producteur et vos informations publiques
 			</p>
 		</div>
+		
+		<!-- Section Admin -->
+		{#if data.isAdmin}
+			<aside class="alert variant-filled-warning mb-6">
+				<div class="alert-message">
+					<h3 class="h3 mb-2">Mode Administrateur</h3>
+					<p class="mb-4">Vous êtes connecté en tant qu'administrateur. Vous pouvez éditer n'importe quel producteur en saisissant son ID.</p>
+					<form method="get" class="flex gap-2">
+						<input 
+							type="number" 
+							name="producerId" 
+							placeholder="ID du producteur" 
+							class="input w-48"
+							value={data.producer?.id || ''}
+						/>
+						<button type="submit" class="btn variant-filled-primary">
+							Charger le producteur
+						</button>
+					</form>
+					{#if data.producer}
+						<p class="mt-2 text-sm">
+							Producteur actuel : <strong>{data.producer.companyName}</strong> (ID: {data.producer.id})
+						</p>
+					{/if}
+				</div>
+			</aside>
+		{/if}
 
 		<!-- Message de succès -->
 		{#if showSuccessMessage}
