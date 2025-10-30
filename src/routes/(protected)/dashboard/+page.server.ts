@@ -251,10 +251,11 @@ export const actions: Actions = {
 			});
 		}
 	},
-	removeProduct: async ({ request, locals }) => {
+	removeProduct: async ({ request, locals, url }) => {
+		// console.log("removeProduct");
 		const formData = await request.formData();
 		const product_id = formData.get('id')?.toString();
-		let producerId = +(formData.get('producerId') || 0);
+		let producerId = +(url.searchParams.get('producerId') || 0);
 		if (!locals.user) return [];
 		const isAdmin = locals.user.email === ADMIN_EMAIL;
 		if (!isAdmin || !producerId) {
@@ -270,19 +271,17 @@ export const actions: Actions = {
 		}
 		return getProducts(producerId);
 	},
-	addProducts: async ({ request, locals }) => {
-		console.log("addProducts");
+	addProducts: async ({ request, locals, url }) => {
+		// console.log("addProducts");
 		const formData = await request.formData();
 		const productIdsJson = formData.get('productIds')?.toString();
 		if (!productIdsJson) {
 			return fail(400, { message: 'No products selected' });
 		}
-		console.log("addProducts", productIdsJson);
 		if (!locals.user) {
 			return fail(401, { message: 'Unauthorized' });
 		}
-		let producerId = +(formData.get('producerId') || 0);
-		console.log("addProducts for producer0=", producerId, formData);
+		let producerId = +(url.searchParams.get('producerId') || 0);
 		const isAdmin = locals.user.email === ADMIN_EMAIL;
 		if (!isAdmin || producerId==0) {
 			producerId = locals.user.producerId;
@@ -293,15 +292,12 @@ export const actions: Actions = {
 		}
 		try {
 			const productIds = JSON.parse(productIdsJson);
-			const producerId = locals.user.producerId;
-			
 			// Insérer les nouvelles relations (ignorer les doublons)
 			for (const productId of productIds) {
 				const query = sql`
 					INSERT INTO producers_products (producer_id, product_id)
 					VALUES (${producerId}, ${productId})
-					ON CONFLICT (producer_id, product_id) DO NOTHING
-				`;
+					ON CONFLICT (producer_id, product_id) DO NOTHING`;
 				await db?.execute(query);
 			}
 			return getProducts(producerId);
