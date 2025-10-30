@@ -19,12 +19,12 @@
 
 	let { form }: Props = $props();
 	
-	// Valeurs par défaut si form est null, avec réactivité
-	const formData = $derived(form || {
-		data: { firstName: '', lastName: '', email: '', password: '', terms: false },
-		errors: {},
-		valid: true
-	});
+	// Valeurs dérivées avec accès sécurisé
+	const formData = $derived.by(() => ({
+		data: form?.data || { firstName: '', lastName: '', email: '', password: '', terms: false },
+		errors: form?.errors || {},
+		valid: form?.valid ?? true
+	}));
 	
 	let submitting = $state(false);
 </script>
