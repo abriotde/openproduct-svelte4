@@ -202,7 +202,7 @@
 		</div>
 
 		<!-- Formulaire de profil producteur -->
-		<form method="POST" use:enhance action="?/update">
+		<form method="POST" use:enhance action="?/update{data.producer?.id ? `&producerId=${data.producer.id}` : ''}">
 			<div class="space-y-8">
 				<!-- Informations de base -->
 				<div class="card">
