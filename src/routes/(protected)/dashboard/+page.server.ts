@@ -138,7 +138,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 async function getXYFromAddress(address: string) {
 	const url = "https://api-adresse.data.gouv.fr/search/?q=" + encodeURI(address);
-	console.log("Url : ", url);
+	console.log("Call API : ", url);
 	const response = await fetch(url);
 	const res = await response.json();
 	if (res.features.length == 0) return null;
@@ -182,7 +182,6 @@ export const actions: Actions = {
 					.where(eq(producerTable.userId, locals.user.id))
 					.limit(1);
 			}
-			console.log("existingProducer", existingProducer, producerIdParam)
 
 			const address = data.address || null;
 			const postCode = data.postCode || null;
@@ -286,8 +285,6 @@ export const actions: Actions = {
 			return fail(400, { message: 'No products selected' });
 		}
 		try {
-			console.log("formData:",formData);
-			console.log("productIdsJson:",productIdsJson);
 			const productIds = JSON.parse(productIdsJson);
 			const producerId = locals.user.producerId;
 			
