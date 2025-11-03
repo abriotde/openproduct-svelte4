@@ -5,7 +5,7 @@
 
 # import Pkg; Pkg.add("JSON")
 # import Pkg; Pkg.add("MySQL")
-using ArgParse
+using ArgParse, Tables
 import JSON, DBInterface
 
 include("connect.jl")
@@ -34,7 +34,8 @@ function loadArea(departement::Int64)
 		write(file, "{\"id\":"*departementStr*",\"producers\":[\n")
 		sep = ""
 		nbDone = 0
-		for producer in producers
+		data = rowtable(producers)
+		for producer in data
 			nbDone += 1
 			if nbDone%1000==0
 				print(".")

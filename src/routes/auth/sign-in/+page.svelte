@@ -17,7 +17,8 @@
 	let { form }: Props = $props();
 	
 	// Valeurs dérivées avec accès sécurisé
-	const formData = $derived.by(() => ({
+	const formData = $derived.by(() => (
+	{
 		data: form?.data || { email: '', password: '' },
 		errors: form?.errors || {},
 		valid: form?.valid ?? true

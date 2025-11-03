@@ -406,7 +406,7 @@
 			if (!loadingAreas.includes(areaId) && !loadedAreas.includes(areaId)) {
 				loadingAreas.push(areaId);
 				try {
-					const response = await fetch(`/data/producers_${areaId}.json`);
+					const response = await fetch(resolve(`/data`)+"/producers_"+areaId.toString()+".json");
 					if (response.ok) {
 						let departementConfig = await response.json();
 						console.log("getAllProducers() => " , departementConfig);
@@ -675,7 +675,7 @@
 	
 	async function loadTags() {
 		try {
-			const response = await fetch('/data/tags/t1.json');
+			const response = await fetch(resolve(`/data`)+"/tags/t1.json");
 			const data = await response.json();
 			availableTags = data;
 			console.log('Tags chargés:', availableTags);

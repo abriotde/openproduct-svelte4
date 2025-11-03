@@ -24,25 +24,21 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	default: async (event) => {
+		// console.log("sign_in()");
 		const formData = await event.request.formData();
 		const email = formData.get('email')?.toString() || '';
 		const password = formData.get('password')?.toString() || '';
-
-		// Validation simple
 		const errors: Record<string, string> = {};
-		
 		if (!email) {
 			errors.email = 'Email is required';
 		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 			errors.email = 'Please enter a valid email address';
 		}
-		
 		if (!password) {
 			errors.password = 'Password is required';
 		} else if (password.length < 6) {
 			errors.password = 'Password must be at least 6 characters';
 		}
-
 		if (Object.keys(errors).length > 0) {
 			return fail(400, {
 				form: {
@@ -57,7 +53,7 @@ export const actions: Actions = {
 		const emailLower = email.toLowerCase();
 		const existingUser = await getUserByEmail(emailLower);
 		if (!existingUser) {
-			const message = 'The email or password is incorrect.';
+			const message = 'The email is unknown.';
 			setFlash({ type: 'error', message}, event);
 			return fail(400, {
 				form: {
@@ -75,7 +71,7 @@ export const actions: Actions = {
 			);
 			if (!validPassword) {
 				console.log("Invalid password.")
-				const message = 'The email or password is incorrect.';
+				const message = 'The password is incorrect.';
 				setFlash({ type: 'error', message}, event);
 				return fail(400, {
 					form: {

@@ -11,7 +11,7 @@ import { sql } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { number } from 'zod/v4';
 
-const ADMIN_EMAIL = 'contact@openproduct.fr';
+const ADMIN_ROLE = 'ADMIN';
 
 async function getProducts(producer_id: number | null) {
 	// console.log("getProducts(",producer_id,")");
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	}
 
 	// Vérifier si l'utilisateur est admin
-	const isAdmin = locals.user.email === ADMIN_EMAIL;
+	const isAdmin = locals.user.role === ADMIN_ROLE;
 	
 	// Récupérer le producerId depuis l'URL si présent
 	const producerIdParam = url.searchParams.get('producerId');
@@ -161,7 +161,7 @@ export const actions: Actions = {
     	const form = await superValidate(request, zod4(producerSchema));
 
 		const data = form.data;
-		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		const isAdmin = locals.user.role === ADMIN_ROLE;
 		const producerIdParam = url.searchParams.get('producerId');
 		
 		try {
@@ -257,7 +257,7 @@ export const actions: Actions = {
 		const product_id = formData.get('id')?.toString();
 		let producerId = +(url.searchParams.get('producerId') || 0);
 		if (!locals.user) return [];
-		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		const isAdmin = locals.user.role === ADMIN_ROLE;
 		if (!isAdmin || !producerId) {
 			producerId = locals.user.producerId;
 		}
@@ -282,7 +282,7 @@ export const actions: Actions = {
 			return fail(401, { message: 'Unauthorized' });
 		}
 		let producerId = +(url.searchParams.get('producerId') || 0);
-		const isAdmin = locals.user.email === ADMIN_EMAIL;
+		const isAdmin = locals.user.role === ADMIN_ROLE;
 		if (!isAdmin || producerId==0) {
 			producerId = locals.user.producerId;
 		}
