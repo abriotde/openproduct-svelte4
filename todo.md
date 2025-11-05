@@ -1,6 +1,7 @@
 
 
-* Adapt sendMail script and put it on production on prod server.
-* product: filter on used by producers in /map filter (but not in /dashboard).
+* FIX Map error
 * Add github action test.
 * Add more tests.
+* Set important PME
+* Set FAQ & Youtube help

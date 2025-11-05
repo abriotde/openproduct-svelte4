@@ -468,7 +468,7 @@
 
 	function getMarkerPin(producer: any) {
 		const cat = producer.cat;
-		if (cat == null || !mapIcons.black) return null;
+		if (cat == null || !mapIcons.black) return mapIcons.green;
 		
 		switch (cat[0]) {
 			case "H": return mapIcons.yellow;  // Habillement
@@ -540,6 +540,7 @@
 		console.log("displayProducers(", producers, ")");
 		
 		for (const producer of producers) {
+			// console.log("displayProducers() : producer=", producer);
 			if (producer != undefined) {
 				const key = getProducerKey(producer);
 				const markerManager = markersLoaded[key];
