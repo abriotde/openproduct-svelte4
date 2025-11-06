@@ -567,6 +567,7 @@
 				</div>
 
 				<!-- Production -->
+				{#if data.producer}
 				<div class="card">
 					<header class="card-header">
 						<h2 class="h3 flex items-center gap-2">
@@ -607,6 +608,7 @@
 						</div>
 					</section>
 				</div>
+				{/if}
 
 				{#if $errors.general}
 					<div class="text-error-500">
