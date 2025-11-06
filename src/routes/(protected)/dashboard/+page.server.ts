@@ -7,7 +7,7 @@ import { resolve } from '$app/paths';
 import { producerSchema } from '$lib/config/zod-schemas.js';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { sql } from 'drizzle-orm';
+import { sql, DrizzleQueryError } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { number } from 'zod/v4';
 
@@ -241,11 +241,15 @@ export const actions: Actions = {
 			}
 			return {form};
 		} catch (error) {
+			let message = 'An error occurred while saving your profile. Please try again.';
+			if (error instanceof DrizzleQueryError) {
+				message = error.cause?.detail;
+			}
 			console.error('Error saving producer profile:', error);
 			return fail(500, {
 				form: {
 					data,
-					errors: { general: 'An error occurred while saving your profile. Please try again.' },
+					errors: {general:  message},
 					valid: false
 				}
 			});

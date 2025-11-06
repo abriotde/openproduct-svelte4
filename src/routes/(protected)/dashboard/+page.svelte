@@ -608,6 +608,11 @@
 					</section>
 				</div>
 
+				{#if $errors.general}
+					<div class="text-error-500">
+						{$errors.general}
+					</div>
+				{/if}
 				<!-- Boutons d'action -->
 				<div class="flex justify-end space-x-4">
 					<button
