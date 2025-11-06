@@ -86,7 +86,7 @@
 								let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
 								datas.set(product, producers);
 								productsByAreas.set(myArea, datas);
-								for (const p of producers) {
+								for (const p of producers.producers) {
 									producersFilterByProduct.set(p, true);
 								}
 								displayProducers(producersLoaded);
@@ -98,7 +98,7 @@
 								);
 							});
 					} else {
-						for (const p of producers) {
+						for (const p of producers.producers) {
 							producersFilterByProduct.set(p, true);
 						}
 						someInCache = true;
@@ -154,7 +154,17 @@
 	let loadedAreas: number[] = [];
 	let loadingAreas: number[] = [];
 	let areasToCheck: number[]|null = null;
-	let productsByAreas: Map<number,Map<number, number[]>> = new Map(); // Map<AreaId, Map<ProductId, Producers[]>>
+	
+	type ProducerMinimalInfo = {
+		id: number;
+		name: string;
+		area: number;
+	}
+	type ProductDetails = {
+		producers: number[];
+		list: ProducerMinimalInfo[];
+	};
+	let productsByAreas: Map<number,Map<number, ProductDetails>> = new Map(); // Map<AreaId, Map<ProductId, Producers[]>>
 	let producersFilterByProduct: Map<number, boolean> = new Map();
 	let filterChar = "";
 	let markersLoaded: any = {};
@@ -537,7 +547,7 @@
 
 	function displayProducers(producers: object[]) {
 		console.log("displayProducers(", producers, ")");
-		
+		let nbDisplayingProducers = 0;
 		for (const producer of producers) {
 			// console.log("displayProducers() : producer=", producer);
 			if (producer != undefined) {
@@ -545,6 +555,7 @@
 				const markerManager = markersLoaded[key];
 				
 				if (myfilter(producer)) {
+					nbDisplayingProducers += 1;
 					if (markerManager != undefined) {
 						if (markerManager[0] == false) {
 							markerManager[0] = true;
@@ -561,6 +572,17 @@
 						markerManager[0] = false;
 					}
 				}
+			}
+		}
+		if (nbDisplayingProducers==0 && myfilter==filterByProduct) {
+			let myArea = 0;
+			let datas = productsByAreas.get(myArea); // Should not be null as filterByProduct has initialized it
+			if (!datas) {
+				return false;
+			}
+			for (const product of filters.produces.keys()) {
+				const producers = datas.get(product);
+				
 			}
 		}
 	}

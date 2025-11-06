@@ -12,18 +12,22 @@ cnx = get_connection()
 
 function write_product(id::Int32, name::String)
 	println("Product ",name,", n°", id)
-	sql = "Select producer_id from producers_products Where product_id=\$1"
+	sql = "Select producer_id from producers_products Where product_id=\$1 and producer_id is not null"
 	rows = DBInterface.execute(cnx, sql, [id])
 	nb = 0
 	filepath = "../static/data/products/p"*string(id)*".json"
 	file = open(filepath, "w") do file
 		producers = []
+		producers_ids = ""
+		sep = ""
 		for row in rows
 			try
 				producer_id = row[:1]
 				nb += 1
 				# println(" - Product ",name,", producer n°", producer_id)
 				push!(producers, producer_id)
+				producers_ids *= sep*string(producer_id)
+				sep = ","
 			catch err
 				if isa(err, KeyError)
 					println("ERROR : No departement : ",id)
@@ -31,7 +35,15 @@ function write_product(id::Int32, name::String)
 				end
 			end
 		end
+		write(file, "{\n \"producers\":")
 		write(file, JSON.json(producers))
+		if nb>0 && nb<100
+			sql = "Select id, company_name as name, case when post_code>99 then post_code/1000 else post_code end as area from producers Where id in ("*string(producers_ids)*")"
+			rows = DBInterface.execute(cnx, sql)
+			producers = rowtable(rows)
+			write(file, ",\n \"list\":"*JSON.json(producers))
+		end
+		write(file, "\n}")
 		# println(filepath, "writen")
 	end
 	nb
