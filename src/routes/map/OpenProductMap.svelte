@@ -581,13 +581,43 @@
 			if (!datas) { // Should not be null as filterByProduct has initialized it
 				return false;
 			}
-			for (const product of filters.produces.keys()) {
-				const producers = datas.get(product);
-				if (!producers) { // Should not be null as filterByProduct has initialized it
-					return false;
+				for (const product of filters.produces.keys()) {
+					const producers = datas.get(product);
+					if (!producers) { // Should not be null as filterByProduct has initialized it
+						return false;
+					}
+					// Afficher la liste des producteurs si disponible
+					if (producers.list && producers.list.length > 0) {
+						const productName = filters.produces.get(product) || 'ce produit';
+						let message = `Aucun producteur de "${productName}" trouvé dans la zone affichée.\n\n`;
+						message += `Producteurs disponibles (${producers.list.length}) :\n\n`;
+						
+						// Grouper par département
+						const byArea = new Map<number, ProducerMinimalInfo[]>();
+						for (const p of producers.list) {
+							const area = p.area || 0;
+							if (!byArea.has(area)) {
+								byArea.set(area, []);
+							}
+							byArea.get(area)!.push(p);
+						}
+						
+						// Trier par département et afficher
+						const sortedAreas = Array.from(byArea.keys()).sort((a, b) => a - b);
+						for (const area of sortedAreas) {
+							const producersList = byArea.get(area)!;
+							message += `\nDépartement ${area.toString().padStart(2, '0')} (${producersList.length}) :\n`;
+							for (const p of producersList) {
+								message += `  • ${p.name}\n`;
+							}
+						}
+						
+						alert(message);
+					} else if (producers.producers && producers.producers.length > 0) {
+						const productName = filters.produces.get(product) || 'ce produit';
+						alert(`Aucun producteur de "${productName}" trouvé dans la zone affichée.\n\n${producers.producers.length} producteurs disponibles au total (liste trop longue pour être affichée).`);
+					}
 				}
-				
-			}
 		}
 	}
 
