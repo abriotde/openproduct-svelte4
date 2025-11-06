@@ -15,7 +15,7 @@
 	let products = $state(data.products || []);
 	let selectedProductIds:Map<number, string> = $state(new Map());
 	const { form, errors, enhance, submitting, message } = superForm(
-		data.form.data,
+		data.form,
 		{
 			// validators: zodClient(producerSchema),
 			resetForm: false,
