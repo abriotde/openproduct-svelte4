@@ -1,11 +1,11 @@
 #!/bin/env julia
 #=
-	Script for regenerate static JSON data for producers : public/data/producers_AREA.json
+	Script for regenerate static JSON data for producers : static/data/producers_[AREA].json
 =#
 
 # import Pkg; Pkg.add("JSON")
 # import Pkg; Pkg.add("MySQL")
-using ArgParse
+using ArgParse, Tables
 import JSON, DBInterface
 
 include("connect.jl")
@@ -33,8 +33,13 @@ function loadArea(departement::Int64)
 	file = open(filepath, "w") do file
 		write(file, "{\"id\":"*departementStr*",\"producers\":[\n")
 		sep = ""
-		for producer in producers
-		    print(".")
+		nbDone = 0
+		data = rowtable(producers)
+		for producer in data
+			nbDone += 1
+			if nbDone%1000==0
+				print(".")
+			end
 		    line = sep*JSON.json(producer)*"\n"
 		    write(file, line)
 		    sep = ","

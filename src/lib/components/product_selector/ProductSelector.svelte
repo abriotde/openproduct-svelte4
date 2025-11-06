@@ -4,7 +4,7 @@
   	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 
-	let {selectedProductIds = $bindable()} = $props();
+	let {selectedProductIds = $bindable(), usedOnly = false} = $props();
 
 	let searchQuery = $state('');
 	let searchResults: any[] = $state([]);
@@ -19,7 +19,8 @@
 		searchResults = [];
 		try {
 			// Utiliser l'endpoint existant de la page product
-			const response = await fetch(resolve(`/product/api/search`)+`?q=${encodeURIComponent(searchQuery)}`);
+			const usedOnlyParam = usedOnly ? '&usedOnly=true' : '';
+			const response = await fetch(resolve(`/product/api/search`)+`?q=${encodeURIComponent(searchQuery)}${usedOnlyParam}`);
 			
 			if (response.ok) {
 				const data = await response.json();

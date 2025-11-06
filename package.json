@@ -1,6 +1,6 @@
 {
 	"name": "openproduct-web-svelte",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -16,6 +16,8 @@
 	},
 	"devDependencies": {
 		"@lucide/svelte": "^0.482.0",
+		"esbuild": "^0.25.11",
+		"@playwright/test": "^1.56.1",
 		"@skeletonlabs/skeleton": "^2.11.0",
 		"@skeletonlabs/tw-plugin": "^0.3.1",
 		"@sveltejs/adapter-auto": "^6.1.1",
@@ -41,6 +43,7 @@
 		"sveltekit-flash-message": "^2.4.6",
 		"tailwindcss": "^3.4.18",
 		"tslib": "^2.8.1",
+		"tsx": "^4.20.6",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.9",
 		"zod": "^4.1.12"
@@ -68,8 +71,9 @@
 		"oslo": "^1.2.1",
 		"pg": "^8.16.3",
 		"postcss-nesting": "^13.0.2",
+		"postgres": "^3.4.7",
 		"svelte-sonner": "^1.0.5",
-		"sveltekit-superforms": "2.27.2",
+		"sveltekit-superforms": "2.28.0",
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^3.1.1",
 		"vaul-svelte": "^0.3.2"

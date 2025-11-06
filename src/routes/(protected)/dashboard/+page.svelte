@@ -42,10 +42,12 @@
 		try {
 			const formData = new FormData();
 			formData.append('id', product_id.toString());
-			const response = await fetch(resolve('/dashboard')+'?/removeProduct', {
-				method: 'POST',
-				body: formData
-			});
+			const response = await fetch(
+				resolve('/dashboard')+"?/removeProduct"+(data.producer?.id ? `&producerId=${data.producer.id}` : ''), {
+					method: 'POST',
+					body: formData
+				}
+			);
 			/** @type {import('@sveltejs/kit').ActionResult} */
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
@@ -84,10 +86,12 @@
 			const productIds = Array.from(selectedProductIds.keys());
 			console.log("addProducts2(",productIds,")")
 			formData.append('productIds', JSON.stringify(productIds));
-			const response = await fetch(resolve('/dashboard')+'?/addProducts', {
-				method: 'POST',
-				body: formData
-			});
+			const response = await fetch(
+				resolve('/dashboard')+'?/addProducts'+(data.producer?.id ? `&producerId=${data.producer.id}` : ''), {
+					method: 'POST',
+					body: formData
+				}
+			);
 			
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
@@ -127,6 +131,33 @@
 				Gérez votre profil de producteur et vos informations publiques
 			</p>
 		</div>
+		
+		<!-- Section Admin -->
+		{#if data.isAdmin}
+			<aside class="alert variant-filled-warning mb-6">
+				<div class="alert-message">
+					<h3 class="h3 mb-2">Mode Administrateur</h3>
+					<p class="mb-4">Vous êtes connecté en tant qu'administrateur. Vous pouvez éditer n'importe quel producteur en saisissant son ID.</p>
+					<form method="get" class="flex gap-2">
+						<input 
+							type="number" 
+							name="producerId" 
+							placeholder="ID du producteur" 
+							class="input w-48"
+							value={data.producer?.id || ''}
+						/>
+						<button type="submit" class="btn variant-filled-primary">
+							Charger le producteur
+						</button>
+					</form>
+					{#if data.producer}
+						<p class="mt-2 text-sm">
+							Producteur actuel : <strong>{data.producer.companyName}</strong> (ID: {data.producer.id})
+						</p>
+					{/if}
+				</div>
+			</aside>
+		{/if}
 
 		<!-- Message de succès -->
 		{#if showSuccessMessage}
@@ -175,7 +206,7 @@
 		</div>
 
 		<!-- Formulaire de profil producteur -->
-		<form method="POST" use:enhance action="?/update">
+		<form method="POST" use:enhance action="?/update{data.producer?.id ? `&producerId=${data.producer.id}` : ''}">
 			<div class="space-y-8">
 				<!-- Informations de base -->
 				<div class="card">
@@ -350,15 +381,17 @@
 							<div>
 								<label class="label">
 									<span class="font-semibold">Code postal</span>
-									<input
-										class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
-										type="text"
-										name="postCode"
-										bind:value={$form.postCode}
-										placeholder="69000"
-										maxlength="5"
-										disabled={$submitting}
-									/>
+							<input
+								type="number"
+								inputmode="numeric"
+								class="input px-4 py-2 rounded-lg {$errors.postCode ? 'input-error border-error-500' : ''}"
+								name="postCode"
+								bind:value={$form.postCode}
+								placeholder="22980"
+								min="1000"
+								max="99999"
+								disabled={$submitting}
+							/>
 									{#if $errors.postCode}
 										<small class="text-error-500 text-sm mt-1">{$errors.postCode}</small>
 									{/if}
@@ -373,7 +406,7 @@
 										type="text"
 										name="city"
 										bind:value={$form.city}
-										placeholder="Lyon"
+										placeholder="Plélan-le-Petit"
 										disabled={$submitting}
 									/>
 									{#if $errors.city}

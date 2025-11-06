@@ -21,7 +21,7 @@
 			const result = deserialize(await response.text());
 			if (result.type === 'success' && result.data) {
 				const prod = result.data;
-				console.log("setProductTree() => ", prod);
+				// console.log("setProductTree() => ", prod);
 				selectedProduct = prod;
 			} else {
 				console.error('setProductTree() : Error with status : ', result.status);
@@ -34,8 +34,8 @@
 		}
 	}
 	function toggleProduct(productId: number, productName:string) {
-		console.log("ProductExplorer.toggleProduct(",productId, productName,") in ",selectedProductIds,";");
-		console.log("selectedProduct.product.id:",selectedProduct.product.id);
+		// console.log("ProductExplorer.toggleProduct(",productId, productName,") in ",selectedProductIds,";");
+		// console.log("selectedProduct.product.id:",selectedProduct.product.id);
 		const newMap = new Map(selectedProductIds);
 		if (newMap.has(productId)) {
 			newMap.delete(productId);
@@ -43,7 +43,7 @@
 			newMap.set(productId, productName);
 		}
 		selectedProductIds = newMap;
-		console.log("ProductExplorer.toggleProduct() => ",selectedProductIds,";");
+		// console.log("ProductExplorer.toggleProduct() => ",selectedProductIds,";");
 	}
 	onMount(() => {
 		console.log('ProductExplorer initialized');
@@ -68,6 +68,7 @@
 				{/if}
 				<Package size={28} />
 				<h3 class="h3 text-white">{selectedProduct.product.name}</h3>
+				<span>({selectedProduct.product.id})</span>
 			</div>
 		</div>
 

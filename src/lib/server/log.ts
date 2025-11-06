@@ -57,7 +57,8 @@ export default async function log(statusCode: number, event) {
 			...messageEvents,
 			...trackEvents
 		};
-		console.log('log: ', JSON.stringify(logData));
+		let datetime = new Date().toISOString();
+		console.log('> ',datetime, " : ", JSON.stringify(logData));
 		if(AXIOM_TOKEN === 'your-axiom-token') return;
 		if(AXIOM_ORG_ID === 'your-axiom-org-id') return;
 		if(AXIOM_DATASET === 'your-axiom-dataset') return;

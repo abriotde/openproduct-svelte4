@@ -125,7 +125,7 @@ export default async function sendEmail(
 				}
 			);
 		}
-		const message = 'E-mail sent successfully!';
+		const message = 'E-mail sent successfully to '+email+'!';
 		console.log(message);
 		return {
 			statusCode: 200,

@@ -1,11 +1,30 @@
 #!/bin/bash
 
-PRODUCTION_DIR=openproduct:/home/kaja9241/public_node/
+PRODUCTION_DIR=/home/kaja9241/public_node
 
 cd ${0/deploy.sh/}/..
+source scripts/config.sh
 
+if [ $ENV == "prod" ]; then
+	echo "Generate static datas"
+	./scripts/generate_static.sh
+	if [ $? -ne 0 ]; then
+		echo "Fail generate static datas"
+		exit 1
+	fi
+fi
 
-npm install # For package-lock.json as we usually use "bun"
-npm run build # For build dir
-npm ci --omit=dev # --production For node_modules
-rsync -avpzh build package.json package-lock.json svelte.config.js tailwind.config.js postcss.config.cjs components.json vite.config.ts tsconfig.json drizzle.config.ts $PRODUCTION_DIR
+bun install
+bun run build
+# npm ci --omit=dev # --production For node_modules
+
+if [ $ENV == "dev" ]; then
+	echo "Send to production"
+	rsync -avpzh build package.json  svelte.config.js tailwind.config.js postcss.config.cjs components.json vite.config.ts tsconfig.json drizzle.config.ts $PRODUTION_HOST:$PRODUCTION_DIR/
+	rsync -avpzh scripts .env.production $PRODUTION_HOST:~/
+else
+	echo "Copy to production"
+	cp -r build package.json  svelte.config.js tailwind.config.js postcss.config.cjs components.json vite.config.ts tsconfig.json drizzle.config.ts $PRODUCTION_DIR/
+fi
+
+./scripts/db_dump.sh

@@ -16,3 +16,5 @@ pnpm-lock.yaml
 .vscode/**
 static/data/**
 static/producers/**
+playwright-report/**
+test-results/**

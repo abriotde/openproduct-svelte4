@@ -1,10 +1,10 @@
-#!/usr/local/bin/julia --startup=no
+#!/bin/env julia
 #=
-# Script to generate JSON list of producer's id by product's id. It allow a quick filter by product on /map.
+# Script to generate HTML producer page used to get details from /map pins : static/data/producers/producer_[ID].html.
 # 
 =#
 
-import JSON, OteraEngine, MySQL, Dates, DBInterface
+import JSON, OteraEngine, Dates, DBInterface
 DEBUG=true
 
 include("connect.jl")
@@ -14,7 +14,6 @@ TemplateProducerPage = missing
 
 function generateStaticProducerPage(filepath::String, producer::LibPQ.Row, col_names::Vector{String})
 	# println("generateStaticProducerPage(",filepath,",",producer,")")
-	print(".")
 	if ismissing(TemplateProducerPage)
 		global TemplateProducerPage = OteraEngine.Template("./templateProducerPage.html")
 	end
@@ -28,13 +27,13 @@ end
 function generateStaticProducerPages(webrootpath::String, webpath::String; useCache=false)
 	if DEBUG; println("generateStaticProducerPages(",webrootpath,",",webpath,")"); end
 	mindate = "2000-01-01 00:00:00"
-	sql = "Select case when updated_at>='"*mindate*"' then 0 else 1 end ok, id, latitude lat, longitude lng, company_name name,
-			COALESCE(description, short_description) text,
-			short_description job,
+	sql = "Select case when updated_at>='"*mindate*"' then 0 else 1 end ok, id, latitude lat, longitude lng, company_name as name,
+			COALESCE(description, short_description) as text,
+			short_description as job,
 			concat(address,' ',post_code,' ',city) as address,
 			phone_number_1, phone_number_2,
 			case when send_email is NULL or send_email!='ko' then email else '' end as email,
-			case when website_status in ('ok','400') then website_1 else '' end as website, siret_number siret
+			case when website_status in ('ok','400') then website_1 else '' end as website, siret_number as siret
 		FROM producers
 		WHERE latitude is not null AND longitude is not null
 			AND status in ('actif','unknown','to-check')
@@ -56,7 +55,7 @@ function generateStaticProducerPages(webrootpath::String, webpath::String; useCa
 			producerFilepath = webrootpath*replace(weburl, "%d"=>string(producer[idCol]))
 			generateStaticProducerPage(producerFilepath, producer, col_names)
 			nbDone += 1
-			if nbDone%10==0
+			if nbDone%1000==0
 				print(".")
 			end
 		end

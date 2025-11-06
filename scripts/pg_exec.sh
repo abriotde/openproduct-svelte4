@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${0/db_dump.sh/}/..
+cd ${0/pg_exec.sh/..}
 source scripts/config.sh
 
 # for table in products product_relationships; do
@@ -8,5 +8,5 @@ source scripts/config.sh
 # 	pg_dump --data-only -U $DATABASE_USER -h localhost $DATABASE_NAME -t $table > ./$table.sql
 # done
 
-pg_dump --clean --if-exists -U $DATABASE_USER -h localhost $DATABASE_NAME > $DUMP_PATH/pg_dump.sql
+psql -U $DATABASE_USER -h localhost $DATABASE_NAME < ./scripts/pg_exec.sql
 
