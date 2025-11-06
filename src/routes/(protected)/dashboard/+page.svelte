@@ -15,7 +15,7 @@
 	let products = $state(data.products || []);
 	let selectedProductIds:Map<number, string> = $state(new Map());
 	const { form, errors, enhance, submitting, message } = superForm(
-		data.form.data,
+		data.form,
 		{
 			// validators: zodClient(producerSchema),
 			resetForm: false,
@@ -567,6 +567,7 @@
 				</div>
 
 				<!-- Production -->
+				{#if data.producer}
 				<div class="card">
 					<header class="card-header">
 						<h2 class="h3 flex items-center gap-2">
@@ -607,7 +608,13 @@
 						</div>
 					</section>
 				</div>
+				{/if}
 
+				{#if $errors.general}
+					<div class="text-error-500">
+						{$errors.general}
+					</div>
+				{/if}
 				<!-- Boutons d'action -->
 				<div class="flex justify-end space-x-4">
 					<button
