@@ -485,13 +485,12 @@
 		let i = 0;
 		let output = "";
 		let sep = "";
-		
 		while ((i + 2) < len) {
 			output += sep + tel[i] + tel[i + 1];
 			sep = " ";
 			i = i + 2;
 		}
-		output += sep + tel[i];
+		output += sep + tel[i] + tel[i + 1];
 		return output;
 	}
 
