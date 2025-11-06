@@ -9,7 +9,6 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import { sql, DrizzleQueryError } from 'drizzle-orm';
 import { PgDialect } from 'drizzle-orm/pg-core';
-import type { number } from 'zod/v4';
 
 const ADMIN_ROLE = 'ADMIN';
 
@@ -223,10 +222,11 @@ export const actions: Actions = {
 			}
 			return { form };
 		} catch (error) {
-			let message = 'An error occurred while saving your profile. Please try again.';
+			let message = 'Une erreur s\'est produite lors de la sauvegarde de votre profil.';
 			if (error instanceof DrizzleQueryError) {
-				message = error.cause?.detail || message;
+				message += " : "+error.cause?.detail+". Tentez de coriger le problème si vous pouvez.";
 			}
+			message += " Si le problème persiste signalez le par mail : contact@openproduct.fr."
 			console.error('Error saving producer profile:', error);
 			form.errors.general = [message];
 			return fail(500, { form });
