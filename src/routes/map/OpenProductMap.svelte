@@ -6,6 +6,15 @@
 	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
 	import { resolve } from '$app/paths';
 
+	type ProducerMinimalInfo = {
+		id: number;
+		name: string;
+		area: number;
+	}
+	type ProductDetails = {
+		producers: number[];
+		list: ProducerMinimalInfo[];
+	};
 	initializeStores();
 	const drawerStore = getDrawerStore();
 	let filters = $state({
@@ -76,14 +85,14 @@
 			// for (const myArea of loadedAreas) {
 				const myArea = 0;
 				console.log("applyFilters() : area ",myArea,";");
-				let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+				let datas = productsByAreas.get(myArea) || new Map<number, ProductDetails>();
 				for (const product of filters.produces.keys()) {
 					const producers = datas.get(product);
 					if (!producers) {
 						fetch(resolve('/data/products')+'/p'+product+'.json')
 							.then(response => response.json())
 							.then(producers => {
-								let datas = productsByAreas.get(myArea) || new Map<number, number[]>();
+								let datas = productsByAreas.get(myArea) || new Map<number, ProductDetails>();
 								datas.set(product, producers);
 								productsByAreas.set(myArea, datas);
 								for (const p of producers.producers) {
@@ -154,16 +163,7 @@
 	let loadedAreas: number[] = [];
 	let loadingAreas: number[] = [];
 	let areasToCheck: number[]|null = null;
-	
-	type ProducerMinimalInfo = {
-		id: number;
-		name: string;
-		area: number;
-	}
-	type ProductDetails = {
-		producers: number[];
-		list: ProducerMinimalInfo[];
-	};
+
 	let productsByAreas: Map<number,Map<number, ProductDetails>> = new Map(); // Map<AreaId, Map<ProductId, Producers[]>>
 	let producersFilterByProduct: Map<number, boolean> = new Map();
 	let filterChar = "";
@@ -574,14 +574,18 @@
 				}
 			}
 		}
+		// If no pins displayed
 		if (nbDisplayingProducers==0 && myfilter==filterByProduct) {
 			let myArea = 0;
-			let datas = productsByAreas.get(myArea); // Should not be null as filterByProduct has initialized it
-			if (!datas) {
+			let datas = productsByAreas.get(myArea);
+			if (!datas) { // Should not be null as filterByProduct has initialized it
 				return false;
 			}
 			for (const product of filters.produces.keys()) {
 				const producers = datas.get(product);
+				if (!producers) { // Should not be null as filterByProduct has initialized it
+					return false;
+				}
 				
 			}
 		}
