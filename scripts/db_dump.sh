@@ -8,5 +8,5 @@ source scripts/config.sh
 # 	pg_dump --data-only -U $DATABASE_USER -h localhost $DATABASE_NAME -t $table > ./$table.sql
 # done
 
-pg_dump --clean --if-exists -U $DATABASE_USER -h localhost $DATABASE_NAME > $DUMP_PATH/pg_dump.sql
+pg_dump --clean --if-exists --exclude-table-data=users -U $DATABASE_USER -h localhost $DATABASE_NAME > $DUMP_PATH/pg_dump.sql
 
