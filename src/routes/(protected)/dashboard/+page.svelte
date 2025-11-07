@@ -159,26 +159,6 @@
 			</aside>
 		{/if}
 
-		<!-- Message de succès -->
-		{#if showSuccessMessage}
-			<aside class="alert variant-filled-success mb-6">
-				<div class="alert-message flex items-center gap-2">
-					<CircleCheck class="h-5 w-5" />
-					<span>Profil sauvegardé avec succès !</span>
-				</div>
-			</aside>
-		{/if}
-
-		<!-- Message d'erreur global -->
-		{#if $message}
-			<aside class="alert variant-filled-error mb-6">
-				<div class="alert-message flex items-center gap-2">
-					<CircleAlert class="h-5 w-5" />
-					<span>{$message}</span>
-				</div>
-			</aside>
-		{/if}
-
 		<!-- Informations utilisateur -->
 		<div class="card mb-8">
 			<header class="card-header">
@@ -610,10 +590,32 @@
 				</div>
 				{/if}
 
+				<!-- Message de succès -->
+				{#if showSuccessMessage}
+					<aside class="alert variant-filled-success mb-6">
+						<div class="alert-message flex items-center gap-2">
+							<CircleCheck class="h-5 w-5" />
+							<span>Profil sauvegardé avec succès ! Les modifications seront visible sur la carte sous une semaine.</span>
+						</div>
+					</aside>
+				{/if}
+
+				<!-- Message d'erreur global -->
+				{#if $message}
+					<aside class="alert variant-filled-error mb-6">
+						<div class="alert-message flex items-center gap-2">
+							<CircleAlert class="h-5 w-5" />
+							<span>{$message}</span>
+						</div>
+					</aside>
+				{/if}
 				{#if $errors.general}
-					<div class="text-error-500">
-						{$errors.general}
-					</div>
+					<aside class="alert variant-filled-error mb-6">
+						<div class="alert-message flex items-center gap-2">
+							<CircleAlert class="h-5 w-5" />
+							<span>{$errors.general}</span>
+						</div>
+					</aside>
 				{/if}
 				<!-- Boutons d'action -->
 				<div class="flex justify-end space-x-4">
