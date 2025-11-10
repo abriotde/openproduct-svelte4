@@ -40,7 +40,7 @@ logging.basicConfig(
 	level=logging.INFO,
 	format='%(asctime)s - %(levelname)s - %(message)s',
 	handlers=[
-		logging.FileHandler('extract_emails.log'),
+		logging.FileHandler('extract_emails_from_websites.log'),
 		logging.StreamHandler()
 	]
 )
@@ -205,7 +205,7 @@ class EmailExtractor:
 		
 		return social_links
 	
-	def has_contact_form(self, html: str) -> bool:
+	def has_contact_form(self, html: str, website_url: str) -> bool:
 		"""Détecte la présence d'un formulaire de contact."""
 		try:
 			soup = BeautifulSoup(html, 'html.parser')
@@ -219,12 +219,10 @@ class EmailExtractor:
 				contact_indicators = ['email', 'message', 'contact', 'nom', 'name']
 				if any(indicator in form_text or indicator in form_html 
 					  for indicator in contact_indicators):
-					return True
-			
-			return False
+					return website_url
 		except Exception as e:
 			logger.warning(f"Erreur lors de la détection de formulaire: {e}")
-			return False
+		return None
 	
 	def extract_from_website(self, website_url: str) -> Dict:
 		"""Extrait les informations d'un site web."""
@@ -262,7 +260,7 @@ class EmailExtractor:
 			result['social_links'] = self.find_social_links(html)
 			
 			# Détecter un formulaire de contact
-			result['has_contact_form'] = self.has_contact_form(html)
+			result['has_contact_form'] = self.has_contact_form(html, website_url)
 			
 			# Trouver et visiter les pages contact
 			contact_pages = self.find_contact_pages(website_url, html)
@@ -285,8 +283,8 @@ class EmailExtractor:
 					result['emails'].update(emails)
 					
 					# Vérifier s'il y a un formulaire
-					if not result['has_contact_form']:
-						result['has_contact_form'] = self.has_contact_form(contact_html)
+					if result['has_contact_form'] is None:
+						result['has_contact_form'] = self.has_contact_form(contact_html, contact_url)
 		
 		except Exception as e:
 			logger.error(f"Erreur lors de l'extraction depuis {website_url}: {e}")
@@ -307,7 +305,6 @@ def get_producers_without_email(limit: Optional[int] = None) -> List[Dict]:
 			WHERE (email IS NULL OR email = '')
 				AND website_1 IS NOT NULL
 				AND website_status != 'ko'
-				AND website_1 LIKE '%%'
 			ORDER BY id
 		"""
 		
@@ -353,24 +350,53 @@ def generate_csv_report(results: List[Dict], output_file: str):
 		writer.writeheader()
 		
 		for result in results:
+			emails = result.get('emails', [])
+			social_links = result.get('social_links', {})
 			row = {
 				'id': result['id'],
 				'company_name': result['company_name'],
 				'website': result['website'],
-				'emails_found': len(result['emails']),
-				'email_list': ', '.join(result['emails']),
-				'facebook': result['social_links'].get('facebook', ''),
-				'instagram': result['social_links'].get('instagram', ''),
-				'linkedin': result['social_links'].get('linkedin', ''),
-				'twitter': result['social_links'].get('twitter', ''),
-				'has_contact_form': 'Oui' if result['has_contact_form'] else 'Non',
-				'pages_visited': result['pages_visited'],
+				'emails_found': len(emails),
+				'email_list': ', '.join(emails),
+				'facebook': social_links.get('facebook', ''),
+				'instagram': social_links.get('instagram', ''),
+				'linkedin': social_links.get('linkedin', ''),
+				'twitter': social_links.get('twitter', ''),
+				'has_contact_form': 'Oui' if result.get('has_contact_form', None) is not None else 'Non',
+				'pages_visited': result.get('pages_visited', 0),
 				'error': result.get('error', '')
 			}
 			writer.writerow(row)
 		
 	logger.info(f"Rapport CSV généré: {output_file}")
 
+def extract_website_from_producer(extractor, producer):
+	retValue = {'website': None}
+	for i in range(1, 4):
+		website=producer['website_'+str(i)]
+		if website is not None and website.strip()!="":
+			if "facebook" in website: # Consider Facebook as a valid website by default
+				retValue['website'] = website
+				retValue['social_links'] = {'facebook': website}
+			else:
+				extraction_result = extractor.extract_from_website(website)
+				if extraction_result.get('error')!='HS':
+					extraction_result['website'] = website
+					retValue.update(extraction_result)
+	return retValue
+
+def set_facebook(facebook_url, producer):
+	"""
+	Function to set website_X with facebook url. Ensure not ever exists
+	"""
+	for i in range(1, 4):
+		key = 'website_'+str(i)
+		website = producer[key]
+		if website is None:
+			return key+"='"+facebook_url+"'"
+		if website==facebook_url:
+			return "" # Already registered
+	return ""
 
 def main():
 	"""Fonction principale."""
@@ -411,30 +437,19 @@ def main():
 			sql_update = f"-- Producer: {producer['company_name']} \nUpdate producers SET\n"
 			sep = ""
 
-			website=producer['website_1']
-			extraction_result = extractor.extract_from_website(website)
-			if extraction_result.get('error')=='HS':
-				extraction_result = extractor.extract_from_website(producer['website_2'])
-				if extraction_result.get('error')=='HS':
-					extraction_result = extractor.extract_from_website(producer['website_3'])
-					if extraction_result.get('error')!='HS':
-						website = producer['website_3']
-				else:
-					website = producer['website_2']
-
+			extraction_result = extract_website_from_producer(extractor, producer)
 			result = {
 				'id': producer['id'],
 				'company_name': producer['company_name'],
-				'website': website,
+				'website': extraction_result.get('website', producer['website_1']),
 				**extraction_result
 			}
 			results.append(result)
-			error = extraction_result['error']
-			if error=='HS':
+			if extraction_result.get('website') is None: # No real website acessible
 				sql_update += sep+"  webbsite_status='ko'"
 				sep = ",\n"
 			else:
-				if result['emails']:
+				if result.get('emails'):
 					logger.info(f"  ✓ {len(result['emails'])} email(s) trouvé(s): {', '.join(result['emails'])}")
 					email = list(result['emails'])[0]
 					sql_update += sep+f"  email='{email}'"
@@ -442,23 +457,23 @@ def main():
 				else:
 					logger.info(f"  ✗ Aucun email trouvé")
 				
-				if result['social_links']:
+				if result.get('social_links'):
 					facebook = result['social_links'].get('facebook', '')
 					if facebook!='':
-						if producer['website_2'] is None:
-							sql_update += sep+f"  website_2='{facebook}'"
+						sql = set_facebook(facebook, producer)
+						if sql!="":
+							sql_update += sep+sql
 							sep = ",\n"
-						elif producer['website_3'] is None:
-							sql_update += sep+f"  website_3='{facebook}'"
-							sep = ",\n"
+						logger.info(f"  📱 Facebook: {facebook}")
 					logger.info(f"  📱 Réseaux sociaux: {', '.join(result['social_links'].keys())}")
-				
-				if result['has_contact_form']:
-					logger.info(f"  📝 Formulaire de contact détecté")
-				
-				if sep!="":
-					sql_update += f"\n  WHERE id={result['id']};\n\n"
-					f.write(sql_update)
+
+				if result.get('has_contact_form') is not None:
+					logger.info(f"  📝 Formulaire de contact détecté : {result['has_contact_form']}")
+
+			if sep!="":
+				sql_update += f"\n  WHERE id={producer['id']};\n\n"
+				f.write(sql_update)
+				# print("SQL:", sql_update)
 
 			# Pause entre chaque site
 			if i < len(producers):
@@ -468,14 +483,14 @@ def main():
 	# Générer les rapports
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	
-	# csv_file = f'extract_emails_from_websites.csv'
-	# generate_csv_report(results, csv_file)
+	csv_file = f'extract_emails_from_websites.csv'
+	generate_csv_report(results, csv_file)
 	
 	# Statistiques finales
 	total = len(results)
-	with_email = sum(1 for r in results if r['emails'])
-	with_social = sum(1 for r in results if r['social_links'])
-	with_form = sum(1 for r in results if r['has_contact_form'])
+	with_email = sum(1 for r in results if r.get('emails', False))
+	with_social = sum(1 for r in results if r.get('social_links', False))
+	with_form = sum(1 for r in results if r.get('has_contact_form', False))
 	with_error = sum(1 for r in results if r.get('error'))
 	
 	logger.info(f"\n{'='*60}")
