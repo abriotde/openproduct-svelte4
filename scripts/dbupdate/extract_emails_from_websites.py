@@ -446,7 +446,7 @@ def main():
 			}
 			results.append(result)
 			if extraction_result.get('website') is None: # No real website acessible
-				sql_update += sep+"  webbsite_status='ko'"
+				sql_update += sep+"  website_status='ko'"
 				sep = ",\n"
 			else:
 				if result.get('emails'):

@@ -18,3 +18,4 @@ static/data/**
 static/producers/**
 playwright-report/**
 test-results/**
+scripts/pg_exec.sql
