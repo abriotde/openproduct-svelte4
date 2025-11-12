@@ -546,7 +546,7 @@
 	}
 
 	function displayProducers(producers: object[]) {
-		console.log("displayProducers(", producers, ")");
+		// console.log("displayProducers(", producers, ")");
 		let nbDisplayingProducers = 0;
 		for (const producer of producers) {
 			// console.log("displayProducers() : producer=", producer);
@@ -575,17 +575,22 @@
 			}
 		}
 		// If no pins displayed
+		// console.log("displayProducers() => ", nbDisplayingProducers);
 		if (nbDisplayingProducers==0 && myfilter==filterByProduct) {
 			let myArea = 0;
 			let datas = productsByAreas.get(myArea);
 			if (!datas) { // Should not be null as filterByProduct has initialized it
+				console.log("INFO : No product found on area ",myArea);
 				return false;
 			}
+			// console.log("INFO : products found on ",myArea);
 				for (const product of filters.produces.keys()) {
 					const producers = datas.get(product);
 					if (!producers) { // Should not be null as filterByProduct has initialized it
+						console.log("ERROR : displayProducers() : No producers of ", product, " found.");
 						return false;
 					}
+					// console.log("INFO : producer of ", product, " : ", producers);
 					// Afficher la liste des producteurs si disponible
 					if (producers.list && producers.list.length > 0) {
 						const productName = filters.produces.get(product) || 'ce produit';

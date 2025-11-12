@@ -9,4 +9,7 @@ source scripts/config.sh
 # done
 
 pg_dump --clean --if-exists --exclude-table-data=users -U $DATABASE_USER -h localhost $DATABASE_NAME > $DUMP_PATH/pg_dump.sql
+pg_dump --clean --if-exists --table=users -U $DATABASE_USER -h localhost $DATABASE_NAME > $DUMP_PATH/pg_dump_users.sql
+
+echo "All dumped into '$DUMP_PATH'"
 
