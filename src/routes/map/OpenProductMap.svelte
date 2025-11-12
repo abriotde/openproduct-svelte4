@@ -10,6 +10,8 @@
 		id: number;
 		name: string;
 		area: number;
+		x?: number;
+		y?: number;
 	}
 	type ProductDetails = {
 		producers: number[];
@@ -25,6 +27,10 @@
 	});
 	
 	let availableTags = $state<any[]>([]);
+	let producersDrawerData = $state<{
+		productName: string;
+		producers: Map<number, ProducerMinimalInfo[]>;
+	} | null>(null);
 	
 	function openFilters() {
 		drawerStore.open({
@@ -39,6 +45,30 @@
 
 	function closeFilters() {
 		drawerStore.close();
+	}
+
+	function openProducersDrawer(productName: string, producersByArea: Map<number, ProducerMinimalInfo[]>) {
+		producersDrawerData = { productName, producers: producersByArea };
+		drawerStore.open({
+			id: 'producers-drawer',
+			position: 'right',
+			width: 'w-full md:w-96',
+			bgDrawer: 'bg-surface-50-900-token',
+			bgBackdrop: 'bg-surface-backdrop-token',
+			padding: 'p-0'
+		});
+	}
+
+	function closeProducersDrawer() {
+		drawerStore.close();
+		producersDrawerData = null;
+	}
+
+	function centerMapOnProducer(producer: ProducerMinimalInfo) {
+		if (map && producer.x && producer.y) {
+			map.setView([producer.x, producer.y], 15);
+			closeProducersDrawer();
+		}
 	}
 
 	function resetFilters() {
@@ -594,8 +624,6 @@
 					// Afficher la liste des producteurs si disponible
 					if (producers.list && producers.list.length > 0) {
 						const productName = filters.produces.get(product) || 'ce produit';
-						let message = `Aucun producteur de "${productName}" trouvé dans la zone affichée.\n\n`;
-						message += `Producteurs disponibles (${producers.list.length}) :\n\n`;
 						
 						// Grouper par département
 						const byArea = new Map<number, ProducerMinimalInfo[]>();
@@ -607,17 +635,8 @@
 							byArea.get(area)!.push(p);
 						}
 						
-						// Trier par département et afficher
-						const sortedAreas = Array.from(byArea.keys()).sort((a, b) => a - b);
-						for (const area of sortedAreas) {
-							const producersList = byArea.get(area)!;
-							message += `\nDépartement ${area.toString().padStart(2, '0')} (${producersList.length}) :\n`;
-							for (const p of producersList) {
-								message += `  • ${p.name}\n`;
-							}
-						}
-						
-						alert(message);
+						// Ouvrir le drawer avec la liste des producteurs
+						openProducersDrawer(productName, byArea);
 					} else if (producers.producers && producers.producers.length > 0) {
 						const productName = filters.produces.get(product) || 'ce produit';
 						alert(`Aucun producteur de "${productName}" trouvé dans la zone affichée.\n\n${producers.producers.length} producteurs disponibles au total (liste trop longue pour être affichée).`);
@@ -895,6 +914,70 @@
 					Appliquer
 				</button>
 			</footer>
+		</div>
+	{/if}
+	
+	<!-- Drawer pour la liste des producteurs -->
+	{#if $drawerStore.id === 'producers-drawer' && producersDrawerData}
+		<div class="flex flex-col h-full bg-surface-50-900-token">
+			<!-- Header -->
+			<header class="bg-primary-500 text-white p-4 flex items-center justify-between">
+				<h2 class="h3 font-bold">Producteurs de {producersDrawerData.productName}</h2>
+				<button type="button"
+					class="btn-icon variant-filled hover:variant-filled-error"
+					onclick={closeProducersDrawer}>
+					<X size={24} />
+				</button>
+			</header>
+
+			<!-- Message d'info -->
+			<div class="bg-warning-500/10 border-l-4 border-warning-500 p-4">
+				<p class="text-sm">
+					Aucun producteur trouvé dans la zone affichée.
+					<br />
+					<strong>Cliquez sur un producteur</strong> pour centrer la carte sur sa position.
+				</p>
+			</div>
+
+			<!-- Liste des producteurs groupés par département -->
+			<div class="flex-1 overflow-y-auto p-4">
+				{#each Array.from(producersDrawerData.producers.keys()).sort((a, b) => a - b) as area}
+					{@const producersList = producersDrawerData.producers.get(area)}
+					{#if producersList}
+						<div class="mb-6">
+							<!-- En-tête du département -->
+							<div class="flex items-center gap-2 mb-3 pb-2 border-b border-surface-300-600-token">
+								<MapPin size={20} class="text-primary-500" />
+								<h3 class="font-bold text-lg">
+									Département {area.toString().padStart(2, '0')}
+								</h3>
+								<span class="badge variant-filled-surface">{producersList.length}</span>
+							</div>
+
+							<!-- Liste des producteurs -->
+							<div class="space-y-2">
+								{#each producersList as producer}
+									<button
+										type="button"
+										class="w-full text-left p-3 rounded-lg bg-surface-100-800-token hover:bg-primary-500/20 transition-colors border border-surface-300-600-token"
+										onclick={() => centerMapOnProducer(producer)}
+									>
+										<div class="flex items-center justify-between">
+											<span class="font-medium">{producer.name}</span>
+											<MapPin size={16} class="text-primary-500" />
+										</div>
+										{#if producer.x && producer.y}
+											<div class="text-xs text-surface-600-300-token mt-1">
+												{producer.x.toFixed(4)}, {producer.y.toFixed(4)}
+											</div>
+										{/if}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				{/each}
+			</div>
 		</div>
 	{/if}
 </Drawer>
