@@ -543,12 +543,28 @@
 
 		let text = `<h3>${producer.name}</h3>`;
 		if (producer.web) {
-			text = `<a href="${producer.web}" target="_blank">${text}</a><br>`;
+			text = `<a href="${producer.web}" target="_blank">${text}</a>`;
+		}
+		if (producer.tag && producer.tag.length>0) {
+			text += "<p>Tag : "; var sep = "";
+			for (const t of producer.tag) {
+				text += sep+t;
+				sep = ",";
+			}
+			text += "</p>";
 		}
 		if (producer.suspect == 1) {
 			text += '<span style="color:red">Ce producteur semble ne plus exister. Contactez-nous si vous avez des informations.</span>';
 		}
 		text += `<p>${producer.txt}</p>`;
+		if (producer.production && producer.production.length>0) {
+			text += "<p>Production : "; var sep = "";
+			for (const product of producer.production) {
+				text += sep+product;
+				sep = ",";
+			}
+			text += "</p>";
+		}
 		text += "<a href='"+resolve("/")+"producers/producer_"+producer.id+".html' target='producer'>+ d'infos</a><br>";
 		if (producer.email) {
 			text += `Email: <a href="mailto:${producer.email}">${producer.email}</a><br>`;
