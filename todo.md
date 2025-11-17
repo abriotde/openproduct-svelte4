@@ -1,6 +1,9 @@
 
-* Add display producer when no on map due to product filter
+* Add production on Map
+* No unhide password button?
+* FIX bottom screen display on producer page (Can not click on Save.)
 * Add github action test.
 * Add more tests.
 * Set important PME
 * Set FAQ & Youtube help
+

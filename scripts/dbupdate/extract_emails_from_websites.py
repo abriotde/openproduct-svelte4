@@ -53,6 +53,8 @@ EMAIL_PATTERN = re.compile(
 
 # Emails à ignorer (génériques, spam, etc.)
 IGNORED_EMAILS = {
+	'utilisateur@domaine.com',
+	'your@email.com',
 	'example@example.com',
 	'email@example.com',
 	'contact@example.com',
@@ -82,6 +84,9 @@ IGNORED_DOMAINS = {
 	'instagram.com',
 	'youtube.com',
 	'pinterest.com',
+}
+IGNORED_WEBSITES = {
+	'facebook.com/plugins', 'facebook.com/sharer'
 }
 
 # Mots-clés pour identifier les pages contact
@@ -197,7 +202,7 @@ class EmailExtractor:
 			
 			for platform, pattern in patterns.items():
 				matches = re.findall(pattern, html_text, re.IGNORECASE)
-				if matches:
+				if matches and not matches[0] in IGNORED_WEBSITES:
 					social_links[platform] = f"https://{matches[0]}"
 		
 		except Exception as e:
@@ -292,25 +297,34 @@ class EmailExtractor:
 		
 		return result
 
+def get_emails_from_file(file):
+	emails =  []
+	with open(file, "r") as fd:
+		for line in fd:
+			emails.append(line.strip())
+	return emails
 
-def get_producers_without_email(limit: Optional[int] = None) -> List[Dict]:
+def get_producers_without_email(limit: Optional[int] = None, file: Optional[str] = None) -> List[Dict]:
 	"""Récupère les producteurs sans email depuis la base de données."""
 	try:
 		conn = psycopg.connect(DATABASE_URL)
 		cursor = conn.cursor()
 		
-		query = """
-			SELECT id, company_name, website_1, website_2, website_3
-			FROM producers
-			WHERE (email IS NULL OR email = '')
+		query = "SELECT id, company_name, website_1, website_2, website_3, email FROM producers WHERE "
+		if file:
+			query += " email in ('" \
+				+ ("','".join(get_emails_from_file(file))) \
+				+ "')"
+		else:
+			query += """ (email IS NULL OR email = '')
 				AND website_1 IS NOT NULL
 				AND website_status != 'ko'
-			ORDER BY id
-		"""
+				"""
+		query += " AND status in ('actif', 'unknown', 'to-check') ORDER BY id "
 		
 		if limit:
 			query += f" LIMIT {limit}"
-		
+		print("SQL:", query)
 		cursor.execute(query)
 		rows = cursor.fetchall()
 		
@@ -318,6 +332,7 @@ def get_producers_without_email(limit: Optional[int] = None) -> List[Dict]:
 		for row in rows:
 			producers.append({
 				'id': row[0],
+				'email': row[5],
 				'company_name': row[1],
 				'website_1': row[2],
 				'website_2': row[3],
@@ -413,11 +428,15 @@ def main():
 		action='store_true',
 		help='Mode test sans génération de fichiers SQL'
 	)
-	
+	parser.add_argument(
+		'--file',
+		type=str,
+		help='Load email from a file instead of producers without emails.'
+	)
 	args = parser.parse_args()
 	
 	# Récupérer les producteurs
-	producers = get_producers_without_email(args.limit)
+	producers = get_producers_without_email(args.limit, args.file)
 	
 	if not producers:
 		logger.info("Aucun producteur à traiter")
@@ -433,7 +452,7 @@ def main():
 		f.write(f"-- Généré le {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
 	
 		for i, producer in enumerate(producers, 1):
-			logger.info(f"\n[{i}/{len(producers)}] Traitement de: {producer['company_name']}")
+			logger.info(f"\n[{i}/{len(producers)}] Traitement de: {producer['company_name']}: {producer['email']}")
 			sql_update = f"-- Producer: {producer['company_name']} \nUpdate producers SET\n"
 			sep = ""
 
@@ -449,10 +468,11 @@ def main():
 				sql_update += sep+"  website_status='ko'"
 				sep = ",\n"
 			else:
-				if result.get('emails'):
+				email2 = result.get('emails')
+				if email2 and email2!=producer['email']:
 					logger.info(f"  ✓ {len(result['emails'])} email(s) trouvé(s): {', '.join(result['emails'])}")
 					email = list(result['emails'])[0]
-					sql_update += sep+f"  email='{email}'"
+					sql_update += sep+f"  email='{email}', has_send_mail=false"
 					sep = ",\n"
 				else:
 					logger.info(f"  ✗ Aucun email trouvé")

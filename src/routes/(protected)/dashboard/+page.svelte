@@ -122,7 +122,8 @@
 	<title>Tableau de bord - Profil Producteur</title>
 </svelte:head>
 
-<div class="container mx-auto py-8 px-4">
+
+<div class="container mx-auto py-8 px-4 min-h-screen">
 	<div class="max-w-4xl mx-auto">
 		<!-- En-tête -->
 		<div class="mb-8">
