@@ -24,6 +24,7 @@
 		valid: form?.valid ?? true
 	}));
 	let submitting = $state(false);
+	let hide_password = $state(true);
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
@@ -69,10 +70,10 @@
 			</label>
 
 			<label class="label">
-				<span>Mot de passe</span>
+				<span>Mot de passe</span><button type="button" class="toggle-password" onclick="{() => hide_password = !hide_password}">{hide_password?"👁️":"🙈"}</button>
 				<input 
 					class="input {formData.errors.password ? 'input-error' : ''}" 
-					type="password" 
+					type="{hide_password? "password" : "text"}" 
 					name="password"
 					value={formData.data.password}
 					required
