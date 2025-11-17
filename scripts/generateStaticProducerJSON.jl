@@ -75,7 +75,7 @@ function loadArea(departement::Int64)
 end
 
 
-loadProducts()
+loadProducts(dbConnection)
 if length(ARGS)>0
 	for area in ARGS
 		loadArea(parse(Int64, area))

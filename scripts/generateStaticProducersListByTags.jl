@@ -9,7 +9,6 @@ using Tables
 
 include("connect.jl")
 cnx = get_connection()
-
 include("tag.jl")
 
 function write_tags(producers_tag::Array{Tag})
@@ -30,8 +29,9 @@ sql = "SELECT id, tag FROM producers where tag>0"
 rows = DBInterface.execute(cnx, sql)
 for row in rows
 	id_producer, tag = row
+	global producers_tag
 	for t in convert_tag_to_list(tag)
-		push!(producers_tag[t.id].producers, id_producer)
+		push!(producers_tag[t.id+1].producers, id_producer)
 	end
 end
 nb = write_tags(producers_tag)
