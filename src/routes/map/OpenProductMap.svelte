@@ -552,7 +552,7 @@
 			text += "<p>Tag : "; var sep = "";
 			for (const t of availableTags) {
 				if (is_tagged(t.mask, producer.tag)) {
-					text += sep+t;
+					text += sep+t.label;
 					sep = ",";
 				}
 			}
