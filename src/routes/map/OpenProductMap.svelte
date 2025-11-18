@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { initializeStores, Drawer, getDrawerStore, filter } from '@skeletonlabs/skeleton';
-	import { Search, MapPin, X, CirclePlus, CircleX } from 'lucide-svelte';
+	import { initializeStores, Drawer, getDrawerStore } from '@skeletonlabs/skeleton';
+	import { Search, MapPin, X, CircleX } from 'lucide-svelte';
 	import ProductSelector from '$lib/components/product_selector/ProductSelector.svelte';
 	import { resolve } from '$app/paths';
 
@@ -23,7 +23,7 @@
 		category: '',
 		address: '',
 		produces: new Map<number, string>(),
-		tags: new Set<number>()
+		tags: 0
 	});
 	
 	let availableTags = $state<any[]>([]);
@@ -76,7 +76,7 @@
 			category: '',
 			address: '',
 			produces: new Map<number, string>(),
-			tags: new Set<number>()
+			tags: 0
 		};
 		if (filterSelect) filterSelect.value = '';
 		if (addressInput) addressInput.value = '';
@@ -152,7 +152,7 @@
 				console.log("applyFilters(category:",filters.category,");");
 				myfilter = combinedFilter;
 				filterProducersByCategory(filters.category);
-			} else if (filters.tags.size > 0) {
+			} else if (filters.tags > 0) {
 				console.log("applyFilters(tags:",filters.tags,");");
 				myfilter = combinedFilter;
 				displayProducers(producersLoaded);
@@ -232,6 +232,9 @@
 			cyan: getIcon("#359396"),     // PME
 			black: getIcon("#000000")     // Défaut
 		};
+	}
+	function is_tagged(tag_value: number, tag2test: number) {
+		return (tag2test & tag_value) > 0;
 	}
 
 	async function loadLeaflet() {
@@ -545,11 +548,13 @@
 		if (producer.web) {
 			text = `<a href="${producer.web}" target="_blank">${text}</a>`;
 		}
-		if (producer.tag && producer.tag.length>0) {
+		if (producer.tag && producer.tag>0) {
 			text += "<p>Tag : "; var sep = "";
-			for (const t of producer.tag) {
-				text += sep+t;
-				sep = ",";
+			for (const t of availableTags) {
+				if (is_tagged(t.mask, producer.tag)) {
+					text += sep+t;
+					sep = ",";
+				}
 			}
 			text += "</p>";
 		}
@@ -671,8 +676,8 @@
 	};
 	
 	const filterByTags = (producer: any) => {
-		if (filters.tags.size === 0) return true;
-		return filters.tags.has(producer.tag || 0);
+		if (filters.tags==0) return true;
+		return (filters.tags & producer.tag)==filters.tags;
 	};
 	const charFilter = (producer: any) => {
 		let inverse = false;
@@ -774,6 +779,9 @@
 			const response = await fetch(resolve(`/data`)+"/tags/t1.json");
 			const data = await response.json();
 			availableTags = data;
+			for (const tag of data) {
+				availableTags[tag.id].mask = 2**tag.id
+			}
 			console.log('Tags chargés:', availableTags);
 		} catch (error) {
 			console.error('Erreur lors du chargement des tags:', error);
@@ -781,13 +789,14 @@
 	}
 	
 	function toggleTag(tagId: number) {
-		const newSet = new Set(filters.tags);
-		if (newSet.has(tagId)) {
-			newSet.delete(tagId);
+		var newSet = filters.tags;
+		if (is_tagged(tagId, newSet)) {
+			newSet = (newSet & ~tagId);
 		} else {
-			newSet.add(tagId);
+			newSet = (newSet | tagId);
 		}
 		filters.tags = newSet;
+		console.log(filters);
 	}
 </script>
 
@@ -901,11 +910,11 @@
 							{#each availableTags as tag}
 								<button
 									type="button"
-									class="btn w-full {filters.tags.has(tag.id) ? 'variant-filled-primary' : 'variant-ghost-surface'}"
-									onclick={() => toggleTag(tag.id)}
+									class="btn w-full {is_tagged(tag.mask, filters.tags) ? 'variant-filled-primary' : 'variant-ghost-surface'}"
+									onclick={() => toggleTag(tag.mask)}
 								>
 									<span class="flex items-center gap-2">
-										{#if filters.tags.has(tag.id)}
+										{#if is_tagged(tag.mask, filters.tags)}
 											<div class="w-2 h-2 bg-white rounded-full"></div>
 										{/if}
 										<span>{tag.label}</span>

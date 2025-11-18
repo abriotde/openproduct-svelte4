@@ -59,9 +59,9 @@ function loadArea(departement::Int64)
 			producer_dict["production"] = convert_product_ids_to_list(producer[:production], dbConnection)
 
 			# Convert tags to theire translations
-			mytag = producer[:tag]
-			tag_lst = [tag.name for tag in convert_tag_to_list(mytag)]
-			producer_dict["tag"] = tag_lst
+			# mytag = producer[:tag]
+			# tag_lst = [tag.name for tag in convert_tag_to_list(mytag)]
+			# producer_dict["tag"] = tag_lst
 			# println(" -> Tag:", tag_lst, ";")
 
 			# Print as JSON

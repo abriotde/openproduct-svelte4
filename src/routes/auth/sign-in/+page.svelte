@@ -70,7 +70,7 @@
 			</label>
 
 			<label class="label">
-				<span>Mot de passe</span><button type="button" class="toggle-password" onclick="{() => hide_password = !hide_password}">{hide_password?"👁️":"🙈"}</button>
+				<span>Mot de passe</span>&nbsp;<button type="button" class="toggle-password" onclick="{() => hide_password = !hide_password}">👁️</button>
 				<input 
 					class="input {formData.errors.password ? 'input-error' : ''}" 
 					type="{hide_password? "password" : "text"}" 
