@@ -34,6 +34,9 @@ Pkg.add("FunSQL")
 Pkg.add("Tables")
 Pkg.add("SMTPClient")
 Pkg.add("DataFrames")
+Pkg.add("Memoize")
+Pkg.add("URIs")
+Pkg.add("HTTP")
 EOF
 
 
