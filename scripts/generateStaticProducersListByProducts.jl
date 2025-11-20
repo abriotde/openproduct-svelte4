@@ -8,7 +8,7 @@ import JSON, DBInterface, CSV, FunSQL, LibPQ
 using Tables
 
 include("connect.jl")
-cnx = get_connection()
+dbConnection = OpenProduct.get_connection(ROOT_PATH)
 
 
 products_all_descendants = Dict{Int, Array{Int}}()
@@ -19,7 +19,7 @@ function get_all_childs(product_id)
 		sql = "Select parent_id, child_id
 			from product_relationships
 			order by id desc"
-		rows = DBInterface.execute(cnx, sql)
+		rows = DBInterface.execute(dbConnection, sql)
 		for row in rows
 			parent = Int(row[1])
 			child = Int(row[2])
@@ -46,7 +46,7 @@ function write_product(id::Int32, name::String)
 	end
 	sql *=") and producer_id is not null"
 	# println("SQL: ",sql)
-	rows = DBInterface.execute(cnx, sql)
+	rows = DBInterface.execute(dbConnection, sql)
 	nb = 0
 	filepath = "../static/data/products/p"*string(id)*".json"
 	file = open(filepath, "w") do file
@@ -75,7 +75,7 @@ function write_product(id::Int32, name::String)
 		if nb>0 && nb<100
 			sql = "Select id, company_name as name, case when post_code>99 then post_code/1000 else post_code end as area, latitude as x, longitude as y
 				from producers Where id in ("*string(producers_ids)*")"
-			rows = DBInterface.execute(cnx, sql)
+			rows = DBInterface.execute(dbConnection, sql)
 			producers = rowtable(rows)
 			write(file, ",\n \"list\":"*JSON.json(producers))
 		end
@@ -88,7 +88,7 @@ end
 # Get min/max points
 
 sql = "SELECT id, name FROM products"
-rows = DBInterface.execute(cnx, sql)
+rows = DBInterface.execute(dbConnection, sql)
 for row in rows
 	try
 		id, name = row
@@ -101,7 +101,7 @@ for row in rows
 		end
 	end
 end
-DBInterface.close!(cnx)
+DBInterface.close!(dbConnection)
 exit(0)
 
 # Write output

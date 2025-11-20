@@ -2,13 +2,14 @@ import DBInterface, LibPQ
 using TOML
 using Memoization
 
-ENV="dev"
-conffile = "../.env.production"
+ENV=""
+conffile = "../.env.local"
 if isfile(conffile)
+	println("Development environment")
+	ENV="dev"
+else
 	println("Production environment")
 	ENV="prod"
-else
-	println("Development environment")
 end
 
 CURDIR=pwd()

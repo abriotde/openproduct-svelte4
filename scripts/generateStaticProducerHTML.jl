@@ -9,8 +9,7 @@ using DataFrames
 DEBUG=true
 
 include("connect.jl")
-dbConnection = get_connection()
-include("tag.jl")
+dbConnection = OpenProduct.get_connection(ROOT_PATH)
 
 TemplateProducerPage = missing
 
@@ -21,8 +20,8 @@ function generateStaticProducerPage(filepath::String, producer::DataFrameRow{Dat
 	end
 	open(filepath, "w") do fd
 		producer_dict = Dict(names(producer) .=> values(producer))
-		producer_dict["production"] = join(convert_product_ids_to_list(producer_dict["production"], dbConnection), ", ")
-		producer_dict["tag"] = join([tag.label for tag in convert_tag_to_list(producer_dict["tag"])], ", ")
+		producer_dict["production"] = join(OpenProduct.convert_product_ids_to_list(producer_dict["production"], dbConnection), ", ")
+		producer_dict["tag"] = join([tag.label for tag in OpenProduct.convert_tag_to_list(producer_dict["tag"])], ", ")
 		# println("Dict:", producer_dict)
 		dictionary = Dict{Symbol, String}(
 			Symbol(name) => string(producer_dict[name]) for (index, name) in enumerate(col_names)

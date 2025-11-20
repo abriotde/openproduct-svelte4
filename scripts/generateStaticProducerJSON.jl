@@ -10,8 +10,7 @@ using DataFrames
 import JSON, DBInterface
 
 include("connect.jl")
-dbConnection = get_connection()
-include("tag.jl")
+dbConnection = OpenProduct.get_connection(ROOT_PATH)
 
 
 #=
@@ -56,11 +55,11 @@ function loadArea(departement::Int64)
 			# Convert to dict for JSON.json() and to store list inside.
 			producer_dict = Dict(names(producer) .=> values(producer))
 			# Convert production ids to names
-			producer_dict["production"] = convert_product_ids_to_list(producer[:production], dbConnection)
+			producer_dict["production"] = OpenProduct.convert_product_ids_to_list(producer[:production], dbConnection)
 
 			# Convert tags to theire translations
 			# mytag = producer[:tag]
-			# tag_lst = [tag.name for tag in convert_tag_to_list(mytag)]
+			# tag_lst = [tag.name for tag in OpenProduct.convert_tag_to_list(mytag)]
 			# producer_dict["tag"] = tag_lst
 			# println(" -> Tag:", tag_lst, ";")
 
@@ -75,7 +74,7 @@ function loadArea(departement::Int64)
 end
 
 
-loadProducts(dbConnection)
+OpenProduct.loadProducts(dbConnection)
 if length(ARGS)>0
 	for area in ARGS
 		loadArea(parse(Int64, area))
