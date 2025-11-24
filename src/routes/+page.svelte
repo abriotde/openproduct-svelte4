@@ -4,21 +4,37 @@
 </script>
 
 <svelte:head>
-	<title>{APP_NAME}</title>
+	<title>OpenProduct - Trouvez des producteurs locaux près de chez vous | Made in France</title>
 	<meta
 		name="description"
-		content="OpenProduct, une association des producteurs locaux."
+		content="Découvrez les producteurs locaux près de chez vous avec OpenProduct. Circuits courts, made in France, produits locaux de qualité. Trouvez facilement les producteurs de votre région."
 	/>
+	<meta name="keywords" content="producteurs locaux, producteurs près de chez moi, made in France, circuits courts, produits locaux, agriculture locale, artisans locaux, consommer local" />
+	
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="OpenProduct - Trouvez des producteurs locaux près de chez vous" />
+	<meta property="og:description" content="Découvrez les producteurs locaux près de chez vous. Circuits courts, made in France, produits de qualité." />
+	<meta property="og:locale" content="fr_FR" />
+	
+	<!-- Twitter -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="OpenProduct - Producteurs locaux près de chez vous" />
+	<meta name="twitter:description" content="Découvrez les producteurs locaux près de chez vous. Circuits courts, made in France." />
+	
+	<!-- Geo tags -->
+	<meta name="geo.region" content="FR" />
+	<meta name="geo.placename" content="France" />
 </svelte:head>
 
 <div class="container mx-auto py-8 px-4 min-h-screen">
 	<section class="grid items-start gap-6">
 		<div class="flex max-w-[980px] flex-col items-start gap-4 pb-8">
 			<h1 class="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
-				{APP_NAME}
+				Trouvez des producteurs locaux près de chez vous - Made in France
 			</h1>
 			<h2>Qui sommes nous?</h2>
-			<p>OpenProduct est une association à but non-lucrative (loi 1901) qui souhaite promouvoir les producteurs locaux et les circuits courts en permettant à tous de trouver facilement tous les producteurs et les contacter directement.</p>
+			<p>OpenProduct est une association à but non-lucrative (loi 1901) qui souhaite promouvoir les <strong>producteurs locaux</strong> et les <strong>circuits courts</strong> en permettant à tous de trouver facilement les <strong>producteurs près de chez soi</strong> et de les contacter directement. Découvrez le <strong>made in France</strong> et soutenez l'agriculture locale de votre région.</p>
 			<h2>Comment?</h2>
 			<p>L'inscription et l'utilisation sont gratuites pour tous les producteurs afin de n'en laisser aucun de côté.</p>
 			<p>La base de donnée est open-source et l'accès est libre et simple pour tous les utilisateurs sur notre site.</p>
