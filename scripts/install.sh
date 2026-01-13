@@ -37,6 +37,8 @@ Pkg.add("DataFrames")
 Pkg.add("Memoize")
 Pkg.add("URIs")
 Pkg.add("HTTP")
+Pkg.add("Gumbo") # Parse HTML
+Pkg.add("Cascadia") # CSS selector
 EOF
 
 

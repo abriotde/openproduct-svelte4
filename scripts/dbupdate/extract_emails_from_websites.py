@@ -68,6 +68,7 @@ IGNORED_EMAILS = {
 	'test@test',
 	'spam@',
 	'abuse@',
+	'votre@email.com'
 }
 
 # Domaines à ignorer (services techniques, analytics, etc.)
